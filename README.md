@@ -3,10 +3,10 @@
 ## [todo] install brew
 
 ## [done] setup ssh keys
-[setup_ssh.sh](dev/temp/setup_ssh.sh)
+[setup_ssh.sh](dev/draft/basic_setup/setup_ssh.sh)
 
 ## [done] setup github cli
-[setup_gh.sh](dev/temp/setup_gh.sh)
+[setup_gh.sh](dev/draft/basic_setup/setup_gh.sh)
 
 ## [wip] install python environments
 
