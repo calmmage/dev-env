@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "project-name"
+name = "calmage-dev-env"
 version = "0.0.1"
 description = ""
 authors = ["Petr Lavrov <calmmage@gmail.com>"]
@@ -14,6 +14,9 @@ pytest = "*"
 # logging
 loguru = "*"
 toml = "*"
+PyGithub = "*"
+typer-cli = {version =  "0.12.4", extras = ["all"]}
+gitpython = "*"
 
 
 [tool.poetry.group.dev.dependencies]
