@@ -6,7 +6,7 @@ authors = ["Petr Lavrov <calmmage@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.8.1,<4.0"
+python = ">=3.12+41,<4.0"
 # for stability, use frozen-app-name branch
 calmlib = { git = "https://github.com/calmmage/calmlib.git", branch = "main" }
 #calmmage = { git = "https://github.com/calmmage/calmmage.git", branch = "main" }
@@ -17,6 +17,10 @@ toml = "*"
 PyGithub = "*"
 typer-cli = {version =  "0.12.4", extras = ["all"]}
 gitpython = "*"
+pyrogram = {git = "https://github.com/KurimuzonAkuma/pyrogram", branch = "master"}
+#tgcrypto = "^1.2.5"
+mtprotocrypt = "*"
+python-telegram-bot = "^21.4"
 
 
 [tool.poetry.group.dev.dependencies]
