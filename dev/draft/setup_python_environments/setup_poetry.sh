@@ -84,6 +84,7 @@ fi
 
 # Display poetry version
 poetry --version
+
 setup_poetry() {
     local repo_root_path="$1"
     local root_path="$2"
@@ -92,22 +93,27 @@ setup_poetry() {
 
     log INFO "Poetry config path: $poetry_config_path"
 
-    local env_exists=false
-    local env_path=""
+    # Change to repo root directory
+    cd "$repo_root_path" || { log ERROR "Failed to change to repo root directory"; return 1; }
 
-    if poetry env list | grep -q "$repo_root_path"; then
-        env_exists=true
-        env_path=$(poetry env info --path)
-    fi
-
-    if $env_exists && [ -d "$env_path" ]; then
-        log INFO "Poetry environment exists at: $env_path"
+    log INFO "Updating dev_env repo..."
+    if git pull --ff-only; then
+        log INFO "Dev env repo updated successfully."
     else
-        log INFO "Creating new poetry environment..."
-        poetry config virtualenvs.path "$root_path/envs/poetry"
-        poetry install --no-root
-        env_path=$(poetry env info --path)
+        log WARN "Failed to update dev env repo. Continuing with existing version."
     fi
+
+#     poetry config virtualenvs.path "$root_path/envs/poetry"
+
+    log INFO "Running poetry install to ensure environment is up to date..."
+    if poetry install --no-root; then
+        log INFO "Poetry environment updated successfully."
+    else
+        log ERROR "Failed to update poetry environment."
+        return 1
+    fi
+
+    local env_path=$(poetry env info --path)
 
     if [ -L "$symlink_path" ]; then
         if [ "$(readlink "$symlink_path")" = "$env_path" ]; then
