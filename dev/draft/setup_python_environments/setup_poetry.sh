@@ -84,22 +84,49 @@ fi
 
 # Display poetry version
 poetry --version
-
 setup_poetry() {
-    # Step 2: Determine the path of the poetry config file
-    poetry_config_path="$repo_root_path/pyproject.toml"
+    local repo_root_path="$1"
+    local root_path="$2"
+    local poetry_config_path="$repo_root_path/pyproject.toml"
+    local symlink_path="$root_path/envs/poetry/calmmage-dev-env"
+
     log INFO "Poetry config path: $poetry_config_path"
 
-    # Step 3: Create and install the poetry environment to root_path
-    log INFO "Creating and installing poetry environment..."
-    poetry config virtualenvs.path "$root_path"
-    poetry install --no-root
+    local env_exists=false
+    local env_path=""
 
-    # Step 4: Get the Python path for the created poetry environment
-    python_path=$(poetry env info --path)/bin/python
+    if poetry env list | grep -q "$repo_root_path"; then
+        env_exists=true
+        env_path=$(poetry env info --path)
+    fi
+
+    if $env_exists && [ -d "$env_path" ]; then
+        log INFO "Poetry environment exists at: $env_path"
+    else
+        log INFO "Creating new poetry environment..."
+        poetry config virtualenvs.path "$root_path/envs/poetry"
+        poetry install --no-root
+        env_path=$(poetry env info --path)
+    fi
+
+    if [ -L "$symlink_path" ]; then
+        if [ "$(readlink "$symlink_path")" = "$env_path" ]; then
+            log INFO "Symlink is correct."
+        else
+            log INFO "Updating existing symlink..."
+            ln -sf "$env_path" "$symlink_path"
+        fi
+    else
+        log INFO "Creating new symlink..."
+        mkdir -p "$(dirname "$symlink_path")"
+        ln -sf "$env_path" "$symlink_path"
+    fi
+
+    local python_path="$symlink_path/bin/python"
     log INFO "Python path of the poetry environment: $python_path"
 
-    # Step 5: Save the Python path to an environment variable
-    export CALMMAGE_PYTHON_PATH="$python_path"
-    log INFO "Python path saved to the environment variable CALMMAGE_PYTHON_PATH"
+#     export CALMMAGE_PYTHON_PATH="$python_path"
+#     log INFO "Python path saved to the environment variable CALMMAGE_PYTHON_PATH"
 }
+
+setup_poetry "$repo_root_path" "$root_path"
