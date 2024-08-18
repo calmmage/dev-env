@@ -1,3 +1,5 @@
+#!/bin/bash
+
 brew install gh
 
 gh auth login
