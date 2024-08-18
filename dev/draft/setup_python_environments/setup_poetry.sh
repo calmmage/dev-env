@@ -91,10 +91,11 @@ setup_poetry() {
     local poetry_config_path="$repo_root_path/pyproject.toml"
     local symlink_path="$root_path/envs/poetry/calmmage-dev-env"
 
-    log INFO "Poetry config path: $poetry_config_path"
+    log INFO "Poetry pyproject.toml path: $poetry_config_path"
 
     # Change to repo root directory
-    cd "$repo_root_path" || { log ERROR "Failed to change to repo root directory"; return 1; }
+#     cd "$repo_root_path" || { log ERROR "Failed to change to repo root directory"; return 1; }
+    pushd "$repo_root_path"
 
     log INFO "Updating dev_env repo..."
     if git pull --ff-only; then
@@ -104,6 +105,7 @@ setup_poetry() {
     fi
 
 #     poetry config virtualenvs.path "$root_path/envs/poetry"
+#     poetry config virtualenvs.in-project true
 
     log INFO "Running poetry install to ensure environment is up to date..."
     if poetry install --no-root; then
@@ -120,7 +122,7 @@ setup_poetry() {
             log INFO "Symlink is correct."
         else
             log INFO "Updating existing symlink..."
-            ln -sf "$env_path" "$symlink_path"
+            ln -sfn "$env_path" "$symlink_path"
         fi
     else
         log INFO "Creating new symlink..."
@@ -133,6 +135,7 @@ setup_poetry() {
 
 #     export CALMMAGE_PYTHON_PATH="$python_path"
 #     log INFO "Python path saved to the environment variable CALMMAGE_PYTHON_PATH"
+    popd >> null
 }
 
 setup_poetry "$repo_root_path" "$root_path"
