@@ -5,7 +5,7 @@ from pathlib import Path
 # noinspection PyUnresolvedReferences
 import pytest
 
-from calmmage.dev_env import CalmmageDevEnv
+from dev_env import CalmmageDevEnv
 
 
 def test_setup_monthly_projects_dir(tmp_path):

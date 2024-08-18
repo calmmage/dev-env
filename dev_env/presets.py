@@ -21,19 +21,21 @@ class PresetJan2024(Preset):
         # todo: build the first seasonal dir, add all soflinks
 
     dirs = [
-        "code",
-        "code/structured",
-        "code/structured/lib",
-        "code/structured/tools",
-        "code/structured/projects",
-        "code/structured/unsorted",
-        "code/structured/archive",
-        "code/structured/beta",
-        "code/seasonal",
-        "code/seasonal/past",
-        "workspace/launchd/scripts",
-        "workspace/launchd/logs",
-        "code/structured/dev",
+        # "code",
+        # "code/structured",
+        "structured",
+        "structured/lib",
+        "structured/tools",
+        # "structured/projects",
+        "projects",
+        "structured/unsorted",
+        "structured/archive",
+        "structured/beta",
+        # "code/seasonal",
+        # "code/seasonal/past",
+        # "workspace/launchd/scripts",
+        # "workspace/launchd/logs",
+        "structured/dev",
     ]
     # softlinks = {
     #       # "code/seasonal/latest": "code/seasonal/YYYY_MM_MMM",
@@ -41,11 +43,13 @@ class PresetJan2024(Preset):
     #       "code/seasonal/latest/add_new_project": "~calmlib/tools/add_new_project.py",
     # }
     # this is the path that the 'new_project' tool will use
-    seasonal_projects_dir = "code/seasonal/"
-    new_projects_dir = "code/seasonal/latest/experiments"
-    project_unsorted_dir = "code/structured/unsorted"
-    scripts_dir = "workspace/launchd/scripts"
-    all_projects_dir = "code/structured/projects"
+    seasonal_projects_dir = "projects/calmmage-private/seasonal/"
+    new_projects_dir = "projects/calmmage-private/seasonal/latest/experiments"
+    project_unsorted_dir = "structured/unsorted"
+    # scripts_dir = "workspace/launchd/scripts"
+    scripts_dir = "scripts"
+    # all_projects_dir = "code/structured/projects"
+    all_projects_dir = "projects"
 
 
 presets.append(PresetJan2024)

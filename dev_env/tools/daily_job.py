@@ -1,9 +1,8 @@
-from calmmage.dev_env  import (
+from dev_env import (
     CalmmageDevEnv,
     DEFAULT_ROOT_DIR,
     DEFAULT_APP_DATA_DIR,
 )
-
 
 if __name__ == "__main__":
     import argparse
@@ -21,6 +20,7 @@ if __name__ == "__main__":
         default=DEFAULT_APP_DATA_DIR,
         help="The app data directory",
     )
+
     # Parse the arguments
     args = parser.parse_args()
 

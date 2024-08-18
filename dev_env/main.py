@@ -1,6 +1,6 @@
 import typer
 
-from calmmage.dev_env.dev_env import (
+from dev_env.dev_env import (
     CalmmageDevEnv,
     DEFAULT_ROOT_DIR,
     DEFAULT_APP_DATA_DIR,

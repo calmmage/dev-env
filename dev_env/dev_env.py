@@ -8,7 +8,7 @@ import git
 from deprecated import deprecated
 from dotenv import load_dotenv
 
-from calmmage.dev_env.presets import latest_preset
+from dev_env.presets import latest_preset
 from calmlib.utils import get_logger
 
 logger = get_logger(__name__)
@@ -53,12 +53,6 @@ class CalmmageDevEnv:
             preset = latest_preset
         self.preset = preset
 
-        if self.root_dir.exists() and list(self.root_dir.iterdir()) and not overwrite:
-            if not self._validate_structure():
-                raise ValueError(
-                    f"root dir exists but has invalid structure: {self.root_dir}. Set overwrite=True to ignore that"
-                )
-
         self._github_token = None
         self._github_client = None
         # todo: accept logger as kwarg
@@ -67,6 +61,12 @@ class CalmmageDevEnv:
         self._logger = None
         self._templates = None
         self._local_templates = None
+
+        if self.root_dir.exists() and list(self.root_dir.iterdir()) and not overwrite:
+            if not self._validate_structure():
+                raise ValueError(
+                    f"root dir exists but has invalid structure: {self.root_dir}. Set overwrite=True to ignore that"
+                )
 
         if setup or overwrite:
             self.setup()

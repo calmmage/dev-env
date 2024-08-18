@@ -5,8 +5,8 @@ from pathlib import Path
 # noinspection PyUnresolvedReferences
 import pytest
 
-from calmmage.dev_env import CalmmageDevEnv
-from calmmage.dev_env.presets import latest_preset
+from dev_env import CalmmageDevEnv
+from dev_env.presets import latest_preset
 
 # todo
 def test_new_github_project():

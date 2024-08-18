@@ -6,7 +6,7 @@ import typer
 from typing_extensions import Annotated
 
 from calmlib.utils.common import is_subsequence
-from calmmage.dev_env import CalmmageDevEnv
+from dev_env import CalmmageDevEnv
 
 # Instantiate the CalmmageDevEnv object
 dev_env = CalmmageDevEnv()
