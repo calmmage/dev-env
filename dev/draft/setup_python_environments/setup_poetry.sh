@@ -135,6 +135,9 @@ setup_poetry() {
 
 #     export CALMMAGE_PYTHON_PATH="$python_path"
 #     log INFO "Python path saved to the environment variable CALMMAGE_PYTHON_PATH"
+    log INFO "Setup complete. New aliases available: 'run_py' and 'run'"
+    log INFO "Use 'run_py' for Python scripts and 'run' for auto-detected executables"
+    log INFO "Aliases will be setup by setup_dev_env script and available in your .zshrc or .alias files"
     popd >> null
 }
 
