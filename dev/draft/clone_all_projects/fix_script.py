@@ -1,52 +1,48 @@
+import os
 import shutil
 from pathlib import Path
-
 from loguru import logger
-
-
-def is_git_repo(path):
-    return (path / ".git").is_dir()
 
 
 def fix_cloned_repos(target_dir, dry_run=False):
     target_dir = Path(target_dir)
     fixed_count = 0
     skipped_count = 0
+    to_remove_dir = target_dir / "to_remove"
+    to_remove_dir.mkdir(exist_ok=True)
 
     for repo_dir in target_dir.iterdir():
         if not repo_dir.is_dir():
             continue
 
         nested_repo_dir = repo_dir / repo_dir.name
-        if nested_repo_dir.exists() and is_git_repo(nested_repo_dir):
-            if is_git_repo(repo_dir):
-                logger.info(f"Skipping {repo_dir.name}: Both parent and nested dirs are git repos")
-                skipped_count += 1
-                continue
 
-            logger.info(f"Fixing incorrectly cloned repo: {repo_dir.name}")
+        if nested_repo_dir.exists() and (nested_repo_dir / ".git").exists():
+            logger.info(f"{'[DRY RUN] Would fix' if dry_run else 'Fixing'} incorrectly cloned repo: {repo_dir.name}")
 
+            # 1. Move repo -> temp.repo
+            temp_dir = repo_dir.with_name(f"temp.{repo_dir.name}")
+            logger.debug(f"Moving {repo_dir} to {temp_dir}")
             if not dry_run:
-                # Move contents of nested directory to parent
-                for item in nested_repo_dir.iterdir():
-                    if item.name != repo_dir.name:  # Avoid recursive copy
-                        dest = repo_dir / item.name
-                        if dest.exists():
-                            logger.warning(f"Skipping {item.name}: Already exists in parent")
-                        else:
-                            shutil.move(str(item), str(repo_dir))
+                repo_dir.rename(temp_dir)
 
-                # Remove empty nested directory
-                if not any(nested_repo_dir.iterdir()):
-                    nested_repo_dir.rmdir()
-                else:
-                    logger.warning(f"Nested dir not empty after move: {nested_repo_dir}")
+            nested_repo_dir = temp_dir / repo_dir.name
+            # 2. Move temp.repo/repo -> repo
+            logger.debug(f"Moving {nested_repo_dir} to {repo_dir}")
+            if not dry_run:
+                nested_repo_dir.rename(repo_dir)
+
+            # 3. Remove temp.repo
+            # logger.debug(f"Removing {temp_dir}")
+            logger.debug(f"Moving {temp_dir} to {to_remove_dir / repo_dir.name}")
+            if not dry_run:
+                # shutil.rmtree(temp_dir)
+                temp_dir.rename(to_remove_dir / repo_dir.name)
 
             fixed_count += 1
-        elif is_git_repo(repo_dir):
-            logger.info(f"Repo already correctly cloned: {repo_dir.name}")
         else:
-            logger.warning(f"Unexpected directory structure: {repo_dir.name}")
+            logger.info(f"Repo structure looks correct: {repo_dir.name}")
+            skipped_count += 1
 
     return fixed_count, skipped_count
 
@@ -54,8 +50,8 @@ def fix_cloned_repos(target_dir, dry_run=False):
 if __name__ == "__main__":
     target_dir = Path("~/work/projects").expanduser()
 
-    # dry_run = False
-    dry_run = True
+    dry_run = False
+    # dry_run = True
     fixed_count, skipped_count = fix_cloned_repos(target_dir, dry_run=dry_run)
-    print(f"Fixed {fixed_count} incorrectly cloned repositories.")
-    print(f"Skipped {skipped_count} repositories with intentional nested structure.")
+    print(f"{'[DRY RUN] Would fix' if dry_run else 'Fixed'} {fixed_count} incorrectly cloned repositories.")
+    print(f"Skipped {skipped_count} repositories with correct structure.")
