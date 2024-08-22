@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
     dev_env = CalmmageDevEnv()
     target_dir = dev_env.all_projects_dir
+    raise Exception("This is a broken script - fix first! Copies repos into repo/repo folder")
 
     # get all my projects
     my_repos = list(dev_env.github_client.get_user().get_repos())
