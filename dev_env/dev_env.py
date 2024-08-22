@@ -108,7 +108,7 @@ class CalmmageDevEnv:
     @property
     def github_token(self):
         if self._github_token is None:
-            token = os.getenv("GITHUB_API_TOKEN")
+            token = os.getenv("GITHUB_API_TOKEN", os.getenv("API_TOKEN_GITHUB"))
             if token is None:
                 raise ValueError("Missing GitHub API token")
             self._github_token = token
@@ -167,9 +167,7 @@ class CalmmageDevEnv:
         monthly_project_dir = root / folder_name
         if monthly_project_dir.exists():
             # already exists - nothing to do
-            self.logger.warning(
-                f"Monthly project dir already exists: {monthly_project_dir}"
-            )
+            self.logger.warning(f"Monthly project dir already exists: {monthly_project_dir}")
             return monthly_project_dir
         monthly_project_dir.mkdir(parents=True, exist_ok=True)
         paths = ["experiments", "past_refs"]
@@ -234,9 +232,7 @@ class CalmmageDevEnv:
     GITHUB_RETRY_DELAY = 5
     GITHUB_NUM_RETRIES = 3
 
-    def _create_github_project_from_template(
-        self, name, template_name=None, local_name=None
-    ):
+    def _create_github_project_from_template(self, name, template_name=None, local_name=None):
         # create project dir
         if local_name is None:
             local_name = name
@@ -281,9 +277,7 @@ class CalmmageDevEnv:
                 f"Missing repo files. Retrying cloning the repository from {url} to {project_dir_str}. Attempt {i + 1} of {self.GITHUB_NUM_RETRIES}"
             )
         else:
-            raise ValueError(
-                f"Failed to clone the repository from {url} to {project_dir_str}: no files found"
-            )
+            raise ValueError(f"Failed to clone the repository from {url} to {project_dir_str}: no files found")
         logger.debug(f"Cloned successfully")
         return project_dir
 
@@ -296,11 +290,7 @@ class CalmmageDevEnv:
     def list_templates(self, local=True):
         if local:
             templates_dir = Path(__file__).parent / "resources" / "project_templates"
-            return [
-                template.name
-                for template in templates_dir.iterdir()
-                if template.is_dir()
-            ]
+            return [template.name for template in templates_dir.iterdir() if template.is_dir()]
         else:
             # github
             return self.get_github_template_names()
@@ -325,9 +315,7 @@ class CalmmageDevEnv:
         return template.description
 
     def _create_repo_from_template(self, name, template_name):
-        logger.debug(
-            f"Creating a new repository {name} from the template: {template_name}"
-        )
+        logger.debug(f"Creating a new repository {name} from the template: {template_name}")
         # create a new repo from template
         github_client = self.github_client
 
@@ -338,14 +326,10 @@ class CalmmageDevEnv:
         # check template name is valid
         templates = self.get_github_template_names()
         if template_name not in templates:
-            raise ValueError(
-                f"Invalid template name: {template_name}. Available templates: {templates}"
-            )
+            raise ValueError(f"Invalid template name: {template_name}. Available templates: {templates}")
         # check if the repo already exists
         if name in [repo.name for repo in github_client.get_user().get_repos()]:
-            raise ValueError(
-                f"Repository already exists: https://github.com/{username}/{name}"
-            )
+            raise ValueError(f"Repository already exists: https://github.com/{username}/{name}")
 
         github_client._Github__requester.requestJsonAndCheck(
             "POST",
@@ -366,9 +350,7 @@ class CalmmageDevEnv:
         if self._local_templates is None:
             templates_dir = Path(__file__).parent / "resources" / "project_templates"
             self._local_templates = {
-                template.name: template
-                for template in templates_dir.iterdir()
-                if template.is_dir()
+                template.name: template for template in templates_dir.iterdir() if template.is_dir()
             }
         return self._local_templates
 
@@ -385,9 +367,7 @@ class CalmmageDevEnv:
 
         templates = self.get_local_template_names()
         if template_name not in templates:
-            raise ValueError(
-                f"Invalid template name: {template_name}. Available templates: {templates}"
-            )
+            raise ValueError(f"Invalid template name: {template_name}. Available templates: {templates}")
         # copy template to the new project dir
         template_dir = self.get_local_template(template_name)
         copy_tree(str(template_dir), str(project_dir))
@@ -544,9 +524,7 @@ class CalmmageDevEnv:
         # improved help string
         pass
 
-    def move_project_to_github(
-        self, project_path, template_name=None, project_name=None
-    ):
+    def move_project_to_github(self, project_path, template_name=None, project_name=None):
         # check if the project is already a git repo
         if (project_path / ".git").exists():
             raise ValueError(f"Project {project_path} is already a git repository.")
@@ -566,9 +544,7 @@ class CalmmageDevEnv:
         self._copy_project_files_to_github_clone(project_path, temp_project_path)
 
         # Move the cloned directory to replace the original project directory
-        self._replace_original_project_with_github_clone(
-            project_path, temp_project_path
-        )
+        self._replace_original_project_with_github_clone(project_path, temp_project_path)
 
         # Push changes to the GitHub repository
         # self._push_local_changes_to_github(temp_project_path)
@@ -579,35 +555,25 @@ class CalmmageDevEnv:
 
     @staticmethod
     def get_backup_path(original_project_path, suffix="_backup"):
-        backup_path = original_project_path.parent / (
-            original_project_path.name + "_backup"
-        )
+        backup_path = original_project_path.parent / (original_project_path.name + "_backup")
         counter = 1
         while os.path.exists(backup_path):
-            backup_path = original_project_path.parent / (
-                f"{original_project_path.name}{suffix}({counter})"
-            )
+            backup_path = original_project_path.parent / (f"{original_project_path.name}{suffix}({counter})")
             counter += 1
         return backup_path
 
     @staticmethod
     def get_latest_backup_path(original_project_path, suffix="_backup"):
-        backup_path = original_project_path.parent / (
-            original_project_path.name + suffix
-        )
+        backup_path = original_project_path.parent / (original_project_path.name + suffix)
         counter = 1
         while True:
-            next_path = original_project_path.parent / (
-                f"{original_project_path.name}{suffix}({counter})"
-            )
+            next_path = original_project_path.parent / (f"{original_project_path.name}{suffix}({counter})")
             if not next_path.exists():
                 return backup_path
             backup_path = next_path
             counter += 1
 
-    def _replace_original_project_with_github_clone(
-        self, original_project_path, clone_project_path
-    ):
+    def _replace_original_project_with_github_clone(self, original_project_path, clone_project_path):
         # Remove the original project directory
         backup_path = self.get_backup_path(original_project_path)
         shutil.move(str(original_project_path), str(backup_path))
@@ -651,10 +617,7 @@ class CalmmageDevEnv:
         project_path = Path(project_path)
         if project_name is None:
             project_name = project_path.name
-        target_dir = (
-            self.root_dir
-            / "code/structured/dev/calmmage-dev/calmmage/experiments/seasonal"
-        )
+        target_dir = self.root_dir / "code/structured/dev/calmmage-dev/calmmage/experiments/seasonal"
         # discover latest seasonal dir
         candidates = [p for p in target_dir.iterdir() if p.name.startswith("20")]
         latest_dir = max(candidates, key=lambda p: p.name)
