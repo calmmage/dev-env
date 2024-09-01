@@ -256,7 +256,9 @@ class CalmmageDevEnv:
             raise ValueError(f"Project dir already exists and not empty: {project_dir}")
 
         project_dir_str = str(project_dir)
-        logger.debug(f"Cloning the repository from {url} to {project_dir_str}")
+
+        logging_url = f"{url.replace(self.github_token, 'TOKEN')}"
+        logger.debug(f"Cloning the repository from {logging_url} to {project_dir_str}")
         repo = git.Repo.clone_from(url, project_dir_str)
         time.sleep(self.GITHUB_RETRY_DELAY)
         repo.git.pull()
