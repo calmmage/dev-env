@@ -108,7 +108,7 @@ setup_poetry() {
 #     poetry config virtualenvs.in-project true
 
     log INFO "Running poetry install to ensure environment is up to date..."
-    if poetry install --no-root; then
+    if poetry install; then
         log INFO "Poetry environment updated successfully."
     else
         log ERROR "Failed to update poetry environment."
