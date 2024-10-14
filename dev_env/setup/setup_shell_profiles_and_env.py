@@ -62,7 +62,7 @@ def update_zshrc():
                 if typer.confirm("Do you want to update this line?"):
                     updated_content = re.sub(pattern, line, updated_content, flags=re.MULTILINE)
             else:
-                logger.info(f"Line already exists and is up to date: {line}")
+                logger.debug(f"Line already exists and is up to date: {line}")
         else:
             logger.info(f"Adding new line to .zshrc: {line}")
             updated_content += f"\n{line}"
@@ -72,4 +72,4 @@ def update_zshrc():
             zshrc.write(updated_content)
         logger.info("Updated .zshrc")
     else:
-        logger.info("No changes needed in .zshrc")
+        logger.debug("No changes needed in .zshrc")

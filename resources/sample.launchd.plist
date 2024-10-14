@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>sample.local.job</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/zsh</string>
+		<string>/Users/petrlavrov/work/projects/dev-env/dev/draft/dev_env_rework/dummy.sh</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/tmp/sample.local.job.stderr</string>
+	<key>StandardOutPath</key>
+	<string>/tmp/sample.local.job.stdout</string>
+</dict>
+</plist>
