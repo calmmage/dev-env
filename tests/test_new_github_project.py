@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from pathlib import Path
 
@@ -6,7 +5,8 @@ from pathlib import Path
 import pytest
 
 from dev_env import CalmmageDevEnv
-from dev_env.presets import latest_preset
+from dev_env.core.presets import latest_preset
+
 
 # todo
 def test_new_github_project():
@@ -28,18 +28,20 @@ def test_new_github_project():
 
     # delete the repo
 
+
 # If you want to use pytest clea
-if __name__ == '__main__':
-    
+if __name__ == "__main__":
+
     from datetime import datetime
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    name = f'test_cli_repo_creation_{timestamp}'
+
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    name = f"test_cli_repo_creation_{timestamp}"
     # template_name = 'FAIL'
-    template_name = 'bot-template'
+    template_name = "bot-template"
     # env.
     # env =
     # env.make_repo_from_template(c, name, template_name)
-    
+
     # tmp_path = Path(f'./tmp/root_dir_{timestamp}').absolute()
     # print(tmp_path)
     # test_setup_root_dir(tmp_path)

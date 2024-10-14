@@ -1,0 +1,9 @@
+~
+~
+~
+~/.calmmage/envs/poetry
+~
+~/Downloads
+~/work
+~/work/projects/dev-env/dev/unsorted/setup_python_environments
+~/work/projects/dev-env/dev/unsorted/setup_python_environments

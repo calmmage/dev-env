@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from dev_env import CalmmageDevEnv
-from dev_env.presets import latest_preset
+from dev_env.core.presets import latest_preset
 
 
 def test_monthly_job(tmp_path):
@@ -20,32 +20,29 @@ def test_monthly_job(tmp_path):
     dev_env.monthly_job()
 
     # Validate the created folders
-    expected_folders = [
-        latest_preset.seasonal_projects_dir + '/latest',
-        'playground'
-    ]
+    expected_folders = [latest_preset.seasonal_projects_dir + "/latest", "playground"]
     # names
     for folder in expected_folders:
         assert (tmp_path / folder).exists(), f"{folder} was not created"
     # check that soft links point to the right dirs
     # latest -> monthly dir
     date = datetime.now()
-    folder_name = date.strftime('%Y_%m_%b').lower()
+    folder_name = date.strftime("%Y_%m_%b").lower()
     source = tmp_path / latest_preset.seasonal_projects_dir / folder_name
-    target = tmp_path / latest_preset.seasonal_projects_dir / 'latest'
+    target = tmp_path / latest_preset.seasonal_projects_dir / "latest"
     assert target.is_symlink()
     assert target.resolve() == source.resolve()
 
     # playground -> latest
-    source = tmp_path / latest_preset.seasonal_projects_dir / 'latest' / 'experiments'
-    target = tmp_path / 'playground'
+    source = tmp_path / latest_preset.seasonal_projects_dir / "latest" / "experiments"
+    target = tmp_path / "playground"
     assert target.is_symlink()
     assert target.resolve() == source.resolve()
 
 
 # If you want to use pytest clea
-if __name__ == '__main__':
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    tmp_path = Path(f'./tmp/monthly_job_{timestamp}').absolute()
+if __name__ == "__main__":
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    tmp_path = Path(f"./tmp/monthly_job_{timestamp}").absolute()
     print(tmp_path)
     test_monthly_job(tmp_path)

@@ -1,2 +1,17 @@
-from .dev_env import CalmmageDevEnv, DEFAULT_ROOT_DIR, DEFAULT_APP_DATA_DIR
-from . import main, presets
+from . import main
+from .core import presets
+
+from importlib.metadata import PackageNotFoundError
+
+try:
+    import importlib.metadata
+
+    __version__ = importlib.metadata.version(__package__ or __name__)
+    del importlib
+except PackageNotFoundError:
+    import toml
+    from pathlib import Path
+
+    path = Path(__file__).parent.parent / "pyproject.toml"
+    __version__ = toml.load(path)["tool"]["poetry"]["version"]
+    del toml, Path, path

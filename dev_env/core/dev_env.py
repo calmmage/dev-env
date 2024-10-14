@@ -8,7 +8,7 @@ import git
 from deprecated import deprecated
 from dotenv import load_dotenv
 
-from dev_env.presets import latest_preset
+from dev_env.core.presets import latest_preset
 from calmlib.utils import get_logger
 
 logger = get_logger(__name__)
