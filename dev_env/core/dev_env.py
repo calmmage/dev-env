@@ -9,32 +9,12 @@ from deprecated import deprecated
 from dotenv import load_dotenv
 
 from dev_env.core.presets import latest_preset
-from calmlib.utils import get_logger
+from calmlib.utils import get_logger, copy_tree
 
 logger = get_logger(__name__)
 
 DEFAULT_ROOT_DIR = "~/work"
 DEFAULT_APP_DATA_DIR = "~/.calmmage"
-
-
-# todo: move to calmlib
-@deprecated(version="0.1.0", reason="Use calmlib.beta.utils.common.copy_tree instead.")
-def copy_tree(source, destination, override=False):
-    # todo: use override
-    source_path = Path(source)
-    destination_path = Path(destination)
-
-    if not source_path.is_dir():
-        raise ValueError(f"Source ({source}) is not a directory.")
-
-    if not destination_path.exists():
-        destination_path.mkdir(parents=True)
-
-    for item in source_path.iterdir():
-        if item.is_dir():
-            copy_tree(item, destination_path / item.name, override=override)
-        else:
-            shutil.copy2(item, destination_path / item.name)
 
 
 class CalmmageDevEnv:
@@ -553,7 +533,7 @@ class CalmmageDevEnv:
 
     @staticmethod
     def _copy_project_files_to_github_clone(original_project_path, clone_project_path):
-        return copy_tree(original_project_path, clone_project_path, override=True)
+        return copy_tree(original_project_path, clone_project_path, overwrite=True)
 
     @staticmethod
     def get_backup_path(original_project_path, suffix="_backup"):
