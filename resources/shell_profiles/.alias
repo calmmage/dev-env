@@ -41,4 +41,5 @@ alias cpa="copy_absolute_path"
 # run python script with poetry environment
 alias runp="run_with_poetry"
 
-alias lnsafe="runp $PROJECTS_ROOT/dev-env/dev_env/tools/lnsafe.py"
+alias lnsafe="runp $CALMMAGE_DEV_ENV_PATH/dev-env/dev_env/tools/lnsafe.py"
+alias typer=$CALMMAGE_POETRY_ENV_PATH/bin/typer
