@@ -60,12 +60,13 @@ move_and_link() {
 }
 
 find_project() {
-    find ~/work -name "*$1*"
+#     find ~/work -name "*$1*"
+    rg -g "*$1*" -l ~/work
 }
 
-find_what_where() {
-    grep -rnw "$2" -e "$1"
-}
+# find_what_where() {
+#     grep -rnw "$2" -e "$1"
+# }
 
 # todo: replace this with a fancy ai help that queries chatgpt
 help() {

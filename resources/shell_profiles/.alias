@@ -21,7 +21,8 @@ alias mva=move_and_link
 alias fp=find_project
 
 # find text in file
-alias find_=find_what_where
+# alias find_=find_what_where
+alias find=rg
 
 # cdr prj -> cd *p*r*j*; See also: cdf
 alias cdr='nocorrect change_dir_regexp'
