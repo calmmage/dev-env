@@ -147,3 +147,39 @@ copy_absolute_path() {
     echo "$abs_path" | pbcopy
     echo "Copied: $abs_path"
 }
+
+# requires export CALMMAGE_POETRY_ENV_PATH="/path/to/poetry/env"
+# default - CALMMAGE_POETRY_ENV_PATH="$HOME/.calmmage/dev_env/.venv"
+# export PROJECTS_ROOT="$HOME/work/projects"
+
+run_with_poetry() {
+    # Check if the environment variable is set
+    if [ -z "$CALMMAGE_POETRY_ENV_PATH" ]; then
+        echo "Error: CALMMAGE_POETRY_ENV_PATH must be set"
+        return 1
+    fi
+
+    # Check if a script path is provided as an argument
+    if [ $# -eq 0 ]; then
+        echo "Error: No script path provided"
+        echo "Usage: run_with_poetry <script_path> [args...]"
+        return 1
+    fi
+
+    # Get the script path (first argument)
+    local SCRIPT_PATH="$1"
+    shift  # Remove the first argument, leaving any additional args
+
+    # Check if the script exists
+    if [ ! -f "$SCRIPT_PATH" ]; then
+        echo "Error: Script not found at $SCRIPT_PATH"
+        return 1
+    fi
+
+    # Activate the Poetry environment, run the script with any additional args, and deactivate
+    (
+        source "$CALMMAGE_POETRY_ENV_PATH/bin/activate" && \
+        python "$SCRIPT_PATH" "$@" && \
+        deactivate
+    )
+}

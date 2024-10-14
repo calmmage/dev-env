@@ -37,3 +37,8 @@ alias aa='add_alias'
 
 # copy absolute path of the current dir
 alias cpa="copy_absolute_path"
+
+# run python script with poetry environment
+alias runp="run_with_poetry"
+
+alias lnsafe="runp $PROJECTS_ROOT/dev-env/dev_env/tools/lnsafe.py"
