@@ -11,24 +11,43 @@ DEV_ENV_DIR = Path.home() / ".calmmage" / "dev_env"
 def git_pull_with_fetch(repo):
     """
     Fetch and pull updates for the given repository.
+    Only report if there were actual changes.
     """
     try:
-        logger.info("Fetching updates...")
+        # logger.debug("Updating updates...")
         repo.git.fetch("--all")
-        logger.info("Pulling updates...")
-        repo.git.pull()
-        logger.info("Repository updated successfully")
-    except GitCommandError as e:
-        logger.error(f"Failed to update repository: {e}")
+
+        # Check if there are changes to pull
+        local_commit = repo.head.commit
+        current_branch = repo.active_branch.name
+        remote_commit = repo.refs[f"origin/{current_branch}"].commit
+
+        repo_name = Path(repo.working_tree_dir).name
+
+        if local_commit != remote_commit:
+            # logger.debug("Pulling updates...")
+            pull_info = repo.git.pull()
+            logger.info(f"Repository {repo_name} has been updated")
+            logger.debug(f"Pull info: {pull_info}")
+        else:
+            logger.debug(f"Repository {repo_name} is already up to date")
+
+        return local_commit != remote_commit
+    except Exception as e:
+        logger.error(f"Failed to update repository: {repo}: {e}")
         raise RuntimeError(f"Failed to update repository: {e}")
 
 
 def clone_or_update_dev_env():
     if DEV_ENV_DIR.exists():
-        logger.info("Updating dev_env repository")
+        logger.info("Checking dev_env repository for updates")
         try:
             repo = Repo(DEV_ENV_DIR)
-            git_pull_with_fetch(repo)
+            updated = git_pull_with_fetch(repo)
+            if updated:
+                logger.info("dev_env repository has been updated")
+            else:
+                logger.info("dev_env repository is already up to date")
         except GitCommandError as e:
             logger.error(f"Failed to update dev_env repository: {e}")
             raise RuntimeError(f"Failed to update dev_env repository: {e}")
@@ -36,6 +55,7 @@ def clone_or_update_dev_env():
         logger.info("Cloning dev_env repository")
         try:
             Repo.clone_from("https://github.com/calmmage/dev-env.git", str(DEV_ENV_DIR))
+            logger.info("dev_env repository has been cloned successfully")
         except GitCommandError as e:
             logger.error(f"Failed to clone dev_env repository: {e}")
             raise RuntimeError(f"Failed to clone dev_env repository: {e}")

@@ -5,6 +5,8 @@ from loguru import logger
 from pathlib import Path
 from tqdm.auto import tqdm
 
+import dev_env.core.git_utils
+
 load_dotenv()
 
 allowed_teams = ["calmmage", "Augmented-development", "engineering-friends", "lavrpetrov"]
@@ -40,7 +42,7 @@ if __name__ == "__main__":
     target_dir = dev_env.all_projects_dir
 
     # get all my projects
-    my_repos = list(dev_env.github_client.get_user().get_repos())
+    my_repos = list(dev_env.core.git_utils.github_client.get_user().get_repos())
 
     stats = clone_repos(my_repos, target_dir)
     print(stats)

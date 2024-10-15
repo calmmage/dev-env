@@ -44,3 +44,11 @@ alias runp="run_with_poetry"
 
 alias lnsafe="runp $CALMMAGE_DEV_ENV_PATH/dev_env/tools/lnsafe.py"
 alias typer=$CALMMAGE_POETRY_ENV_PATH/bin/typer
+    # todo: need a script that runs and checks in the start of bashrc if $CALMMAGE_DEV_ENV_PATH is set and warn if not
+    # typer_path = "$CALMMAGE_DEV_ENV_PATH/.venv/bin/typer"
+    # new_project_tool_path = "$CALMMAGE_DEV_ENV_PATH/dev/draft/mvp/project_manager.py"
+    # # lines_to_add = [
+    # #     f"alias typer='{typer_path}'",
+    # #     f"alias new_project='typer {new_project_tool_path}'"
+alias np='typer $CALMMAGE_DEV_ENV_PATH/dev/draft/mvp/project_manager.py'
+alias new_project='np'

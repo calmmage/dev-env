@@ -42,6 +42,7 @@ class MySettings(BaseSettings):
     github_api_token: SecretStr = Field(..., alias="GITHUB_API_TOKEN")
 
     seasonal_dir_template_repo: str = "calmmage/seasonal-dir-template"
+    default_github_template: str = "calmmage/python-project-template"
 
     class Config:
         env_prefix = "CALMMAGE_DEV_ENV_"

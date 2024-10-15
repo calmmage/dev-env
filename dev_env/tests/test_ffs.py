@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 from github import Github
-from dev_env.core.ffs import get_repo
+from dev_env.core.git_utils import get_repo
 from dev_env.core.settings import settings
 
 
