@@ -1,22 +1,24 @@
-from pathlib import Path
+import traceback
 
-from typing import Union
+import time
 
+from functools import lru_cache
 from git import Repo
 from github import Github
 from github.Repository import Repository
 from loguru import logger
-from functools import lru_cache
+from pathlib import Path
+from typing import Union
+
 from dev_env.core.constants import experiments_dir, projects_dir, archive_dir
 from dev_env.core.settings import settings
 from dev_env.setup.setup_shell_profiles_and_env import git_pull_with_fetch
-
 
 github_client = Github(settings.github_api_token.get_secret_value())
 
 
 @lru_cache
-def get_all_repos():
+def get_all_repos() -> list[Repository]:
     return list(github_client.get_user().get_repos())
 
 
@@ -87,7 +89,7 @@ def get_repo(repo_key: str):
     else:  # just name
         candidates = [r for r in get_all_repos() if r.name == repo_key]
         user_name = github_client.get_user().login
-        logger.info(f"User name: {user_name}")
+        # logger.info(f"User name: {user_name}")
         # sort candidates, putting user's repos first
         candidates = sorted(candidates, key=lambda x: x.owner.login == user_name, reverse=True)
         if len(candidates) == 1:
@@ -139,7 +141,7 @@ def clone_repo(
                     logger.error(f"Failed to pull {target_dir}: {e}")
                     return local_repo
         else:
-            target_dir.unlink()
+            target_dir.rmdir()
 
     # todo: will this work with private repos?
     # somehow it worked in notebook -
@@ -153,9 +155,20 @@ def clone_repo(
     return local_repo
 
 
-def create_and_clone_repo(repo_name: str, target_dir: Path, template_repo_name: str):
+def create_and_clone_repo(repo_name: str, target_dir: Path, template_repo_name: str, num_retries: int = 3):
     create_repo_from_template(repo_name, template_repo_name)
-    clone_repo(repo_name, target_dir)
+    # add retry with backoff
+    for i in range(num_retries):
+        try:
+            return clone_repo(repo_name, target_dir)
+        except Exception as e:
+            time.sleep(2 ** (i + 1))
+
+            logger.error(f"Failed to clone {repo_name} to {target_dir} on attempt {i}: {e}")
+    else:
+        logger.error(f"Failed to clone {repo_name} to {target_dir} after {num_retries} attempts")
+        traceback.print_exc()
+        return None
 
 
 def get_github_template_names():
@@ -164,46 +177,31 @@ def get_github_template_names():
             yield repo.name
 
 
-def _create_repo_from_template(name, template_name):
-    logger.debug(f"Creating a new repository {name} from the template: {template_name}")
-    # create a new repo from template
-    # github_client = self.github_client
-
-    # get the new repository
-    # new_repo = github_client.get_user().get_repo(name)
-    username = github_client.get_user().login
-    # check template name is valid
-    templates = get_github_template_names()
-    if template_name not in templates:
-        raise ValueError(f"Invalid template name: {template_name}. Available templates: {templates}")
-    # check if the repo already exists
-    if name in [repo.name for repo in get_all_repos()]:
-        raise ValueError(f"Repository already exists: https://github.com/{username}/{name}")
-
-    github_client._Github__requester.requestJsonAndCheck(
-        "POST",
-        f"/repos/{username}/{template_name}/generate",
-        input={"owner": username, "name": name},
-    )
-    url = f"https://github.com/{username}/{name}"
-    logger.debug(f"Repository created: {url}")
-    # return the repo link ?
-    return url
-
-
-def create_repo_from_template(repo_name: str, template_repo_key: str):
+def create_repo_from_template(name, template_name):
     """
     Create a new repo from template.
     Args:
         repo_name (str): new repo name.
         template_repo_key (str): template repo name, full name, or url.
     """
-    template_repo = get_repo(template_repo_key)
-    if not template_repo.is_template:
-        raise ValueError(f"Template repo {template_repo_key} is not a template")
+    logger.debug(f"Creating a new repository {name} from the template: {template_name}")
+    repo = get_repo(template_name)
 
-    # check if repo exists
-    user = github_client.get_user()
-    if any([repo.full_name == f"{user.name}/{repo_name}" for repo in get_all_repos()]):
-        raise ValueError(f"Repo {repo_name} already exists")
-    return user.create_repo(repo_name, template_repo)
+    # if template_name not in templates:
+    if not repo.is_template:
+        templates = list(get_github_template_names())
+        raise ValueError(f"Invalid template name: {template_name}. Available templates: {templates}")
+    # check if the repo already exists
+    if name in [repo.name for repo in get_all_repos()]:
+        raise ValueError(f"Repository already exists: https://github.com/{repo.full_name}")
+
+    username = github_client.get_user().login
+    github_client._Github__requester.requestJsonAndCheck(
+        "POST",
+        f"/repos/{repo.full_name}/generate",
+        input={"owner": username, "name": name},
+    )
+    url = f"https://github.com/{username}/{name}"
+    logger.debug(f"Repository created: {url}")
+    # return the repo link ?
+    return url

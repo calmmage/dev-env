@@ -29,11 +29,12 @@ def setup_hacky_aliases_and_env_vars():
 
 
 def main():
-    create_dirs()
-    setup_hacky_aliases_and_env_vars()
-    clone_projects()
+    # create_dirs()
+    # setup_hacky_aliases_and_env_vars()
+    # clone_projects()
 
     setup_seasonal_folder()
+
     setup_symlinks_dir()
 
 

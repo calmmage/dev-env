@@ -180,7 +180,6 @@ def get_seasonal_dev_dir(dt: datetime = None) -> Path:
     seasonal_dev_dir_name = dt.strftime("dev-%b-%Y".lower())
     return seasonal_dir_path / seasonal_dev_dir_name
 
-
 def setup_seasonal_folder(dt: datetime = None):
     """
     Create a new seasonal folder and populate it with a dev repo from template.
@@ -188,24 +187,35 @@ def setup_seasonal_folder(dt: datetime = None):
     Args:
         dt (datetime): datetime object for seasonal folder name. If None, use current datetime.
     """
+    logger.info("Setting up seasonal folder")
     if dt is None:
         dt = datetime.now()
     seasonal_dir_path = get_seasonal_dir(dt)
-    if not seasonal_dir_path.exists():
+    logger.debug(f"Seasonal directory path: {seasonal_dir_path}")
+    
+    if not (seasonal_dir_path.exists() and list(seasonal_dir_path.iterdir())):
+        logger.info(f"Creating new seasonal directory: {seasonal_dir_path}")
         seasonal_dir_path.mkdir(parents=True, exist_ok=True)
 
         # populate seasonal dir contents
         seasonal_dev_dir = get_seasonal_dev_dir(dt)
+        logger.debug(f"Seasonal dev directory: {seasonal_dev_dir}")
         seasonal_dev_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Creating and cloning repo for {seasonal_dev_dir.name}")
         create_and_clone_repo(seasonal_dev_dir.name, seasonal_dev_dir, settings.seasonal_dir_template_repo)
+    else:
+        logger.info(f"Seasonal directory already exists: {seasonal_dir_path}")
 
     # step 3: check latest softlink
     latest_seasonal_dir = seasonal_dir / "latest"
     if latest_seasonal_dir.exists():
+        logger.debug(f"Removing existing symlink: {latest_seasonal_dir}")
         latest_seasonal_dir.unlink()
+    logger.info(f"Creating symlink: {latest_seasonal_dir} -> {seasonal_dir_path}")
     latest_seasonal_dir.symlink_to(seasonal_dir_path)
 
     # todo: link to ~/code dir as well?
+    logger.info("Seasonal folder setup complete")
     return seasonal_dir_path
 
 
