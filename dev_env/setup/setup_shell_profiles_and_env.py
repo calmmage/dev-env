@@ -1,13 +1,26 @@
 import re
 from pathlib import Path
 
-import typer
 from git import Repo, GitCommandError
 from loguru import logger
 
-# todo: make this configurable?
+# todo: make this configurable? via env var?
 DEV_ENV_DIR = Path.home() / ".calmmage" / "dev_env"
-ZSHRC_PATH = Path.home() / ".zshrc"
+
+
+def git_pull_with_fetch(repo):
+    """
+    Fetch and pull updates for the given repository.
+    """
+    try:
+        logger.info("Fetching updates...")
+        repo.git.fetch("--all")
+        logger.info("Pulling updates...")
+        repo.git.pull()
+        logger.info("Repository updated successfully")
+    except GitCommandError as e:
+        logger.error(f"Failed to update repository: {e}")
+        raise RuntimeError(f"Failed to update repository: {e}")
 
 
 def clone_or_update_dev_env():
@@ -15,61 +28,93 @@ def clone_or_update_dev_env():
         logger.info("Updating dev_env repository")
         try:
             repo = Repo(DEV_ENV_DIR)
-            origin = repo.remotes.origin
-            origin.pull()
+            git_pull_with_fetch(repo)
         except GitCommandError as e:
             logger.error(f"Failed to update dev_env repository: {e}")
-            raise typer.Exit(code=1)
+            raise RuntimeError(f"Failed to update dev_env repository: {e}")
     else:
         logger.info("Cloning dev_env repository")
         try:
             Repo.clone_from("https://github.com/calmmage/dev-env.git", str(DEV_ENV_DIR))
         except GitCommandError as e:
             logger.error(f"Failed to clone dev_env repository: {e}")
-            raise typer.Exit(code=1)
+            raise RuntimeError(f"Failed to clone dev_env repository: {e}")
 
 
-def update_zshrc():
-    if not ZSHRC_PATH.exists():
-        ZSHRC_PATH.touch()
+def add_line_to_shell_profile_safe(line, shell_profile=Path.home() / ".zshrc"):
+    """
+    Safely add a line to the shell profile if it doesn't already exist.
+    """
+    shell_profile = Path(shell_profile)
+    if not shell_profile.exists():
+        shell_profile.touch()
 
-    with open(ZSHRC_PATH, "r") as zshrc:
-        content = zshrc.read()
+    with open(shell_profile, "r") as f:
+        content = f.read()
 
-    lines_to_add = [
-        f"export CALMMAGE_DEV_ENV_PATH={DEV_ENV_DIR}",
-        f"export CALMMAGE_POETRY_ENV_PATH=$(poetry env info --path)",
-        f"source $CALMMAGE_DEV_ENV_PATH/resources/shell_profiles/.zshrc",
-        f"source $CALMMAGE_DEV_ENV_PATH/resources/shell_profiles/.alias",
-    ]
+    if line in content:
+        logger.debug(f"Line already exists in {shell_profile}: {line}")
+        return False
 
-    updated_content = content
+    with open(shell_profile, "a") as f:
+        f.write(f"\n{line}")
+    logger.info(f"Added new line to {shell_profile}: {line}")
+    return True
 
-    for line in lines_to_add:
-        if line.startswith("export"):
-            pattern = re.escape(line.split("=")[0]) + r"=.*"
-            match = re.search(pattern, content, re.MULTILINE)
-        elif line.startswith("source"):
-            pattern = re.escape(line)
-            match = re.search(pattern, content, re.MULTILINE)
+
+def add_variable_to_shell_profile_safe(variable, value, shell_profile=Path.home() / ".zshrc"):
+    """
+    Safely add or update a variable in the shell profile.
+    """
+    shell_profile = Path(shell_profile)
+    if not shell_profile.exists():
+        shell_profile.touch()
+
+    with open(shell_profile, "r") as f:
+        content = f.read()
+
+    new_line = f"export {variable}={value}"
+    pattern = re.escape(f"export {variable}=") + r".*"
+    match = re.search(pattern, content, re.MULTILINE)
+
+    if match:
+        existing_line = match.group(0)
+        if existing_line != new_line:
+            logger.warning(f"Existing variable differs in {shell_profile}: {existing_line}")
+            if input(f"Do you want to update {variable}? (y/n): ").lower() == "y":
+                updated_content = re.sub(pattern, new_line, content, flags=re.MULTILINE)
+                with open(shell_profile, "w") as f:
+                    f.write(updated_content)
+                logger.info(f"Updated variable in {shell_profile}: {new_line}")
+                return True
         else:
-            continue  # Skip lines that don't start with export or source
-
-        if match:
-            existing_line = match.group(0)
-            if existing_line != line:
-                logger.warning(f"Existing line differs: {existing_line}")
-                if typer.confirm("Do you want to update this line?"):
-                    updated_content = re.sub(pattern, line, updated_content, flags=re.MULTILINE)
-            else:
-                logger.debug(f"Line already exists and is up to date: {line}")
-        else:
-            logger.info(f"Adding new line to .zshrc: {line}")
-            updated_content += f"\n{line}"
-
-    if updated_content != content:
-        with open(ZSHRC_PATH, "w") as zshrc:
-            zshrc.write(updated_content)
-        logger.info("Updated .zshrc")
+            logger.debug(f"Variable already exists and is up to date in {shell_profile}: {new_line}")
     else:
-        logger.debug("No changes needed in .zshrc")
+        with open(shell_profile, "a") as f:
+            f.write(f"\n{new_line}")
+        logger.info(f"Added new variable to {shell_profile}: {new_line}")
+        return True
+
+    return False
+
+
+def update_shell_profiles():
+    # zshrc
+    add_variable_to_shell_profile_safe("CALMMAGE_DEV_ENV_PATH", str(DEV_ENV_DIR))
+    add_variable_to_shell_profile_safe("CALMMAGE_POETRY_ENV_PATH", "$(poetry env info --path)")
+    add_line_to_shell_profile_safe(f"source $CALMMAGE_DEV_ENV_PATH/resources/shell_profiles/.zshrc")
+    add_line_to_shell_profile_safe(f"source $CALMMAGE_DEV_ENV_PATH/resources/shell_profiles/.alias")
+
+    # zprofile
+    add_variable_to_shell_profile_safe(
+        "CALMMAGE_DEV_ENV_PATH", str(DEV_ENV_DIR), shell_profile=Path.home() / ".zprofile"
+    )
+    add_variable_to_shell_profile_safe(
+        "CALMMAGE_POETRY_ENV_PATH", "$(poetry env info --path)", shell_profile=Path.home() / ".zprofile"
+    )
+    add_line_to_shell_profile_safe(
+        f"source $CALMMAGE_DEV_ENV_PATH/resources/shell_profiles/.zshrc", shell_profile=Path.home() / ".zprofile"
+    )
+    add_line_to_shell_profile_safe(
+        f"source $CALMMAGE_DEV_ENV_PATH/resources/shell_profiles/.alias", shell_profile=Path.home() / ".zprofile"
+    )
