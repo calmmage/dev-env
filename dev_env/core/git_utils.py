@@ -1,14 +1,15 @@
-import traceback
-
 import time
-
+import traceback
 from functools import lru_cache
+from pathlib import Path
+from typing import Union
+
+from dotenv import load_dotenv
 from git import Repo
 from github import Github
 from github.Repository import Repository
 from loguru import logger
-from pathlib import Path
-from typing import Union
+from pydantic_settings import BaseSettings
 
 from dev_env.core.constants import experiments_dir, projects_dir, archive_dir
 from dev_env.core.settings import settings
@@ -205,3 +206,19 @@ def create_repo_from_template(name, template_name):
     logger.debug(f"Repository created: {url}")
     # return the repo link ?
     return url
+
+
+class Settings(BaseSettings):
+    github_api_token: str
+
+
+def get_github_client() -> Github:
+    """Initialize and return a GitHub client."""
+    load_dotenv()
+    settings = Settings()
+    return Github(settings.github_api_token)
+
+
+def is_git_repo(path: Path) -> bool:
+    """Check if the given path is a git repository."""
+    return (path / ".git").is_dir()
