@@ -1,6 +1,7 @@
 from loguru import logger
 from pathlib import Path
 from git import Repo
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from dev_env.core.git_utils import (
     get_all_repos,
@@ -72,7 +73,50 @@ def create_dirs():
 # todo: move to utils
 
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def clone_single_repo(repo, target_dir):
+    try:
+        local_repo_path = check_repo_cloned(repo)
+        if local_repo_path:
+            if repo.name in settings.main_projects and local_repo_path.parent != projects_dir:
+                logger.warning(f"Main repo {local_repo_path} is not in {projects_dir}")
+                logger.info(f"Moving {local_repo_path} to {projects_dir}")
+                local_repo_path.rename(projects_dir / local_repo_path.name)
+                local_repo_path = projects_dir / local_repo_path.name
+
+            try:
+                local_repo = Repo(local_repo_path)
+                git_pull_with_fetch(local_repo)
+                logger.info(f"Successfully pulled changes for {local_repo_path}")
+            except Exception as e:
+                logger.error(f"Failed to pull {local_repo_path}: {e}")
+            return
+
+        # clone
+        # determine target dir
+        # if created in last month -> experiments
+        # if in main repos -> projects
+        # else -> archive
+
+        moscow_tz = timezone("Europe/Moscow")
+        repo_creation_date = repo.created_at.astimezone(moscow_tz)
+        if repo_creation_date > datetime.now(moscow_tz) - timedelta(days=30):
+            target_dir = experiments_dir
+        elif repo.name in settings.main_projects:
+            target_dir = projects_dir
+        else:
+            target_dir = archive_dir
+
+        target_path = target_dir / repo.name
+        clone_repo(repo, target_path)
+        logger.info(f"Successfully cloned {repo.name} to {target_path}")
+    except Exception as e:
+        logger.error(f"Failed to clone or update repo {repo.name}: {e}")
+        raise
+
+
 def clone_projects():
+
     # list all projects in my github
     # select only the ones in the accounts_to_clone_from
     # clone main projects to projects dir
@@ -88,48 +132,10 @@ def clone_projects():
         if not check_repo_allowed(repo):
             continue
 
-        # check if repo is cloned somewhere in main dirs
-        local_repo_path = check_repo_cloned(repo)
-        if local_repo_path:
-            # first, check if it's a main repo that is not in projects dir
-            if repo.name in settings.main_projects:
-                if local_repo_path.parent != projects_dir:
-                    logger.warning(f"Main repo {local_repo_path} is not in {projects_dir}")
-                    logger.info(f"Moving {local_repo_path} to {projects_dir}")
-                    local_repo_path.rename(projects_dir / local_repo_path.name)
-                    local_repo_path = projects_dir / local_repo_path.name
-
-            # just pull
-            try:
-                local_repo = Repo(local_repo_path)
-                git_pull_with_fetch(local_repo)
-                # pull_info = local_repo.remotes.origin.pull()
-                # if pull_info:
-                #     logger.info(f"Pulled changes for {local_repo_path}: {pull_info}")
-                # else:
-                #     logger.debug(f"No changes to pull for {local_repo_path}")
-            except Exception as e:
-                logger.error(f"Failed to pull {local_repo_path}: {e}")
-            continue
-
-        # clone
-        # determine target dir
-        # if created in last month -> experiments
-        # if in main repos -> projects
-        # else -> archive
-
-        moscow_tz = timezone("Europe/Moscow")
-
-        repo_creation_date = repo.created_at.astimezone(moscow_tz)
-        if repo_creation_date > datetime.now(moscow_tz) - timedelta(days=30):
-            target_dir = experiments_dir
-        elif repo.name in settings.main_projects:
-            target_dir = projects_dir
-        else:
-            target_dir = archive_dir
-
-        target_path = target_dir / repo.name
-        clone_repo(repo, target_path)
+        try:
+            clone_single_repo(repo, None)  # We'll determine the target_dir inside the function
+        except Exception as e:
+            logger.error(f"Failed to process repo {repo.name} after multiple attempts: {e}")
 
 
 # endregion idea 2 - clone projects
@@ -157,14 +163,6 @@ def clone_projects():
 
 
 # todo: move to utils
-
-
-# todo: move to utils
-
-
-# todo: move to utils
-
-
 def get_seasonal_dir(dt: datetime = None) -> Path:
     if dt is None:
         dt = datetime.now()
@@ -180,6 +178,7 @@ def get_seasonal_dev_dir(dt: datetime = None) -> Path:
     seasonal_dev_dir_name = dt.strftime("dev-%b-%Y".lower())
     return seasonal_dir_path / seasonal_dev_dir_name
 
+
 def setup_seasonal_folder(dt: datetime = None):
     """
     Create a new seasonal folder and populate it with a dev repo from template.
@@ -192,7 +191,7 @@ def setup_seasonal_folder(dt: datetime = None):
         dt = datetime.now()
     seasonal_dir_path = get_seasonal_dir(dt)
     logger.debug(f"Seasonal directory path: {seasonal_dir_path}")
-    
+
     if not (seasonal_dir_path.exists() and list(seasonal_dir_path.iterdir())):
         logger.info(f"Creating new seasonal directory: {seasonal_dir_path}")
         seasonal_dir_path.mkdir(parents=True, exist_ok=True)
