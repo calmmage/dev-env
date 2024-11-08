@@ -92,9 +92,9 @@ https://www.notion.so/Troubleshoot-throwaway-11fbc5d57f7c80a993eff1ccaa7c253e?pv
 
 - [ ] install brew
 - [x] setup ssh keys  
-  [setup_ssh.sh](dev/unsorted/basic_setup/setup_ssh.sh)
+  [setup_ssh.sh](../try-nix/dev/unsorted/basic_setup/setup_ssh.sh)
 - [x] setup github cli  
-  [setup_gh.sh](dev/unsorted/basic_setup/setup_gh.sh)
+  [setup_gh.sh](../try-nix/dev/unsorted/basic_setup/setup_gh.sh)
 - [ ] install python environments
 - [ ] clone all projects
 - idea: daily job to commit / push / pull all repos
