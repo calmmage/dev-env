@@ -5,7 +5,7 @@ This script deploys calmmage dev environment
 import typer
 from loguru import logger
 
-from dev_env.setup.setup_shell_profiles_and_env import clone_or_update_dev_env, update_zshrc
+from dev_env.setup.setup_shell_profiles_and_env import clone_or_update_dev_env, update_shell_profiles
 
 app = typer.Typer()
 
@@ -21,7 +21,7 @@ def main():
     clone_or_update_dev_env()
 
     # Step 2: Update .zshrc
-    update_zshrc()
+    update_shell_profiles()
 
     logger.success("Dev environment setup complete")
     logger.info("Please restart your terminal or run 'source ~/.zshrc' to apply changes")

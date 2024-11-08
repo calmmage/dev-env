@@ -2,6 +2,7 @@
 # ADDED MANUALLY
 # ----------------------------------------
 
+*.session
 config*.toml
 *secret*.toml
 *.token

@@ -3,7 +3,7 @@
 ## implement
 ## use
 - [x] run
-- [ ] deploy to ~/.calmmage (commit, runp)
+- [x] deploy to ~/.calmmage (commit, runp)
 - [ ] bind to raycast? 
 
 
@@ -61,3 +61,12 @@ check them in ffs
 - [x] use
 
 # workalong 2
+# daily job?
+- [ ] pull all repos
+- [ ] commit and push all changes
+  - think what specifically I want to do here
+  - maybe only the repos that need syncing?
+- [ ] 
+
+# workalong 3
+# tools - new project
