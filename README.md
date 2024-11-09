@@ -1,3 +1,55 @@
+# Dev Env
+
+Development environment setup and configuration management.
+
+## Quick Start
+
+First-time setup:
+```bash
+./bootstrap.sh  # First-time system setup
+```
+
+Daily usage:
+```bash
+# Quick rebuild of current config
+nixswitch
+
+# Full update (git + flake) and rebuild
+nixup
+
+```
+
+## Core Scripts
+
+- `bootstrap.sh` - First-time system setup (Xcode tools, Nix, Homebrew)
+- `build-nix.sh` - Core build script with options:
+  - No flags: Just rebuild current config
+  - `--flake` (`-f`): Update flake inputs and rebuild
+  - `--git` (`-g`): Pull latest changes and rebuild
+  - `--update` (`-u`): Full update (git + flake) and rebuild
+
+## Directory Structure
+
+```
+.
+├── bootstrap.sh     # First-time setup
+├── build-nix.sh     # Core build script
+├── nix/            # Nix configuration
+│   ├── modules/    # System modules
+│   └── flake.nix   # Main flake
+└── tools/          # Helper tools and scripts
+```
+
+## Additional Documentation
+
+- [Nix Configuration](nix/README.md)
+- [Python Tools Usage](docs/python-tools.md)
+- [Project Management](docs/project-management.md)
+
+
+# Old instructions - to migrate
+----------------------------------------
+
 # Usage
 ## How to run python scripts with my dev env
 - interactively: runp alias

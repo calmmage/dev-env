@@ -121,10 +121,8 @@ in
         dc = "docker-compose";
         # Add your aliases here
         ls = "ls --color=auto -F";
-        nixswitch = "$DEV_ENV_PATH/nix/build-nix.sh";
-        nixup = "$DEV_ENV_PATH/nix/build-nix.sh --flake";
-        nixapply  = "$DEV_ENV_PATH/apply.sh";
-        nixsysup = "$DEV_ENV_PATH/nix/build-nix.sh --update";
+        nixswitch = "darwin-rebuild switch --flake $DEV_ENV_PATH/nix/.#";
+        nixup = "pushd $DEV_ENV_PATH/nix; git pull; nix flake update; nixswitch; popd";
       };
       oh-my-zsh = {
         enable = true;
