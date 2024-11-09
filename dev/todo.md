@@ -19,3 +19,10 @@
 - create aliases for useful tools
 - make a list of common actions and tools for them (accompanied by aliases)
 - a tool for used /aliased and unused / unaliased tools (three categories: used, unused, ingored)
+
+
+- [x] deduplicate brew and home-manager packages with preference to home-manager
+- [x] add brew tools from brew dump
+- [ ] add tools from claude suggested tools (and aliases)
+- [ ] figure out how to better store aliases: in nix-file or in .aliases file?
+- [ ] add aliases for better tool replacements
