@@ -16,9 +16,25 @@ echo "4. Verify changes were applied successfully"
 # - Apply changes
 # - Run verification checks
 
-# References the existing home-manager configuration:
-# startLine: 115
-# endLine: 120
 
-echo "Not yet implemented"
-exit 1 
+#!/bin/bash
+# apply.sh - System update script
+set -e
+
+[ -f ~/.dev-env-location ] && source ~/.dev-env-location
+
+echo "🔄 Updating system configuration..."
+
+# Update repository
+cd "$DEV_ENV_PATH"
+git pull
+
+# Update flake inputs
+cd nix
+nix flake update
+
+# Build and apply using core build script
+"$DEV_ENV_PATH/nix/build-nix.sh"
+
+# Verify changes
+echo "✅ System updated successfully!"

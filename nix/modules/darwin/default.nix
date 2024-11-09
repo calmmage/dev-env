@@ -1,6 +1,18 @@
-{ pkgs, ... }:
+{ config, pkgs, lib, ... }:
 let
   username = "petr";
+  # Read the dev-env location from the file
+  devEnvLocationFile = "${config.users.users.${username}.home}/.dev-env-location";
+  # Extract path from "export DEV_ENV_PATH=/path/to/dev-env"
+  devEnvPath = builtins.readFile devEnvLocationFile;
+  # Strip the "export DEV_ENV_PATH=" prefix and any quotes
+  cleanDevEnvPath = lib.removeSuffix "\n" (
+    lib.removePrefix "export DEV_ENV_PATH=" (
+      lib.removeSuffix "\"" (
+        lib.removePrefix "\"" devEnvPath
+      )
+    )
+  );
 in
 {
   # here go the darwin preferences and config items
@@ -9,7 +21,10 @@ in
     shells = [ pkgs.bash pkgs.zsh ];
     loginShell = pkgs.zsh;
     systemPackages = [ pkgs.coreutils ];
-    systemPath = [ "/opt/homebrew/bin" ];
+    systemPath = [
+      "/opt/homebrew/bin"
+      "${cleanDevEnvPath}/tools/dev_env_manager/bin"
+    ];
     pathsToLink = [ "/Applications" ];
   };
   nix = {

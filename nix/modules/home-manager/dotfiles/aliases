@@ -1,3 +1,6 @@
+# Add an alias to update dev-env
+alias update-dev-env='python3 $DEV_ENV_PATH/tools/dev_env_updater.py
+
 # alias help="echo \"$HELP\""
 # open code with sublime
 alias subl='open -a Sublime\ Text'

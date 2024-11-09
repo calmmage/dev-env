@@ -23,5 +23,36 @@ echo "7. Install additional tools and applications"
 # - Set up additional tools
 # - Verify installation
 
-echo "Not yet implemented"
-exit 1 
+set -e
+
+setup_persistent_location() {
+    local location_file="$HOME/.dev-env-location"
+    if [ ! -f "$location_file" ]; then
+        echo "Please enter target dev-env location (default: $HOME/.dev-env):"
+        read -r user_location
+        DEV_ENV_PATH=${user_location:-$HOME/.dev-env}
+        echo "export DEV_ENV_PATH=\"$DEV_ENV_PATH\"" > "$location_file"
+    fi
+    source "$location_file"
+}
+
+# Install core dependencies
+install_dependencies() {
+    # Install Xcode Command Line Tools
+    xcode-select --install || true
+    
+    # Install Nix
+    curl -L https://nixos.org/nix/install | sh
+    
+    # Install Homebrew
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+}
+
+# Main execution
+setup_persistent_location
+install_dependencies
+
+python3 "$(dirname "$0")/tools/dev_env_updater.py"
+
+# Initial build
+"$DEV_ENV_PATH/nix/build-nix.sh" 

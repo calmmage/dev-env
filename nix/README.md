@@ -10,7 +10,7 @@ Install Nix
 
 Install nix-darwin
 
-`darwin-rebuild switch --flake ~/src/system-config/.#`
+`darwin-rebuild switch --flake $DEV_ENV_PATH/nix/.#`
 
 Cachix
 
