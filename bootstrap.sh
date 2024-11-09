@@ -35,17 +35,31 @@ setup_persistent_location() {
     fi
     source "$location_file"
 }
-
 # Install core dependencies
 install_dependencies() {
-    # Install Xcode Command Line Tools
-    xcode-select --install || true
+    # Install Xcode Command Line Tools if not already installed
+    if ! xcode-select -p &>/dev/null; then
+        echo "Installing Xcode Command Line Tools..."
+        xcode-select --install || true
+    else
+        echo "Xcode Command Line Tools already installed"
+    fi
     
-    # Install Nix
-    curl -L https://nixos.org/nix/install | sh
+    # Install Nix if not already installed
+    if ! command -v nix &>/dev/null; then
+        echo "Installing Nix..."
+        curl -L https://nixos.org/nix/install | sh
+    else
+        echo "Nix already installed"
+    fi
     
-    # Install Homebrew
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # Install Homebrew if not already installed
+    if ! command -v brew &>/dev/null; then
+        echo "Installing Homebrew..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    else
+        echo "Homebrew already installed"
+    fi
 }
 
 # Main execution
@@ -54,5 +68,7 @@ install_dependencies
 
 python3 "$(dirname "$0")/tools/dev_env_updater.py"
 
+cd "$DEV_ENV_PATH/nix"
 # Initial build
-"$DEV_ENV_PATH/nix/build-nix.sh" 
+nix flake update
+darwin-rebuild switch --flake .#default

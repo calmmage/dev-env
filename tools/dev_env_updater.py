@@ -2,22 +2,28 @@
 """Standalone script to manage dev-env repository location and updates"""
 
 import sys
+import os
 from pathlib import Path
-from subprocess import run
+from subprocess import run, check_output
 import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def get_dev_env_path():
-    """Get dev-env path from ~/.dev-env-location"""
+    """Get dev-env path by sourcing ~/.dev-env-location"""
     location_file = Path.home() / '.dev-env-location'
     if not location_file.exists():
         raise RuntimeError("Dev-env location not configured. Please run bootstrap.sh first")
     
-    # Parse the export statement to get the path
-    content = location_file.read_text().strip()
-    return Path(content.split('=')[1].strip('"'))
+    # Source the file and get the environment variable
+    cmd = f'source {location_file} && echo $DEV_ENV_PATH'
+    try:
+        dev_env_path = check_output(['bash', '-c', cmd], text=True).strip()
+        return Path(dev_env_path)
+    except Exception as e:
+        logger.error(f"Failed to source .dev-env-location: {e}")
+        raise
 
 def git_pull_with_fetch(repo_path):
     """Simple git operations using subprocess"""

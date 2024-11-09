@@ -122,7 +122,8 @@ in
         # Add your aliases here
         ls = "ls --color=auto -F";
         nixswitch = "darwin-rebuild switch --flake $DEV_ENV_PATH/nix/.#";
-        nixup = "pushd $DEV_ENV_PATH/nix; git pull; nix flake update; nixswitch; popd";
+        nixup = "pushd $DEV_ENV_PATH/nix; nix flake update; nixswitch; popd";
+        nixapply  = "$DEV_ENV_PATH/apply.sh";
       };
       oh-my-zsh = {
         enable = true;

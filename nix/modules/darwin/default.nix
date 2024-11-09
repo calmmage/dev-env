@@ -19,7 +19,7 @@ in
   programs.zsh.enable = true;
   environment = {
     shells = [ pkgs.bash pkgs.zsh ];
-    loginShell = pkgs.zsh;
+    # loginShell = pkgs.zsh; Deprecated
     systemPackages = [ pkgs.coreutils ];
     systemPath = [
       "/opt/homebrew/bin"
