@@ -35,6 +35,24 @@ setup_persistent_location() {
     fi
     source "$location_file"
 }
+
+setup_nix_configuration() {
+    echo "Setting up Nix configuration..."
+    cd "$DEV_ENV_PATH/nix"
+    
+    # TODO: guide the user through setting up user.yaml config file
+    # # Run configuration script
+    # python3 tools/configure.py
+    
+    # echo "Please review and edit config/user.yaml before continuing"
+    # echo "Press Enter when ready to continue, or Ctrl+C to abort"
+    # read -r
+    
+    # Initial build
+    nix flake update
+    darwin-rebuild switch --flake .#default
+}
+
 # Install core dependencies
 install_dependencies() {
     # Install Xcode Command Line Tools if not already installed
@@ -65,10 +83,6 @@ install_dependencies() {
 # Main execution
 setup_persistent_location
 install_dependencies
+setup_nix_configuration
 
 python3 "$(dirname "$0")/tools/dev_env_updater.py"
-
-cd "$DEV_ENV_PATH/nix"
-# Initial build
-nix flake update
-darwin-rebuild switch --flake .#default

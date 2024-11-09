@@ -1,19 +1,13 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, userConfig, ... }:
 
 let
-  dockApps = [
-    "/Applications/Raycast.app"
-    # Add more applications here, for example:
-    # "/Applications/Firefox.app"
-    # "/System/Applications/Messages.app"
-    "/Applications/Slack.app"
-    # "/Applications/Visual Studio Code.app"
-  ];
+  dockApps = userConfig.dock.apps;
 in
 {
   # Don't change this when you change package input. Leave it alone.
   home.stateVersion = "23.11";
   # specify my home-manager configs
+  # todo: move to ... config user.yaml
   home.packages = with pkgs; [
     curl
     less
@@ -167,8 +161,17 @@ in
       /usr/bin/defaults write com.apple.WindowManager EnableTilingByEdgeDrag -bool false
       /usr/bin/defaults write com.apple.WindowManager EnableTilingOptionAccelerator -bool false
             
-      # Dock settings
-      /usr/bin/defaults write com.apple.dock expose-group-by-app -bool true
+      # Dock settings      
+      /usr/bin/defaults write com.apple.dock expose-group-by-app -bool ${toString userConfig.dock.settings.expose_group_by_app}
+      /usr/bin/defaults write com.apple.dock autohide -bool ${toString userConfig.dock.settings.autohide}
+      /usr/bin/defaults write com.apple.dock magnification -bool ${toString userConfig.dock.settings.magnification}
+      /usr/bin/defaults write com.apple.dock largesize -int ${toString userConfig.dock.settings.magnification_size}
+      /usr/bin/defaults write com.apple.dock tilesize -int ${toString userConfig.dock.settings.tile_size}
+      /usr/bin/defaults write com.apple.dock minimize-to-application -bool ${toString userConfig.dock.settings.minimize_to_application}
+      /usr/bin/defaults write com.apple.dock show-recents -bool ${toString userConfig.dock.settings.show_recent_apps}
+      /usr/bin/defaults write com.apple.dock show-process-indicators -bool ${toString userConfig.dock.settings.show_process_indicators}
+      /usr/bin/defaults write com.apple.dock orientation -string ${userConfig.dock.settings.position}
+
     '';
     dock = lib.hm.dag.entryAfter ["writeBoundary"] ''
       # Remove all apps from dock first
@@ -176,11 +179,11 @@ in
         --no-restart \
         "$HOME/Library/Preferences/com.apple.dock.plist"
 
-      # Add apps from our list
+      # Add apps from our config
       ${lib.concatMapStringsSep "\n" (app: ''
         ${pkgs.dockutil}/bin/dockutil --add "${app}" \
           "$HOME/Library/Preferences/com.apple.dock.plist"
-      '') dockApps}
+      '') userConfig.dock.apps}
 
       # Restart dock to apply changes
       /usr/bin/killall Dock

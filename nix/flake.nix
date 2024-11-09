@@ -48,7 +48,9 @@
   outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, darwin, poetry2nix, ... }@inputs:
     let
       system = "aarch64-darwin";
-      username = "petr"; 
+      # Read user config from YAML
+      userConfig = builtins.fromJSON (builtins.readFile ./config/user.yaml);
+      username = userConfig.username;
 
       overlay-unstable = final: prev: {
         unstable = nixpkgs-unstable.legacyPackages.${prev.system};
@@ -60,11 +62,15 @@
           ({ pkgs, ... }: {
             nixpkgs.overlays = [ 
               overlay-unstable
-              poetry2nix.overlays.default  # Add poetry2nix overlay
+              poetry2nix.overlays.default
             ];
             nixpkgs.config.allowUnfree = true;
             users.users.${username}.home = "/Users/${username}";
           })
+          # Pass userConfig to other modules
+          {
+            _module.args.userConfig = userConfig;
+          }
           ./modules/darwin
           ./configuration.nix
           home-manager.darwinModules.home-manager

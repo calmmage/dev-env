@@ -1,7 +1,4 @@
-{ config, pkgs, lib, ... }:
-let
-  username = "petr";
-in
+{ config, pkgs, lib, userConfig, ... }:
 {
   # here go the darwin preferences and config items
   programs.zsh.enable = true;
@@ -39,11 +36,12 @@ in
     pathsToLink = [ "/Applications" ];
   };
   nix = {
-    settings = { trusted-users = [ "root" "${username}" ]; };
+    settings = { trusted-users = [ "root" userConfig.username ]; };
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
   };
+
   system = {
     keyboard.enableKeyMapping = true;
     keyboard.remapCapsLockToEscape = false;
@@ -64,15 +62,15 @@ in
         NSNavPanelExpandedStateForSaveMode = true;
         "com.apple.mouse.tapBehavior" = 1;
       };
-      dock = {
-        autohide = true;
-        largesize = 128;
-        magnification = true;
-        # tilesize = 36;
-        # expose-group-apps = true;
-        mru-spaces = false; # disable reordering spaces automatically based on recent usage (I hate them chaotically reordering)
-        minimize-to-application = true; # minimize to application instead separate windows
-      };
+      # dock = {
+      #   autohide = true;
+      #   largesize = 128;
+      #   magnification = true;
+      #   # tilesize = 36;
+      #   # expose-group-apps = true;
+      #   mru-spaces = false; # disable reordering spaces automatically based on recent usage (I hate them chaotically reordering)
+      #   minimize-to-application = true; # minimize to application instead separate windows
+      # };
     };
     activationScripts.postActivation.text = ''
       # Allow Karabiner-Elements to receive keyboard events
@@ -82,14 +80,15 @@ in
       if [ -d "/opt/homebrew" ]; then
         echo "Setting proper permissions for Homebrew directories..."
         /usr/bin/sudo /bin/chmod -R 755 /opt/homebrew
-        /usr/bin/sudo /usr/sbin/chown -R ${username}:admin /opt/homebrew
+        /usr/bin/sudo /usr/sbin/chown -R ${userConfig.username}:admin /opt/homebrew
       fi
     '';
   };
+
   networking = {
-    # computerName = "mbpr1619";
-    # hostName = "mbpr1619";
-    # localHostName = "mbpr1619";
+    computerName = userConfig.computer_name;
+    hostName = userConfig.host_name;
+    localHostName = userConfig.local_host_name;
   };
 
   security.pam.enableSudoTouchIdAuth = false;
@@ -98,7 +97,6 @@ in
   services = { nix-daemon = { enable = true; }; };
 
   documentation.enable = false;
-
   nixpkgs.config.allowUnfree = true;
 
   homebrew = {
