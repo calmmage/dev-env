@@ -7,7 +7,14 @@ in
   programs.zsh.enable = true;
   environment = {
     shells = [ pkgs.bash pkgs.zsh ];
-    systemPackages = [ pkgs.coreutils ];
+    systemPackages = with pkgs; [ 
+      coreutils 
+      (pkgs.poetry2nix.mkPoetryEnv {
+        projectDir = ../../.;
+        preferWheels = true;
+        python = python311;
+      })
+    ];
     systemPath = [
       "/opt/homebrew/bin"
       # "$DEV_ENV_PATH/tools/" - remove for now - can't get it to work

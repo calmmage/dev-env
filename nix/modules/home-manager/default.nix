@@ -49,7 +49,8 @@ in
     PAGER = "less";
     CLICOLOR = 1;
     EDITOR = "subl";
-    PATH = "$PATH:$HOME/bin";
+    # PATH = "$PATH:$HOME/bin";
+    PATH = "$PATH:$HOME/bin:$DEV_ENV_PATH/.venv/bin";  # Add Poetry env to PATH
   };
 
   programs = {
@@ -121,9 +122,12 @@ in
         dc = "docker-compose";
         # Add your aliases here
         ls = "ls --color=auto -F";
-        nixswitch = "darwin-rebuild switch --flake $DEV_ENV_PATH/nix/.#";
+        nixnix= "nix flake update; darwin-rebuild switch --flake .#default";
+        nixswitch = "darwin-rebuild switch --flake $DEV_ENV_PATH/nix/.#default";
         nixup = "pushd $DEV_ENV_PATH/nix; nix flake update; nixswitch; popd";
         nixapply  = "$DEV_ENV_PATH/apply.sh";
+        runp = "$DEV_ENV_PATH/.venv/bin/python";
+        ipy = "$DEV_ENV_PATH/.venv/bin/ipython";
       };
       oh-my-zsh = {
         enable = true;

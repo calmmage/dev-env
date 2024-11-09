@@ -39,9 +39,13 @@
       url = "github:homebrew/homebrew-cask";
       flake = false;
     };
+    poetry2nix = {
+      url = "github:nix-community/poetry2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, darwin, ... }@inputs:
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, darwin, poetry2nix, ... }@inputs:
     let
       system = "aarch64-darwin";
       username = "petr"; 
@@ -54,7 +58,10 @@
         inherit system;
         modules = [
           ({ pkgs, ... }: {
-            nixpkgs.overlays = [ overlay-unstable ];
+            nixpkgs.overlays = [ 
+              overlay-unstable
+              poetry2nix.overlays.default  # Add poetry2nix overlay
+            ];
             nixpkgs.config.allowUnfree = true;
             users.users.${username}.home = "/Users/${username}";
           })
