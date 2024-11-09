@@ -6,7 +6,7 @@
    - delete my apps
    - apply nix 
 
-3) Move brew packages list to user.yaml
+- [x] 3) Move brew packages list to user.yaml
 
 
 4) Invent a better structure for specific configs:

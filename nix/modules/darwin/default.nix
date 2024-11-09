@@ -108,52 +108,9 @@
       cleanup = "zap"; # Removes all unmanaged packages
     };
     masApps = { };
-    brews = [
-      "poetry"
-      "ripgrep"
-      "sonar-scanner"
-    ];
-
-    casks = [
-      # Development
-      "docker" # docker desktop app
-      "jetbrains-toolbox"
-      "pycharm"
-      "sourcetree"
-      "github" # github desktop app
-      "launchcontrol"
-      "warp"
-      "mitmproxy"
-      "cursor"
-      # "shottr" # Alternative: CleanShot X - installed through setapp
-      "karabiner-elements"
-      "sublime-text"
-      
-      # Browsers & Communication
-      "google-chrome"
-      "slack" 
-      "telegram"
-
-      # Productivity & Utils
-      "raycast"
-      "rectangle"
-      # "bartender" # through setapp
-      "dropbox"
-      "obsidian"
-      "notion"
-      "chatgpt"
-
-      # App marketplace
-      "setapp"
-      # todo: install apps manually
-      # paste
-      # cleanshotX
-      # bartender
-      # popclip
-      # hazeover
-
-      # Creative
-      "adobe-creative-cloud"
-    ];
+    
+    # Use brew packages from user config
+    brews = userConfig.homebrew.brews;
+    casks = userConfig.homebrew.casks;
   };
 }
