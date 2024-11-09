@@ -75,6 +75,63 @@ homebrew:
     # Creative
     - adobe-creative-cloud
 
+    # Suggestions from Claude
+
+    # Media Processing & Conversion
+    - ffmpeg          # Swiss army knife for audio/video processing
+    # - imagemagick     # Powerful image manipulation tool
+    # - handbrake       # Video transcoder
+    # - yt-dlp          # Download videos from YouTube and other sites
+    
+    # # Development Tools
+    # - neovim          # Modern, extensible text editor
+    # - tmux            # Terminal multiplexer for multiple sessions
+    # - jq              # Command-line JSON processor
+    # - httpie          # User-friendly HTTP client
+    # - mkcert          # Make locally-trusted development certificates
+    
+    # # System Monitoring & Performance
+    # - htop            # Interactive process viewer
+    # - glances         # System monitoring tool
+    # - duf             # Disk usage utility
+    # - ncdu            # NCurses disk usage analyzer
+    
+    # # Network Tools
+    # - nmap            # Network exploration and security scanning
+    # - wireshark       # Network protocol analyzer
+    # - netcat         # Networking utility for reading/writing network connections
+    # - mtr             # Network diagnostic tool
+    
+    # # Security & Encryption
+    # - gnupg           # GNU Privacy Guard encryption
+    # - bitwarden       # Password manager
+    # - 1password      # Popular password manager alternative
+    # - veracrypt       # Disk encryption software
+    
+    # # Productivity
+    # - taskwarrior     # Command-line task management
+    # - pandoc          # Universal document converter
+    # - asciinema       # Terminal session recorder
+    # - tldr            # Simplified man pages
+    
+    # # Database Tools
+    # - pgcli           # PostgreSQL CLI with auto-completion
+    # - mycli           # MySQL/MariaDB CLI with auto-completion
+    # - dbeaver         # Universal database tool
+    # - mongodb-compass # MongoDB GUI
+
+    # # Cloud & Infrastructure
+    # - terraform       # Infrastructure as code
+    # - kubernetes-cli  # Kubernetes command-line tool
+    # - helm            # Kubernetes package manager
+    # - vagrant         # Development environment creation
+
+    # # File Management
+    # - ranger          # Console file manager with VI keybindings
+    # - fd              # Simple, fast alternative to 'find'
+    # - fzf             # Command-line fuzzy finder
+    # - rsync           # Fast file copying tool
+
 home_manager:
   packages:
     # CLI Tools
@@ -117,3 +174,15 @@ home_manager:
     # slack
     # poetry
     # ripgrep
+
+    # Suggestions from Claude
+    - jq              # Command-line JSON processor and manipulator
+    - htop            # Interactive process viewer and system monitor
+    - tmux            # Terminal multiplexer for multiple sessions
+    - bat             # Cat clone with syntax highlighting and git integration
+    - exa             # Modern replacement for ls with git integration
+    - ripgrep         # Fast grep alternative written in Rust
+    - delta           # Syntax highlighting pager for git diffs
+    - ncdu            # NCurses disk usage analyzer
+    - duf             # Disk usage/free utility with better UI
+    - tldr            # Simplified and community-driven man pages
