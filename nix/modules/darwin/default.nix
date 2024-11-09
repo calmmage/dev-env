@@ -1,29 +1,17 @@
 { config, pkgs, lib, ... }:
 let
   username = "petr";
-  # Read the dev-env location from the file
-  devEnvLocationFile = "${config.users.users.${username}.home}/.dev-env-location";
-  # Extract path from "export DEV_ENV_PATH=/path/to/dev-env"
-  devEnvPath = builtins.readFile devEnvLocationFile;
-  # Strip the "export DEV_ENV_PATH=" prefix and any quotes
-  cleanDevEnvPath = lib.removeSuffix "\n" (
-    lib.removePrefix "export DEV_ENV_PATH=" (
-      lib.removeSuffix "\"" (
-        lib.removePrefix "\"" devEnvPath
-      )
-    )
-  );
 in
 {
   # here go the darwin preferences and config items
   programs.zsh.enable = true;
   environment = {
     shells = [ pkgs.bash pkgs.zsh ];
-    # loginShell = pkgs.zsh; Deprecated
     systemPackages = [ pkgs.coreutils ];
     systemPath = [
       "/opt/homebrew/bin"
-      "${cleanDevEnvPath}/tools/dev_env_manager/bin"
+      # Instead of reading from file, we'll use an environment variable that gets set during activation
+      "@dev_env_path@/tools/dev_env_manager/bin"
     ];
     pathsToLink = [ "/Applications" ];
   };
@@ -64,6 +52,15 @@ in
       };
     };
     activationScripts.postActivation.text = ''
+      # Get DEV_ENV_PATH from the file
+      if [ -f "$HOME/.dev-env-location" ]; then
+        source "$HOME/.dev-env-location"
+        # Replace the placeholder with actual path
+        sed -i "" "s|@dev_env_path@|$DEV_ENV_PATH|g" /etc/paths.d/*
+      else
+        echo "Warning: $HOME/.dev-env-location file not found"
+      fi
+
       # Allow Karabiner-Elements to receive keyboard events
       /usr/bin/sudo /usr/bin/security authorizationdb write system.privilege.taskport allow
       
