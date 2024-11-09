@@ -10,8 +10,7 @@ in
     systemPackages = [ pkgs.coreutils ];
     systemPath = [
       "/opt/homebrew/bin"
-      # Instead of reading from file, we'll use an environment variable that gets set during activation
-      "@dev_env_path@/tools/dev_env_manager/bin"
+      # "$DEV_ENV_PATH/tools/" - remove for now - can't get it to work
     ];
     pathsToLink = [ "/Applications" ];
   };
@@ -52,15 +51,6 @@ in
       };
     };
     activationScripts.postActivation.text = ''
-      # Get DEV_ENV_PATH from the file
-      if [ -f "$HOME/.dev-env-location" ]; then
-        source "$HOME/.dev-env-location"
-        # Replace the placeholder with actual path
-        sed -i "" "s|@dev_env_path@|$DEV_ENV_PATH|g" /etc/paths.d/*
-      else
-        echo "Warning: $HOME/.dev-env-location file not found"
-      fi
-
       # Allow Karabiner-Elements to receive keyboard events
       /usr/bin/sudo /usr/bin/security authorizationdb write system.privilege.taskport allow
       
