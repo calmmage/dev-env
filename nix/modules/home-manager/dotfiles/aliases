@@ -1,5 +1,5 @@
 # Add an alias to update dev-env
-alias update-dev-env='python3 $DEV_ENV_PATH/tools/dev_env_updater.py
+alias update-dev-env='python3 $DEV_ENV_PATH/tools/dev_env_updater.py'
 
 # alias help="echo \"$HELP\""
 # open code with sublime
@@ -21,7 +21,7 @@ alias mva=move_and_link
 
 # find project in the projects dir
 alias fp=find_project
-alias ff="find_file"
+alias ff=find_file
 
 # find text in file
 # alias find_=find_what_where
@@ -47,12 +47,12 @@ alias cpa="copy_absolute_path"
 
 # alias lnsafe="runp $CALMMAGE_DEV_ENV_PATH/dev_env/tools/lnsafe.py"
 alias lnsafe="python $DEV_ENV_PATH/tools/lnsafe.py"
-alias typer=$CALMMAGE_POETRY_ENV_PATH/bin/typer
-    # todo: need a script that runs and checks in the start of bashrc if $CALMMAGE_DEV_ENV_PATH is set and warn if not
-    # typer_path = "$CALMMAGE_DEV_ENV_PATH/.venv/bin/typer"
-    # new_project_tool_path = "$CALMMAGE_DEV_ENV_PATH/dev/draft/mvp/project_manager.py"
-    # # lines_to_add = [
-    # #     f"alias typer='{typer_path}'",
-    # #     f"alias new_project='typer {new_project_tool_path}'"
-alias np='typer $CALMMAGE_DEV_ENV_PATH/dev/draft/mvp/project_manager.py'
+# alias typer=$CALMMAGE_POETRY_ENV_PATH/bin/typer
+# todo: need a script that runs and checks in the start of bashrc if $CALMMAGE_DEV_ENV_PATH is set and warn if not
+# typer_path = "$CALMMAGE_DEV_ENV_PATH/.venv/bin/typer"
+# new_project_tool_path = "$CALMMAGE_DEV_ENV_PATH/dev/draft/mvp/project_manager.py"
+# # lines_to_add = [
+# #     f"alias typer='{typer_path}'",
+# #     f"alias new_project='typer {new_project_tool_path}'"
+alias np='typer $DEV_ENV_PATH/dev/draft/mvp/project_manager.py'
 alias new_project='np'
