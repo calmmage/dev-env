@@ -1,4 +1,4 @@
-1) Move home-manager home.packages = with pkgs; [
+- [x] 1) Move home-manager home.packages = with pkgs; [
  to ... config user.yaml
 
 2) 

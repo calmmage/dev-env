@@ -74,4 +74,46 @@ homebrew:
 
     # Creative
     - adobe-creative-cloud
-    ];
+
+home_manager:
+  packages:
+    # CLI Tools
+    # utils
+    - curl          # Command line tool for transferring data with URLs
+    - less          # Terminal pager for viewing file contents
+    - cmake           # Cross-platform build system generator
+    - dlib            # C++ toolkit for machine learning
+    - tree            # Directory listing in tree-like format
+
+    # custom
+    - gh            # GitHub's official command line tool
+    - docker        # CLI interface for Docker containers
+    
+    # style
+    - oh-my-zsh     # Framework for managing zsh configuration
+    - zsh-powerlevel10k  # Modern, fast zsh theme
+
+    # new
+    # new - to explore
+    - direnv        # Environment switcher for the shell
+    - devenv           # Development environment manager
+    - cachix          # Binary cache hosting service for Nix
+    - postman         # API development environment
+
+    # new - clear
+    - awscli2           # AWS command line interface v2
+    - teams           # Microsoft Teams client
+
+    # new - unclear
+    - nixfmt-classic     # Nix code formatter
+    - pgbadger        # PostgreSQL log analyzer
+    - inetutils       # Collection of common network utilities
+    - git-remote-codecommit  # Git remote helper for AWS CodeCommit
+    - gitflow         # Git branching model extension
+    - shntool         # Multi-purpose WAVE data processing tool
+    - age             # Simple, modern file encryption tool
+
+    # via brew
+    # slack
+    # poetry
+    # ripgrep

@@ -6,38 +6,9 @@ in
 {
   # Don't change this when you change package input. Leave it alone.
   home.stateVersion = "23.11";
-  # specify my home-manager configs
-  # todo: move to ... config user.yaml
-  home.packages = with pkgs; [
-    curl
-    less
-    # slack # via brew
-    direnv
-    oh-my-zsh
-    docker # cli docker 
-    gh  # Adding GitHub CLI via Nix
-    zsh-powerlevel10k
-    nixfmt-classic
-    awscli2
-    devenv
-    cachix
-    postman
-    pgbadger
-    inetutils
-    git-remote-codecommit
-    gitflow
-    teams
-    shntool
-    # postgresql_14
-    # pgadmin4-desktopmode
-    devcontainer
-    tree
-    age
-    cmake  
-    dlib   # Add dlib
-    # poetry # via brew
-    # ripgrep # via brew
-  ];
+  
+  # Use packages from user config
+  home.packages = map (name: pkgs.${name}) userConfig.home_manager.packages;
 
   home.sessionVariables = {
     PAGER = "less";
