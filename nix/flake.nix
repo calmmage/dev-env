@@ -49,15 +49,8 @@
     let
       system = "aarch64-darwin";
       
-      # Load and parse YAML config
-      userConfigFile = ./config/user.yaml;
-      userConfig = builtins.fromJSON (
-        builtins.readFile (
-          pkgs.runCommand "user-config.json" {} ''
-            ${pkgs.yq}/bin/yq -o=json < ${userConfigFile} > $out
-          ''
-        )
-      );
+      # Load nix config directly
+      userConfig = import ./config/user.nix;
 
       overlay-unstable = final: prev: {
         unstable = nixpkgs-unstable.legacyPackages.${prev.system};
