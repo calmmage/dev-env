@@ -21,28 +21,28 @@ in
     shells = [ pkgs.bash pkgs.zsh ];
     systemPackages = with pkgs; [ 
       coreutils 
-      # (pkgs.poetry2nix.mkPoetryEnv {
-      #   projectDir = ../../..;
-      #   preferWheels = true;
-      #   python = python311;
-      #   # Add overrides to handle git dependencies
-      #   overrides = pkgs.poetry2nix.overrides.withDefaults (final: prev: {
-      #     calmlib = prev.calmlib.overridePythonAttrs (old: {
-      #       buildInputs = (old.buildInputs or [ ]) ++ [ 
-      #         pkgs.poetry
-      #         final.poetry-core
-      #       ];
-      #     });
-      #   });
-      #   # Add extra packages that might be needed for building
-      #   extraPackages = ps: with ps; [
-      #     pip
-      #     setuptools
-      #     wheel
-      #     poetry
-      #     poetry-core
-      #   ];
-      # })
+      (pkgs.poetry2nix.mkPoetryEnv {
+        projectDir = ../../..;
+        preferWheels = true;
+        python = python311;
+        # Add overrides to handle git dependencies
+        overrides = pkgs.poetry2nix.overrides.withDefaults (final: prev: {
+          calmlib = prev.calmlib.overridePythonAttrs (old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [ 
+              pkgs.poetry
+              final.poetry-core
+            ];
+          });
+        });
+        # Add extra packages that might be needed for building
+        extraPackages = ps: with ps; [
+          pip
+          setuptools
+          wheel
+          poetry
+          poetry-core
+        ];
+      })
     ];
     systemPath = [
       "/opt/homebrew/bin"
@@ -69,7 +69,7 @@ in
       };
       NSGlobalDomain = {
         AppleInterfaceStyle = "Dark";
-        AppleInterfaceStyleSwitchesAutomatically = true;
+        AppleInterfaceStyleSwitchesAutomatically = false;
         AppleShowAllExtensions = true;
         InitialKeyRepeat = 14;
         KeyRepeat = 1;
