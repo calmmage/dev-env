@@ -1,7 +1,6 @@
 { config, pkgs, lib, userConfig, ... }:
 {
   # here go the darwin preferences and config items
-  programs.zsh.enable = true;
   environment = {
     shells = [ pkgs.bash pkgs.zsh ];
     systemPackages = with pkgs; [ 

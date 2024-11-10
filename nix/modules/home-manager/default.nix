@@ -35,31 +35,6 @@ in
           ''cmd = /usr/bin/opendiff "$LOCAL" "$REMOTE" -merge "$MERGED" | cat'';
       };
     };
-    vscode = {
-      enable = true;
-      enableUpdateCheck = false;
-      enableExtensionUpdateCheck = false;
-      userSettings = {
-        "[python]" = {
-          "editor.formatOnType" = true;
-          "editor.defaultFormatter" = "charliermarsh.ruff";
-        };
-      };
-      extensions = with pkgs.vscode-extensions; [
-        ms-vscode.cpptools-extension-pack
-        mkhl.direnv
-        bbenoist.nix
-        brettm12345.nixfmt-vscode
-        ms-python.python
-        ms-python.debugpy
-        charliermarsh.ruff
-        ms-toolsai.jupyter
-        ms-vscode-remote.remote-containers
-        ecmel.vscode-html-css
-        redhat.vscode-yaml
-        foxundermoon.shell-format
-      ];
-    };
     zsh = {
       enable = true;
       enableCompletion = true;

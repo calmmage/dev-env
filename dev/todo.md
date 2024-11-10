@@ -23,6 +23,17 @@
 
 - [x] deduplicate brew and home-manager packages with preference to home-manager
 - [x] add brew tools from brew dump
-- [ ] add tools from claude suggested tools (and aliases)
+- [x] add tools from claude suggested tools (and aliases)
 - [ ] figure out how to better store aliases: in nix-file or in .aliases file?
-- [ ] add aliases for better tool replacements
+- [ ] add aliases for better tool replacements:
+  - [ ] alias cd -> z/zoxide
+  - [ ] alias ls -> exa
+  - [ ] alias find -> fd
+  - [ ] alias grep -> rg
+  - [ ] alias cat -> bat
+  - [ ] alias top -> btop/htop
+  - [ ] alias du -> dust/ncdu
+  - [ ] alias diff -> delta
+  - [ ] alias rm -> trash-cli
+  - [ ] alias ping -> gping
+  - [ ] alias traceroute -> mtr
