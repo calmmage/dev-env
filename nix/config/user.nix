@@ -10,9 +10,8 @@
       # Visual settings
       autohide = true;
       magnification = true;
-      magnification_size = 128;
       tile_size = 36;
-      # large_size = 16;
+      large_size = 128;
       position = "bottom";  # Can be "bottom", "left", or "right"
       mru_spaces = false; # disable reordering spaces automatically based on recent usage (I hate them chaotically reordering)
       
