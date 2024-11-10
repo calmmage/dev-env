@@ -6,7 +6,7 @@ echo "This script will:"
 echo "1. Install Command Line Tools for Xcode"
 echo "2. Install Nix package manager"
 echo "3. Install Homebrew"
-echo "4. Clone the dev-env repository"
+echo "4. Clone/update the dev-env repository"
 echo "5. Set up initial configuration files"
 echo "6. Apply the full nix configuration"
 echo "7. Install additional tools and applications"
@@ -36,6 +36,81 @@ setup_persistent_location() {
     source "$location_file"
 }
 
+# Install core dependencies
+install_dependencies() {
+    # Install Xcode Command Line Tools if not already installed
+    if ! xcode-select -p &>/dev/null; then
+        echo "Installing Xcode Command Line Tools..."
+        xcode-select --install || true
+    else
+        echo "Xcode Command Line Tools already installed"
+    fi
+    
+    # Install Nix if not already installed
+    if ! command -v nix &>/dev/null; then
+        echo "Installing Nix..."
+        # Add experimental features to nix config
+        mkdir -p ~/.config/nix
+        echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+        # curl -L https://nixos.org/nix/install | sh
+        # todo: if ... we follow this path - need to also enable more things.
+        curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+        # Wait for nix installation to complete
+        sleep 5
+        
+        # Source nix into current shell
+        if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+            . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+        fi
+    else
+        echo "Nix already installed"
+    fi
+    
+    # Install Homebrew if not already installed
+    if ! command -v brew &>/dev/null; then
+        echo "Installing Homebrew..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    else
+        echo "Homebrew already installed"
+    fi
+    
+    # Install nix-darwin if not already installed
+    if ! command -v darwin-rebuild &>/dev/null; then
+        echo "Installing nix-darwin..."
+        
+        # Backup existing configuration files if they exist
+        for file in /etc/nix/nix.conf /etc/bashrc /etc/zshrc; do
+            if [ -f "$file" ]; then
+                echo "Backing up $file to ${file}.before-nix-darwin"
+                sudo mv "$file" "${file}.before-nix-darwin"
+            fi
+        done
+        
+        nix-build https://github.com/LnL7/nix-darwin/archive/master.tar.gz -A installer
+        ./result/bin/darwin-installer
+    else
+        echo "nix-darwin already installed"
+    fi
+}
+
+ensure_dev_env_repo() {
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local updater_script="$script_dir/tools/dev_env_updater.py"
+    
+    if [ ! -f "$updater_script" ]; then
+        echo "Error: Could not find dev_env_updater.py at $updater_script"
+        exit 1
+    fi
+    
+    echo "Ensuring dev-env repository is present and up to date..."
+    python3 "$updater_script"
+    
+    if [ ! -d "$DEV_ENV_PATH" ]; then
+        echo "Error: Failed to setup dev-env repository at $DEV_ENV_PATH"
+        exit 1
+    fi
+}
+
 setup_nix_configuration() {
     echo "Setting up Nix configuration..."
     cd "$DEV_ENV_PATH/nix"
@@ -53,36 +128,8 @@ setup_nix_configuration() {
     darwin-rebuild switch --flake .#default
 }
 
-# Install core dependencies
-install_dependencies() {
-    # Install Xcode Command Line Tools if not already installed
-    if ! xcode-select -p &>/dev/null; then
-        echo "Installing Xcode Command Line Tools..."
-        xcode-select --install || true
-    else
-        echo "Xcode Command Line Tools already installed"
-    fi
-    
-    # Install Nix if not already installed
-    if ! command -v nix &>/dev/null; then
-        echo "Installing Nix..."
-        curl -L https://nixos.org/nix/install | sh
-    else
-        echo "Nix already installed"
-    fi
-    
-    # Install Homebrew if not already installed
-    if ! command -v brew &>/dev/null; then
-        echo "Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    else
-        echo "Homebrew already installed"
-    fi
-}
-
 # Main execution
 setup_persistent_location
 install_dependencies
+ensure_dev_env_repo
 setup_nix_configuration
-
-python3 "$(dirname "$0")/tools/dev_env_updater.py"

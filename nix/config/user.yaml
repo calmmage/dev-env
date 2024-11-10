@@ -129,6 +129,34 @@ homebrew:
     # - fzf             # Command-line fuzzy finder
     # - rsync           # Fast file copying tool
 
+    # Personal & Entertainment
+    - discord           # Gaming chat and communities
+    - steam            # Gaming platform
+    - epic-games       # Epic Games store
+    - obs              # Streaming and recording
+    - kindle           # Amazon's e-book reader
+    - whatsapp         # Messaging app
+    - zoom             # Video conferencing
+    
+    # Gaming & Creative
+    - blender          # 3D creation suite
+    - unity-hub        # Game development platform
+    - minecraft        # Gaming
+    
+    # System & Utilities
+    - aldente          # Battery management
+    - amphetamine      # Keep system awake
+    - grandperspective # Disk space visualization
+    # - hand-mirror      # Quick camera check
+    - hp-smart         # Printer utilities
+    - lastpass         # Password manager
+    - dropover         # Drag and drop enhancement
+    - flow             # Focus timer
+    
+    # Media & Entertainment
+    - vlc              # Media player
+    - iina            # Modern media player for macOS
+
 home_manager:
   packages:
     # CLI Tools
