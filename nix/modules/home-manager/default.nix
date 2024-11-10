@@ -66,14 +66,9 @@ in
         ll = "ls -la";
         g = "git";
         dc = "docker-compose";
-        # Add your aliases here
-        ls = "ls --color=auto -F";
         nixnix= "nix flake update; darwin-rebuild switch --flake .#default";
         nixswitch = "darwin-rebuild switch --flake $DEV_ENV_PATH/nix/.#default";
         nixup = "pushd $DEV_ENV_PATH/nix; nix flake update; nixswitch; popd";
-        # nixapply  = "$DEV_ENV_PATH/apply.sh";
-        # runp = "$DEV_ENV_PATH/.venv/bin/python";
-        # ipy = "$DEV_ENV_PATH/.venv/bin/ipython";
       };
 
       oh-my-zsh = {

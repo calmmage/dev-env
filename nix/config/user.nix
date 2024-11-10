@@ -32,12 +32,13 @@
       # Development essentials that work better with brew
       # "poetry"
       # "ripgrep" 
-      "python@3.11"
-      "python@3.12"
+    #   "python@3.11"
+    #   "python@3.12"
       "node" # Node.js - often better to use brew for JS ecosystem
       "git-lfs" # Git Large File Storage
       "gcc" # GNU Compiler Collection
       "sonar-scanner"
+      # add fkill? how? 
     ];
 
     casks = [
@@ -212,7 +213,7 @@
     "htop"            # Interactive process viewer and system monitor
     "tmux"            # Terminal multiplexer for multiple sessions
     "bat"             # Cat clone with syntax highlighting and git integration
-    "exa"             # Modern replacement for ls with git integration
+    "eza"             # Modern replacement for ls with git integration (fork of exa)
     "ncdu"            # NCurses disk usage analyzer
     "duf"             # Disk usage/free utility with better UI
     "tldr"            # Simplified and community-driven man pages
@@ -224,10 +225,9 @@
     "sqlite"         # Self-contained SQL database engine
     "xz"             # Data compression utility and library
     "zstd"           # Fast real-time compression algorithm
-    "sdl2"           # Multimedia library for audio, video, input and more
+    "SDL2"           # Multimedia library for audio, video, input and more 
     "gettext"        # Internationalization and localization system
     "libuv"          # Multi-platform support library with focus on asynchronous I/O
-    "z"              # Jump quickly to directories you've visited frequently
     # gcc is in brew instead
     # python versions are in brew instead
 
@@ -241,7 +241,6 @@
     # Process & System Monitoring
     "bottom"         # System resource monitor (btop)
     "procs"         # Modern replacement for ps
-    "fkill"         # Interactive process killer
     
     # Text Processing & Viewing
     "sd"            # Simpler syntax for sed
