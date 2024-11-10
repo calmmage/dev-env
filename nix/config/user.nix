@@ -12,12 +12,14 @@
       magnification = true;
       magnification_size = 128;
       tile_size = 36;
+      # large_size = 16;
       position = "bottom";  # Can be "bottom", "left", or "right"
+      mru_spaces = false; # disable reordering spaces automatically based on recent usage (I hate them chaotically reordering)
       
       # Behavior settings
       expose_group_by_app = true;
       minimize_to_application = true;
-      show_recent_apps = false;
+      show_recent_apps = true;
       show_process_indicators = true;
     };
 
@@ -32,8 +34,8 @@
       # Development essentials that work better with brew
       # "poetry"
       # "ripgrep" 
-    #   "python@3.11"
-    #   "python@3.12"
+      "python@3.11"
+      "python@3.12"
       "node" # Node.js - often better to use brew for JS ecosystem
       "git-lfs" # Git Large File Storage
       "gcc" # GNU Compiler Collection
@@ -53,6 +55,7 @@
         "warp"
         # - mitmproxy
         "cursor"
+        # "zed"
         "karabiner-elements"
         "sublime-text"
         
@@ -86,7 +89,7 @@
         # Suggestions from Claude
 
         # Media Processing & Conversion
-        "ffmpeg"          # Swiss army knife for audio/video processing
+        # "ffmpeg"          # Swiss army knife for audio/video processing
         # "imagemagick"     # Powerful image manipulation tool
         # "handbrake"       # Video transcoder
         # "yt-dlp"          # Download videos from YouTube and other sites
@@ -99,7 +102,6 @@
         
         # # System Monitoring & Performance
         # "glances"         # System monitoring tool
-        # "ncdu"            # NCurses disk usage analyzer
         
         # # Network Tools
         # "nmap"            # Network exploration and security scanning
@@ -151,12 +153,12 @@
         
         # System & Utilities
         "aldente"          # Battery management
-        "amphetamine"      # Keep system awake
+        # "amphetamine"      # Keep system awake # missing in brew
         "grandperspective" # Disk space visualization
-        # "hand-mirror"      # Quick camera check
-        "hp-smart"         # Printer utilities
+        # "hand-mirror"      # Quick camera check # via setapp
+        # "hp-smart"         # Printer utilities
         "lastpass"         # Password manager
-        "dropover"         # Drag and drop enhancement
+        # "dropover"         # Drag and drop enhancement # missing in brew - install via setapp
         "flow"             # Focus timer
         
         # Media & Entertainment
@@ -173,11 +175,12 @@
     "less"          # Terminal pager for viewing file contents
     "cmake"           # Cross-platform build system generator
     "dlib"            # C++ toolkit for machine learning
-    "tree"            # Directory listing in tree-like format
+    "tree"            # Directory listing in tree-like format 
+    "ffmpeg"          # Swiss army knife for audio/video processing
 
     # custom
     "gh"            # GitHub's official command line tool
-    "docker"        # CLI interface for Docker containers
+    # "docker"        # CLI interface for Docker containers - conflicts with brew
     
     # style
     "oh-my-zsh"     # Framework for managing zsh configuration
@@ -214,7 +217,7 @@
     "tmux"            # Terminal multiplexer for multiple sessions
     "bat"             # Cat clone with syntax highlighting and git integration
     "eza"             # Modern replacement for ls with git integration (fork of exa)
-    "ncdu"            # NCurses disk usage analyzer
+    # "ncdu"            # NCurses disk usage analyzer
     "duf"             # Disk usage/free utility with better UI
     "tldr"            # Simplified and community-driven man pages
 

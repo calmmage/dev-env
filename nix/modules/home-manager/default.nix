@@ -5,7 +5,7 @@ let
 in
 {
   # Don't change this when you change package input. Leave it alone.
-  home.stateVersion = "23.11";
+  home.stateVersion = "24.05";
   
   # Use packages from user config
   home.packages = map (name: pkgs.${name}) userConfig.home_manager.packages;
@@ -106,23 +106,15 @@ in
 
   home.activation = {
     setDefaults = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      echo "/usr/bin/defaults write com.apple.WindowManager EnableTopTilingByEdgeDrag -bool false"
+      echo "/usr/bin/defaults write com.apple.WindowManager EnableTilingByEdgeDrag -bool false"
+      echo "/usr/bin/defaults write com.apple.WindowManager EnableTilingOptionAccelerator -bool false"
       # Window Manager settings
       /usr/bin/defaults write com.apple.WindowManager EnableTopTilingByEdgeDrag -bool false
       /usr/bin/defaults write com.apple.WindowManager EnableTilingByEdgeDrag -bool false
       /usr/bin/defaults write com.apple.WindowManager EnableTilingOptionAccelerator -bool false
-            
-      # Dock settings      
-      /usr/bin/defaults write com.apple.dock expose-group-by-app -bool ${toString userConfig.dock.settings.expose_group_by_app}
-      /usr/bin/defaults write com.apple.dock autohide -bool ${toString userConfig.dock.settings.autohide}
-      /usr/bin/defaults write com.apple.dock magnification -bool ${toString userConfig.dock.settings.magnification}
-      /usr/bin/defaults write com.apple.dock largesize -int ${toString userConfig.dock.settings.magnification_size}
-      /usr/bin/defaults write com.apple.dock tilesize -int ${toString userConfig.dock.settings.tile_size}
-      /usr/bin/defaults write com.apple.dock minimize-to-application -bool ${toString userConfig.dock.settings.minimize_to_application}
-      /usr/bin/defaults write com.apple.dock show-recents -bool ${toString userConfig.dock.settings.show_recent_apps}
-      /usr/bin/defaults write com.apple.dock show-process-indicators -bool ${toString userConfig.dock.settings.show_process_indicators}
-      /usr/bin/defaults write com.apple.dock orientation -string ${userConfig.dock.settings.position}
-
     '';
+
     dock = lib.hm.dag.entryAfter ["writeBoundary"] ''
       # Remove all apps from dock first
       ${pkgs.dockutil}/bin/dockutil --remove all \

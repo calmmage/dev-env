@@ -1,32 +1,48 @@
 { config, pkgs, lib, userConfig, ... }:
+
+let
+  # Add an overlay to disable tests for problematic Python packages
+  pythonOverlay = final: prev: {
+    python311 = prev.python311.override {
+      packageOverrides = pyFinal: pyPrev: {
+        dnspython = pyPrev.dnspython.overridePythonAttrs (old: {
+          doCheck = false;  # Disable tests for dnspython
+        });
+      };
+    };
+  };
+in
 {
+  # Add the overlay to nixpkgs
+  nixpkgs.overlays = [ pythonOverlay ];
+
   # here go the darwin preferences and config items
   environment = {
     shells = [ pkgs.bash pkgs.zsh ];
     systemPackages = with pkgs; [ 
       coreutils 
-      (pkgs.poetry2nix.mkPoetryEnv {
-        projectDir = ../../..;
-        preferWheels = true;
-        python = python311;
-        # Add overrides to handle git dependencies
-        overrides = pkgs.poetry2nix.overrides.withDefaults (final: prev: {
-          calmlib = prev.calmlib.overridePythonAttrs (old: {
-            buildInputs = (old.buildInputs or [ ]) ++ [ 
-              pkgs.poetry
-              final.poetry-core
-            ];
-          });
-        });
-        # Add extra packages that might be needed for building
-        extraPackages = ps: with ps; [
-          pip
-          setuptools
-          wheel
-          poetry
-          poetry-core
-        ];
-      })
+      # (pkgs.poetry2nix.mkPoetryEnv {
+      #   projectDir = ../../..;
+      #   preferWheels = true;
+      #   python = python311;
+      #   # Add overrides to handle git dependencies
+      #   overrides = pkgs.poetry2nix.overrides.withDefaults (final: prev: {
+      #     calmlib = prev.calmlib.overridePythonAttrs (old: {
+      #       buildInputs = (old.buildInputs or [ ]) ++ [ 
+      #         pkgs.poetry
+      #         final.poetry-core
+      #       ];
+      #     });
+      #   });
+      #   # Add extra packages that might be needed for building
+      #   extraPackages = ps: with ps; [
+      #     pip
+      #     setuptools
+      #     wheel
+      #     poetry
+      #     poetry-core
+      #   ];
+      # })
     ];
     systemPath = [
       "/opt/homebrew/bin"
@@ -61,15 +77,18 @@
         NSNavPanelExpandedStateForSaveMode = true;
         "com.apple.mouse.tapBehavior" = 1;
       };
-      # dock = {
-      #   autohide = true;
-      #   largesize = 128;
-      #   magnification = true;
-      #   # tilesize = 36;
-      #   # expose-group-apps = true;
-      #   mru-spaces = false; # disable reordering spaces automatically based on recent usage (I hate them chaotically reordering)
-      #   minimize-to-application = true; # minimize to application instead separate windows
-      # };
+      dock = {
+        autohide = userConfig.dock.settings.autohide;
+        largesize = userConfig.dock.settings.large_size;
+        magnification = userConfig.dock.settings.magnification;
+        tilesize = userConfig.dock.settings.tile_size;
+        # position = userConfig.dock.settings.position;
+        # expose-group-apps = userConfig.dock.settings.expose_group_by_app;
+        mru-spaces = userConfig.dock.settings.mru_spaces;
+        minimize-to-application = userConfig.dock.settings.minimize_to_application;
+        show-recents = userConfig.dock.settings.show_recent_apps;
+        show-process-indicators = userConfig.dock.settings.show_process_indicators;
+      };
     };
     activationScripts.postActivation.text = ''
       # Allow Karabiner-Elements to receive keyboard events

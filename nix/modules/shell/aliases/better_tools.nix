@@ -5,6 +5,7 @@
     # Navigation
     cd = "z";  # Directory navigation with frecency
     ls = "exa";  # Modern ls with git integration and colors
+    # ls = "ls --color=auto -F";
     tree = "broot";  # Interactive tree view with fuzzy search
     
     # Search
@@ -15,7 +16,7 @@
     # Process Management
     top = "btop";  # Interactive process viewer
     ps = "procs";  # Modern replacement for ps
-    kill = "fkill";  # Interactive process killer
+    # kill = "fkill";  # Interactive process killer
     
     # File Operations
     cp = "rsync -ah --progress";  # Advanced copy with progress
@@ -24,7 +25,7 @@
     
     # System Monitoring
     df = "duf";  # Disk usage with better UI
-    du = "dust";  # Interactive disk usage analyzer
+    # du = "dust";  # Interactive disk usage analyzer
     free = "bottom";  # System resource monitor
     
     # Text Processing
