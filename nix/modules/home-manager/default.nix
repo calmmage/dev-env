@@ -18,11 +18,16 @@ in
     PATH = "$PATH:$HOME/bin:$DEV_ENV_PATH/.venv/bin";  # Add Poetry env to PATH
   };
 
+  imports = [
+    ../shell
+  ];
+
   programs = {
     bat = {
       enable = true;
       config.theme = "TwoDark";
     };
+
     git = {
       enable = true;
       extraConfig = {
@@ -35,6 +40,7 @@ in
           ''cmd = /usr/bin/opendiff "$LOCAL" "$REMOTE" -merge "$MERGED" | cat'';
       };
     };
+
     zsh = {
       enable = true;
       enableCompletion = true;
@@ -69,13 +75,16 @@ in
         # runp = "$DEV_ENV_PATH/.venv/bin/python";
         # ipy = "$DEV_ENV_PATH/.venv/bin/ipython";
       };
+
       oh-my-zsh = {
         enable = true;
         theme = "robbyrussell";
         plugins = [ "git" "kubectl" "helm" "docker" ];
       };
     };
+
     direnv = { enable = true; };
+
   };
   home.file = {
     ".inputrc".source = ./dotfiles/inputrc;

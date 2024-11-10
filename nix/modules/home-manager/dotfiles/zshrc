@@ -9,50 +9,6 @@ if [ -z "$DEV_ENV_PATH" ]; then
     echo "Warning: DEV_ENV_PATH is not set. Please run dev-env/bootstrap.sh to configure it."
 fi
 
-# region utils
-# region softlinks
-move_and_link() {
-    # Ensure both arguments are provided
-    if [ $# -ne 2 ]; then
-        echo "Usage: move_and_link <source> <destination>"
-        return 1
-    fi
-    # Get the absolute paths
-    source=$(realpath "$1")
-    source_base=$(basename "$1")
-    # Move the source to the destination
-    mv "$1" "$2"
-    destination=$(realpath "$2")
-    destination_base=$(basename "$2")
-    echo "Moved $source to $destination"
-    # Create a symlink at the original source location pointing to the new location
-    if [ "$destination_base" = "$source_base" ]; then
-        ln -s "$destination" "$source"
-        echo "Linked $source to $destination"
-    else
-        ln -s "$destination/$source_base" "$source"
-        echo "Linked $source to $destination/$source_base"
-    fi
-}
-# endregion softlinks
-# region search
-find_project() {
-    /usr/bin/find ${2:-~/work} -type d -name "*$1*"
-}
-
-find_file() {
-    rg -g "*$1*" --files ${2:-.}
-}
-
-# endregion search
-# region paths
-copy_absolute_path() {
-    local abs_path="$(readlink -f "${1:-.}")"
-    echo "$abs_path" | pbcopy
-    echo "Copied: $abs_path"
-}
-# endregion paths
-# endregion utils
 
 
 # ------------------------------------------------------------------------------
@@ -103,12 +59,6 @@ aliases: import a code chunk / notebook / dir
 more: knowledge base, similar.
 "
 
-# add alias to add alias to ~/.alias
-add_alias() {
-    echo "" >> ~/.alias
-    echo "# $3" >> ~/.alias
-    echo "alias $1=\"$2\"" >> ~/.alias; source ~/.alias
-}
 
 
 
@@ -116,25 +66,6 @@ add_alias() {
 #     grep -rnw "$2" -e "$1"
 # }
 
-# todo: replace this with a fancy ai help that queries chatgpt
-help() {
-    # HELP=${HELP:-"No help available"}
-    if [ -z "$1" ]; then
-        echo "$HELP"
-    else
-        found=0
-        for file in ~/.alias ~/.zshrc ~/.calmmage/.zshrc ~/.calmmage/.alias; do
-            if [ -f "$file" ]; then
-                grep -E "^alias $1=" "$file" > /dev/null && {
-                    found=1
-                    tac "$file" | sed -n "/^alias $1=/,/^#/{/^#/p}" | head -1
-                    break
-                }
-            fi
-        done
-        [ "$found" -eq 0 ] && echo "Alias '$1' not found."
-    fi
-}
 
 
 
