@@ -21,12 +21,7 @@ dock:
 
   apps:
     - /Applications/Raycast.app
-    # - /Applications/Slack.app
     - /System/Applications/System Settings.app
-    # - /Applications/Warp.app
-    # - /Applications/Visual Studio Code.app
-    # - /Applications/PyCharm.app
-    # - /Applications/Google Chrome.app
 
 homebrew:
   brews:
@@ -93,14 +88,11 @@ homebrew:
     # # Development Tools
     # - neovim          # Modern, extensible text editor
     # - tmux            # Terminal multiplexer for multiple sessions
-    # - jq              # Command-line JSON processor
     # - httpie          # User-friendly HTTP client
     # - mkcert          # Make locally-trusted development certificates
     
     # # System Monitoring & Performance
-    # - htop            # Interactive process viewer
     # - glances         # System monitoring tool
-    # - duf             # Disk usage utility
     # - ncdu            # NCurses disk usage analyzer
     
     # # Network Tools
@@ -119,7 +111,6 @@ homebrew:
     # - taskwarrior     # Command-line task management
     # - pandoc          # Universal document converter
     # - asciinema       # Terminal session recorder
-    # - tldr            # Simplified man pages
     
     # # Database Tools
     # - pgcli           # PostgreSQL CLI with auto-completion
@@ -135,7 +126,6 @@ homebrew:
 
     # # File Management
     # - ranger          # Console file manager with VI keybindings
-    # - fd              # Simple, fast alternative to 'find'
     # - fzf             # Command-line fuzzy finder
     # - rsync           # Fast file copying tool
 
