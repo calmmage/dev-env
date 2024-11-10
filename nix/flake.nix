@@ -48,13 +48,27 @@
   outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, darwin, poetry2nix, ... }@inputs:
     let
       system = "aarch64-darwin";
-      # Read user config from YAML
-      userConfig = builtins.fromJSON (builtins.readFile ./config/user.yaml);
-      username = userConfig.username;
+      
+      # Load and parse YAML config
+      userConfigFile = ./config/user.yaml;
+      userConfig = builtins.fromJSON (
+        builtins.readFile (
+          pkgs.runCommand "user-config.json" {} ''
+            ${pkgs.yq}/bin/yq -o=json < ${userConfigFile} > $out
+          ''
+        )
+      );
 
       overlay-unstable = final: prev: {
         unstable = nixpkgs-unstable.legacyPackages.${prev.system};
       };
+
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+        overlays = [ overlay-unstable ];
+      };
+      
     in {
       darwinConfigurations.default = darwin.lib.darwinSystem {
         inherit system;
@@ -65,7 +79,7 @@
               poetry2nix.overlays.default
             ];
             nixpkgs.config.allowUnfree = true;
-            users.users.${username}.home = "/Users/${username}";
+            users.users.${userConfig.username}.home = "/Users/${userConfig.username}";
           })
           # Pass userConfig to other modules
           {
@@ -77,7 +91,7 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.${username} = import ./modules/home-manager;
+            home-manager.users.${userConfig.username} = import ./modules/home-manager;
           }
         ];
       };
