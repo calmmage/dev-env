@@ -27,18 +27,12 @@
       url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    homebrew-bundle = {
-      url = "github:homebrew/homebrew-bundle";
-      flake = false;
-    };
-    homebrew-core = {
-      url = "github:homebrew/homebrew-core";
-      flake = false;
-    };
-    homebrew-cask = {
-      url = "github:homebrew/homebrew-cask";
-      flake = false;
-    };
+    homebrew-bundle.url = "github:homebrew/homebrew-bundle";
+    homebrew-bundle.flake = false;
+    homebrew-core.url = "github:homebrew/homebrew-core";
+    homebrew-core.flake = false;
+    homebrew-cask.url = "github:homebrew/homebrew-cask";
+    homebrew-cask.flake = false;
     poetry2nix = {
       url = "github:nix-community/poetry2nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -49,42 +43,53 @@
     let
       system = "aarch64-darwin";
       
-      # Load nix config directly
-      userConfig = import ./config/user.nix;
-
-      overlay-unstable = final: prev: {
-        unstable = nixpkgs-unstable.legacyPackages.${prev.system};
-      };
-
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [ overlay-unstable ];
+      };
+
+      # Import user config
+      userConfig = import ./config/user.nix;
+
+      # Create specialArgs to pass to all modules
+      specialArgs = {
+        inherit userConfig;
       };
       
     in {
       darwinConfigurations.default = darwin.lib.darwinSystem {
-        inherit system;
+        inherit system specialArgs;
+        
         modules = [
-          ({ pkgs, ... }: {
+          # Base configuration
+          {
             nixpkgs.overlays = [ 
-              overlay-unstable
+              (final: prev: {
+                unstable = nixpkgs-unstable.legacyPackages.${prev.system};
+              })
               poetry2nix.overlays.default
             ];
             nixpkgs.config.allowUnfree = true;
-            users.users.${userConfig.username}.home = "/Users/${userConfig.username}";
-          })
-          # Pass userConfig to other modules
-          {
-            _module.args.userConfig = userConfig;
           }
+
+          # User configuration
+          {
+            users.users.${userConfig.username}.home = "/Users/${userConfig.username}";
+          }
+
+          # Import modules
           ./modules/darwin
           ./configuration.nix
+
+          # Home Manager configuration
           home-manager.darwinModules.home-manager
           {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.${userConfig.username} = import ./modules/home-manager;
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              extraSpecialArgs = specialArgs;  # Pass specialArgs to home-manager modules
+              users.${userConfig.username} = import ./modules/home-manager;
+            };
           }
         ];
       };
