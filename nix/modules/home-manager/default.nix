@@ -106,9 +106,6 @@ in
 
   home.activation = {
     setDefaults = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      echo "/usr/bin/defaults write com.apple.WindowManager EnableTopTilingByEdgeDrag -bool false"
-      echo "/usr/bin/defaults write com.apple.WindowManager EnableTilingByEdgeDrag -bool false"
-      echo "/usr/bin/defaults write com.apple.WindowManager EnableTilingOptionAccelerator -bool false"
       # Window Manager settings
       /usr/bin/defaults write com.apple.WindowManager EnableTopTilingByEdgeDrag -bool false
       /usr/bin/defaults write com.apple.WindowManager EnableTilingByEdgeDrag -bool false
