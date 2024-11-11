@@ -14,6 +14,10 @@
   home-manager.users.${userConfig.username} = { pkgs, lib, ... }: {
     home.packages = with pkgs; [
       ollama
+      # Node.js development tools
+      nodejs
+      nodePackages.npm
+      nodePackages.pnpm
     ];
     # programs.vscode = {
     #   enable = true;

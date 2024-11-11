@@ -255,12 +255,5 @@
     # File Operations
     "rsync"         # Advanced file copying
     "delta"           # Syntax highlighting pager for git diffs
-
-    # Node.js development tools
-    "nodePackages.next"     # Next.js framework
-    "nodePackages.create-next-app" # Next.js project generator
-    "nodePackages.npm"      # Node package manager
-    "nodePackages.pnpm"     # Fast Node package manager alternative
-
   ];
 } 
