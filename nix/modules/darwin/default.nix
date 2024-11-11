@@ -98,11 +98,6 @@ in
       /usr/bin/sudo /usr/bin/security authorizationdb write system.privilege.taskport allow
       
       # Ensure Homebrew directories have correct permissions
-      if [ -d "/opt/homebrew" ]; then
-        echo "Setting proper permissions for Homebrew directories..."
-        /usr/bin/sudo /bin/chmod -R 755 /opt/homebrew
-        /usr/bin/sudo /usr/sbin/chown -R ${userConfig.username}:admin /opt/homebrew
-      fi
     '';
   };
 
@@ -126,7 +121,8 @@ in
     global.brewfile = true;
     onActivation = {
       autoUpdate = true;
-      cleanup = "zap"; # Removes all unmanaged packages
+      cleanup = "uninstall";
+      upgrade = true;
     };
     masApps = { };
     

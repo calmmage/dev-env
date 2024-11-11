@@ -3,9 +3,7 @@
 {
   programs.zsh.shellAliases = {
     # Navigation
-    cd = "z";  # Directory navigation with frecency
     ls = "exa";  # Modern ls with git integration and colors
-    # ls = "ls --color=auto -F";
     tree = "broot";  # Interactive tree view with fuzzy search
     
     # Search

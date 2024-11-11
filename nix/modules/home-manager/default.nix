@@ -60,6 +60,9 @@ in
         source ~/.aliases
         source ~/.zshrc.local
         source ~/.zsh-custom-functions
+
+        # Initialize zoxide
+        eval "$(zoxide init zsh)"
       '';
 
       shellAliases = {
