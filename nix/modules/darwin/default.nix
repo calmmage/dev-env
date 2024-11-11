@@ -8,6 +8,9 @@ let
         dnspython = pyPrev.dnspython.overridePythonAttrs (old: {
           doCheck = false;  # Disable tests for dnspython
         });
+        cherrypy = pyPrev.cherrypy.overridePythonAttrs (old: {
+          doCheck = false;  # Disable tests for cherrypy
+        });
       };
     };
   };
