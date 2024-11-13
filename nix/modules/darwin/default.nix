@@ -1,6 +1,7 @@
 { config, pkgs, lib, userConfig, ... }:
 
 let
+  inherit (lib) mkEnableOption mkOption types;
   # Add an overlay to disable tests for problematic Python packages
   pythonOverlay = final: prev: {
     python311 = prev.python311.override {
@@ -50,6 +51,10 @@ in
     ];
     pathsToLink = [ "/Applications" ];
   };
+
+  # Enable TouchID for sudo if option is enabled
+  security.pam.enableSudoTouchIdAuth = lib.mkDefault true;
+
   nix = {
     settings = { trusted-users = [ "root" userConfig.username ]; };
     extraOptions = ''
@@ -109,7 +114,6 @@ in
     localHostName = userConfig.local_host_name;
   };
 
-  security.pam.enableSudoTouchIdAuth = false;
   # fonts.fontDir.enable = true; # DANGER
   fonts.packages = [ (pkgs.nerdfonts.override { fonts = [ "Meslo" ]; }) ];
   services = { nix-daemon = { enable = true; }; };
