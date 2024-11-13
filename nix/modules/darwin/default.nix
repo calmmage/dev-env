@@ -33,6 +33,13 @@ in
               final.poetry-core
             ];
           });
+          # Add poetry-bumpversion plugin
+          poetry-bumpversion = prev.poetry-bumpversion.overridePythonAttrs (old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [
+              pkgs.poetry
+              final.poetry-core
+            ];
+          });
         });
         # Add extra packages that might be needed for building
         extraPackages = ps: with ps; [
@@ -41,6 +48,7 @@ in
           wheel
           poetry
           poetry-core
+          poetry-bumpversion
         ];
       })
     ];
