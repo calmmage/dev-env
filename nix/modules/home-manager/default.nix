@@ -47,11 +47,23 @@ in
       autosuggestion.enable = true;
       syntaxHighlighting.enable = true;
 
-      plugins = [{
-        name = "powerlevel10k";
-        src = pkgs.zsh-powerlevel10k;
-        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-      }];
+      plugins = [
+        {
+          name = "powerlevel10k";
+          src = pkgs.zsh-powerlevel10k;
+          file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+        }
+        {
+          name = "zsh-autosuggestions";
+          src = pkgs.zsh-autosuggestions;
+          file = "share/zsh-autosuggestions/zsh-autosuggestions.zsh";
+        }
+        {
+          name = "zsh-syntax-highlighting";
+          src = pkgs.zsh-syntax-highlighting;
+          file = "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
+        }
+      ];
       
       # Combined initExtra
       initExtra = ''
@@ -68,13 +80,25 @@ in
         dc = "docker-compose";
         nixnix= "nix flake update; darwin-rebuild switch --flake .#default";
         nixswitch = "darwin-rebuild switch --flake $DEV_ENV_PATH/nix/.#default";
-        nixup = "pushd $DEV_ENV_PATH/nix; nix flake update; nixswitch; popd";
+        nixup = "pushd $DEV_ENV_PATH/nix; git stash; git pull; nix flake update; nixswitch; popd";
       };
 
       oh-my-zsh = {
         enable = true;
         theme = "robbyrussell";
-        plugins = [ "git" "kubectl" "helm" "docker" ];
+        plugins = [
+          # "git"
+          "cubectl"
+          "helm"
+          "docker"
+          "poetry"
+          "aws" 
+          "gcloud" 
+          "npm"
+          "python"
+          "macos"
+          "z"
+        ];
       };
     };
 
