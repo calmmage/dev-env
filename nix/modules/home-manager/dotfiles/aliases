@@ -56,3 +56,52 @@ alias lnsafe="python $DEV_ENV_PATH/tools/lnsafe.py"
 # #     f"alias new_project='typer {new_project_tool_path}'"
 alias np='typer $DEV_ENV_PATH/dev/draft/mvp/project_manager.py'
 alias new_project='np'
+
+
+# Connect to the Hetzner instance
+alias hetzner="ssh root@5.75.226.237"
+
+# alias gcu="(gcloud compute ssh --zone "europe-west1-b" "instance-default-mar-2023"  --project "jarvis-mar-2022-pub")"
+# todo: create free tier aws instance
+
+# alias to view / zshrc / aliases
+alias sa="subl ~/.aliases"
+alias sz="subl ~/.zshrc"
+alias ca="cursor ~/.aliases"
+alias cz="cursor ~/.zshrc"
+
+# # aliases for calmmage
+# alias sca="subl ~/.calmmage/.alias"
+# alias scz="subl ~/.calmmage/.zshrc"
+# alias cca="cursor ~/.calmmage/.alias"
+# alias ccz="cursor ~/.calmmage/.zshrc"
+
+# aliases for past projects dir
+# alias cd4="cd ~/work/seasonal/past"
+# alias cdh="cd ~/work/seasonal/past"
+
+# Open foam knowledge management
+# alias foam="code ~/work/code/seasonal/2024_01_jan/calmmage/calmmage/personal_website/pages/calmmage_knowledge_base/"
+
+# 
+# alias pkm="code ~/work/code/structured/tools/calmmage/calmmage/personal_website/pages/calmmage_knowledge_base/"
+
+# Code searcher - open vault with all my code snippets in pycharm
+# alias cs="pycharm ~/work/code/structured/tools/code-searcher"
+
+# export PM=~/work/code/structured/tools/calmmage/calmmage/dev_env/tools/project_manager.py
+# export PM=~/.calmmage/project_manager.py
+
+# export CM=~/work/code/structured/tools/calmmage/
+# alias cm="cd $CM"
+# export CMD=~/work/code/structured/dev/calmmage-dev/
+# alias cmd="cd $CMD"
+# export CL=~/work/code/structured/lib/calmlib
+# alias cl="cd $CL"
+# export CLD=~/work/code/structured/dev/calmlib-dev/
+# alias cld="cd $CLD"
+
+# Connect to the EF Hetzner instance
+alias hetzner-ef="ssh root@37.27.46.129"
+# Connect to the coolify v4 instance
+alias hetzner-2="ssh root@49.13.91.131"

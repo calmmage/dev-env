@@ -92,7 +92,7 @@ in
         theme = "robbyrussell";
         plugins = [
           # "git"
-          "cubectl"
+          "kubectl"
           "helm"
           "docker"
           "poetry"
