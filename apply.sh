@@ -16,4 +16,4 @@ git pull
 nix flake update
 
 # e) nix switch
-darwin-rebuild switch --flake .#default
+/run/current-system/sw/bin/darwin-rebuild switch --flake .#default
