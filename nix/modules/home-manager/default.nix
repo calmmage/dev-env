@@ -47,6 +47,10 @@ in
       autosuggestion.enable = true;
       syntaxHighlighting.enable = true;
 
+      initExtraFirst = ''
+        eval "$(zoxide init zsh)"
+      '';
+
       plugins = [
         {
           name = "powerlevel10k";
@@ -97,12 +101,20 @@ in
           "npm"
           "python"
           "macos"
-          "z"
+          # "z"
         ];
       };
     };
 
     direnv = { enable = true; };
+
+    zoxide = {
+      enable = true;
+      enableZshIntegration = true;
+      # options = [
+      #   "--cmd cd"  # Replace cd with zoxide
+      # ];
+    };
 
   };
   home.file = {
