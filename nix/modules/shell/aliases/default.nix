@@ -2,10 +2,8 @@
 
 {
   imports = [
-    # ./git.nix
+    ./new.nix
     ./navigation.nix
-    # ./python.nix
-    # ./tools.nix
     ./better_tools.nix
   ];
 } 

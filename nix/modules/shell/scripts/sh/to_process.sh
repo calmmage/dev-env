@@ -1,8 +1,9 @@
-
-# todo: 
 function add_alias() {
-    echo "" >> ~/.alias
-    echo "# $3" >> ~/.alias
-    echo "alias $1=\"$2\"" >> ~/.alias
-    source ~/.alias
+    # Create .zshrc.new if it doesn't exist
+    touch ~/.zshrc.new
+    
+    echo "" >> ~/.zshrc.new
+    echo "# $3" >> ~/.zshrc.new
+    echo "alias $1=\"$2\"" >> ~/.zshrc.new
+    source ~/.zshrc.new
 }
