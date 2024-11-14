@@ -4,8 +4,8 @@
   programs.zsh.shellAliases = {
     # Navigation
     ls = "exa";  # Modern ls with git integration and colors
-    tree = "broot";  # Interactive tree view with fuzzy search
-    
+    tree_ = "broot";  # Interactive tree view with fuzzy search
+
     # Search
     find = "fd";  # User-friendly, fast alternative to find
     grep = "rg";  # Fast grep with better syntax and git integration

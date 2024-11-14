@@ -1,6 +1,7 @@
 { config, pkgs, lib, userConfig, ... }:
 
 let
+  inherit (lib) mkEnableOption mkOption types;
   # Add an overlay to disable tests for problematic Python packages
   pythonOverlay = final: prev: {
     python311 = prev.python311.override {
@@ -24,28 +25,28 @@ in
     shells = [ pkgs.bash pkgs.zsh ];
     systemPackages = with pkgs; [ 
       coreutils 
-      # (pkgs.poetry2nix.mkPoetryEnv {
-      #   projectDir = ../../..;
-      #   preferWheels = true;
-      #   python = python311;
-      #   # Add overrides to handle git dependencies
-      #   overrides = pkgs.poetry2nix.overrides.withDefaults (final: prev: {
-      #     calmlib = prev.calmlib.overridePythonAttrs (old: {
-      #       buildInputs = (old.buildInputs or [ ]) ++ [ 
-      #         pkgs.poetry
-      #         final.poetry-core
-      #       ];
-      #     });
-      #   });
-      #   # Add extra packages that might be needed for building
-      #   extraPackages = ps: with ps; [
-      #     pip
-      #     setuptools
-      #     wheel
-      #     poetry
-      #     poetry-core
-      #   ];
-      # })
+      (pkgs.poetry2nix.mkPoetryEnv {
+        projectDir = ../../..;
+        preferWheels = true;
+        python = python311;
+        # Add overrides to handle git dependencies
+        overrides = pkgs.poetry2nix.overrides.withDefaults (final: prev: {
+          calmlib = prev.calmlib.overridePythonAttrs (old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [ 
+              pkgs.poetry
+              final.poetry-core
+            ];
+          });
+        });
+        # Add extra packages that might be needed for building
+        extraPackages = ps: with ps; [
+          pip
+          setuptools
+          wheel
+          poetry
+          poetry-core
+        ];
+      })
     ];
     systemPath = [
       "/opt/homebrew/bin"
@@ -53,6 +54,10 @@ in
     ];
     pathsToLink = [ "/Applications" ];
   };
+
+  # Enable TouchID for sudo if option is enabled
+  security.pam.enableSudoTouchIdAuth = lib.mkDefault true;
+
   nix = {
     settings = { trusted-users = [ "root" userConfig.username ]; };
     extraOptions = ''
@@ -72,7 +77,7 @@ in
       };
       NSGlobalDomain = {
         AppleInterfaceStyle = "Dark";
-        AppleInterfaceStyleSwitchesAutomatically = true;
+        AppleInterfaceStyleSwitchesAutomatically = false;
         AppleShowAllExtensions = true;
         InitialKeyRepeat = 14;
         KeyRepeat = 1;
@@ -107,7 +112,6 @@ in
     localHostName = userConfig.local_host_name;
   };
 
-  security.pam.enableSudoTouchIdAuth = false;
   # fonts.fontDir.enable = true; # DANGER
   fonts.packages = [ (pkgs.nerdfonts.override { fonts = [ "Meslo" ]; }) ];
   services = { nix-daemon = { enable = true; }; };
