@@ -5,7 +5,7 @@ from enum import Enum
 from loguru import logger
 from pathlib import Path
 from pydantic_settings import BaseSettings
-from textwrap import dedent
+from textwrap import dedent, indent
 from typing import List
 
 app = typer.Typer()
@@ -32,20 +32,24 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+
 def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str):
+    logger.debug(f"Adding pre-commit tool if missing: {tool_name}")
     pre_commit_config_path = repo_path / ".pre-commit-config.yaml"
+
+    content = indent(content, "  ")
+
     if not pre_commit_config_path.exists():
         logger.warning(
             f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Creating. Don't forget to install"
         )
-
     else:
         # check if vulture is already in it
         # find the line
         # see if it's not commented out
-        content = pre_commit_config_path.read_text()
-        if tool_name in content:
-            tool_line = [line for line in content.splitlines() if tool_name in line][-1]
+        existing_content = pre_commit_config_path.read_text()
+        if tool_name in existing_content:
+            tool_line = [line for line in existing_content.splitlines() if tool_name in line][-1]
             if tool_line.strip().startswith("#"):
                 logger.info(
                     f"Found {tool_name} in .pre-commit-config.yaml, but it's commented out. Will add {tool_name} anew."
@@ -53,9 +57,23 @@ def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str
             else:
                 logger.warning(f"Seems like {tool_name} is already in .pre-commit-config.yaml. Skipping.")
                 return
+        content = existing_content.rstrip() + "\n" + content
 
-    with open(pre_commit_config_path, "w") as f:
-        f.write(content)
+    pre_commit_config_path.write_text(content)
+
+
+def _add_pyproject_section_if_missing(repo_path: Path, section: str, content: str):
+    pyproject_toml_path = repo_path / "pyproject.toml"
+    if not pyproject_toml_path.exists():
+        logger.warning(f"No pyproject.toml found at {pyproject_toml_path}. Skipping.")
+        return
+
+    if section in pyproject_toml_content:
+        logger.info(f"Section {section} already exists in pyproject.toml. Skipping.")
+        return
+
+    pyproject_toml_content = pyproject_toml_content.rstrip() + "\n" + content
+    pyproject_toml_path.write_text(pyproject_toml_content)
 
 
 def _add_vulture(repo_path: Path):
@@ -67,11 +85,15 @@ def _add_vulture(repo_path: Path):
     """
     content = dedent(
         """
-    - repo: https://github.com/jendrikseipp/vulture
-      rev: v2.10
-      hooks:
-        - id: vulture
-    """
+        - repo: https://github.com/jendrikseipp/vulture
+            rev: 'v2.10'  # Use the latest stable version
+            hooks:
+            - id: vulture
+                args: [
+                "--min-confidence", "80",
+                "--exclude", "**/migrations/*,**/__pycache__/*",
+                ]
+        """
     )
     _add_precommit_tool_if_missing(repo_path, "vulture", content)
 
@@ -79,23 +101,47 @@ def _add_vulture(repo_path: Path):
 def _add_black(repo_path: Path):
     content = dedent(
         """
-    - repo: https://github.com/psf/black
-      rev: stable
-      hooks:
-        - id: black
-    """
+        - id: black-jupyter
+          name: black-jupyter
+          description:
+            "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
+          entry: black
+          language: python
+          minimum_pre_commit_version: 2.9.2
+          require_serial: true
+          types_or: [python, pyi, jupyter]
+          additional_dependencies: [".[jupyter]"]
+        """
     )
+
+    # - repo: https://github.com/psf/black
+    #   rev: 24.2.0
+    #   hooks:
+    #     - id: black
+    #       args: [ --line-length=100 ]
+
     _add_precommit_tool_if_missing(repo_path, "black", content)
 
 
 def _add_flake8(repo_path: Path):
     content = dedent(
         """
-    - repo: https://github.com/PyCQA/flake8
-      rev: 6.1.0
-      hooks:
-        - id: flake8
-    """
+        - repo: https://github.com/pycqa/flake8
+            rev: '7.0.0'  # Use the latest stable version
+            hooks:
+            - id: flake8
+                additional_dependencies: [
+                'flake8-docstrings',
+                'flake8-bugbear',
+                'flake8-comprehensions',
+                'flake8-simplify',
+                ]
+                args: [
+                "--max-line-length=100",
+                "--exclude=.git,__pycache__,build,dist",
+                "--ignore=E203,W503",  # Ignore some style errors that conflict with black
+                ]
+        """
     )
     _add_precommit_tool_if_missing(repo_path, "flake8", content)
 
@@ -103,23 +149,74 @@ def _add_flake8(repo_path: Path):
 def _add_isort(repo_path: Path):
     content = dedent(
         """
-    - repo: https://github.com/PyCQA/isort
-      rev: 5.12.0
-      hooks:
-        - id: isort
-    """
+        - repo: https://github.com/PyCQA/isort
+          rev: 5.13.2
+          hooks:
+            - id: isort
+            name: isort (python)
+        """
     )
     _add_precommit_tool_if_missing(repo_path, "isort", content)
+
+    content = dedent(
+        """
+        [tool.isort]
+        profile = "black"
+        multi_line_output = 3
+        line_length = 100
+        include_trailing_comma = true
+        force_grid_wrap = 0
+        use_parentheses = true
+        ensure_newline_before_comments = true
+        skip = [".git", "venv", ".env", "__pycache__"]
+        # known_first_party = ["your_package_name"]  # Replace with your package name
+        # known_third_party = [
+        #     "aiogram",
+        #     "fastapi",
+        #     "pydantic",
+        #     "pytest",
+        #     "tqdm",
+        #     "loguru"
+        # ]
+        # sections = [
+        #     "FUTURE",
+        #     "STDLIB",
+        #     "THIRDPARTY",
+        #     "FIRSTPARTY",
+        #     "LOCALFOLDER"
+        # ]
+        """
+    )
+    _add_pyproject_section_if_missing(repo_path, "[tool.isort]", content)
+
+
+def _add_pyupgrade(repo_path: Path):
+    content = dedent(
+        """
+          - repo: https://github.com/asottile/pyupgrade
+            rev: v3.19.0
+            hooks:
+              - id: pyupgrade
+        """
+    )
+    _add_precommit_tool_if_missing(repo_path, "pyupgrade", content)
 
 
 def _add_ruff(repo_path: Path):
     content = dedent(
         """
-    - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v1.10.0
-      hooks:
-        - id: ruff
-    """
+        - repo: https://github.com/astral-sh/ruff-pre-commit
+          # Ruff version.
+          rev: v0.7.4
+          hooks:
+            # Run the linter.
+            - id: ruff
+              types_or: [ python, pyi ]
+              args: [ --fix ]
+            # Run the formatter.
+            - id: ruff-format
+              types_or: [ python, pyi ]
+        """
     )
     _add_precommit_tool_if_missing(repo_path, "ruff", content)
 
@@ -128,18 +225,30 @@ def _add_codecov(repo_path: Path):
     # step 1: add to pre-commit
     content = dedent(
         """
-    - repo: https://github.com/codecov/codecov-action
-      hooks:
-        - id: codecov
-    """
+        - repo: local
+            hooks:
+            - id: pytest-check
+                name: pytest-check
+                entry: pytest
+                language: system
+                pass_filenames: false
+                always_run: true
+                args: [
+                "--cov=your_package_name",
+                "--cov-report=xml",
+                "--cov-fail-under=80",
+                ]
+        """
     )
+    # - repo: https://github.com/codecov/codecov-action
+    #   hooks:
+    #     - id: codecov
     _add_precommit_tool_if_missing(repo_path, "codecov", content)
 
     # step 2: add to pyproject.toml
-    pyproject_toml_path = repo_path / "pyproject.toml"
-    if not pyproject_toml_path.exists():
-        logger.warning(f"No pyproject.toml found at {pyproject_toml_path}. Skipping.")
-        return
+    subprocess.run(["poetry", "add", "pytest-cov"], cwd=repo_path)
+
+    # _add_pyproject_section_if_missing(repo_path, "[tool.codecov]", content)
 
 
 def _update_pyproject_toml(repo_path: Path):
@@ -204,8 +313,6 @@ def _install_precommit(repo_path: Path):
         logger.error(f"Failed to install pre-commit hooks: {e}")
 
 
-
-
 def _discover_project(project: str) -> Path:
     if Path(project).exists():
         return Path(project)
@@ -220,7 +327,7 @@ def _discover_project(project: str) -> Path:
 @app.command()
 def fix_repo(
     project: str = typer.Argument(..., help="Project"),
-        operation: Operation = typer.Option(..., help="Operation to perform", case_sensitive=False),
+    operation: Operation = typer.Option(Operation.RUN_ALL, help="Operation to perform"),
 ):
     """Fix repository according to modern standards"""
     repo_path = _discover_project(project)
