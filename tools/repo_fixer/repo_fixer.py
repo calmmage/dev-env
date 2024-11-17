@@ -22,6 +22,16 @@ class Operation(str, Enum):
     RUN_ALL = "run-all"
 
 
+class Settings(BaseSettings):
+    root_paths: List[Path] = [
+        Path.home() / "work/projects",
+        Path.home() / "work/archive",
+        Path.home() / "work/experiments",
+    ]
+
+
+settings = Settings()
+
 def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str):
     pre_commit_config_path = repo_path / ".pre-commit-config.yaml"
     if not pre_commit_config_path.exists():
@@ -180,15 +190,20 @@ def _update_yaml_tests(repo_path: Path):
     logger.info(f"Updated GitHub Actions workflow file at {workflow_file}.")
 
 
-class Settings(BaseSettings):
-    root_paths: List[Path] = [
-        Path.home() / "work/projects",
-        Path.home() / "work/archive",
-        Path.home() / "work/experiments",
-    ]
+def _install_precommit(repo_path: Path):
+    """Install pre-commit hooks in the repository."""
+    pre_commit_config_path = repo_path / ".pre-commit-config.yaml"
+    if not pre_commit_config_path.exists():
+        logger.error(f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Cannot install pre-commit.")
+        return
+
+    try:
+        subprocess.run(["pre-commit", "install"], cwd=repo_path, check=True)
+        logger.info("Pre-commit hooks installed successfully.")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to install pre-commit hooks: {e}")
 
 
-settings = Settings()
 
 
 def _discover_project(project: str) -> Path:
@@ -205,7 +220,7 @@ def _discover_project(project: str) -> Path:
 @app.command()
 def fix_repo(
     project: str = typer.Argument(..., help="Project"),
-    operation: Operation = typer.Option(..., help="Operation to perform"),
+        operation: Operation = typer.Option(..., help="Operation to perform", case_sensitive=False),
 ):
     """Fix repository according to modern standards"""
     repo_path = _discover_project(project)
@@ -263,20 +278,6 @@ def fix_repo(
     except Exception as e:
         logger.error(f"Error during {operation}: {e}")
         raise typer.Exit(1)
-
-
-def _install_precommit(repo_path: Path):
-    """Install pre-commit hooks in the repository."""
-    pre_commit_config_path = repo_path / ".pre-commit-config.yaml"
-    if not pre_commit_config_path.exists():
-        logger.error(f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Cannot install pre-commit.")
-        return
-
-    try:
-        subprocess.run(["pre-commit", "install"], cwd=repo_path, check=True)
-        logger.info("Pre-commit hooks installed successfully.")
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Failed to install pre-commit hooks: {e}")
 
 
 if __name__ == "__main__":
