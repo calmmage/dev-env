@@ -44,7 +44,7 @@ def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str
             f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Creating. Don't forget to install"
         )
     else:
-        # check if vulture is already in it
+        # check if tools is already in it
         # find the line
         # see if it's not commented out
         existing_content = pre_commit_config_path.read_text()
@@ -67,6 +67,7 @@ def _add_pyproject_section_if_missing(repo_path: Path, section: str, content: st
     if not pyproject_toml_path.exists():
         logger.warning(f"No pyproject.toml found at {pyproject_toml_path}. Skipping.")
         return
+    pyproject_toml_content = pyproject_toml_path.read_text()
 
     if section in pyproject_toml_content:
         logger.info(f"Section {section} already exists in pyproject.toml. Skipping.")
@@ -85,10 +86,10 @@ def _add_vulture(repo_path: Path):
     """
     content = dedent(
         """
-        - repo: https://github.com/jendrikseipp/vulture
+          - repo: https://github.com/jendrikseipp/vulture
             rev: 'v2.10'  # Use the latest stable version
             hooks:
-            - id: vulture
+              - id: vulture
                 args: [
                 "--min-confidence", "80",
                 "--exclude", "**/migrations/*,**/__pycache__/*",
@@ -126,10 +127,10 @@ def _add_black(repo_path: Path):
 def _add_flake8(repo_path: Path):
     content = dedent(
         """
-        - repo: https://github.com/pycqa/flake8
+          - repo: https://github.com/pycqa/flake8
             rev: '7.0.0'  # Use the latest stable version
             hooks:
-            - id: flake8
+              - id: flake8
                 additional_dependencies: [
                 'flake8-docstrings',
                 'flake8-bugbear',
@@ -153,7 +154,7 @@ def _add_isort(repo_path: Path):
           rev: 5.13.2
           hooks:
             - id: isort
-            name: isort (python)
+              name: isort (python)
         """
     )
     _add_precommit_tool_if_missing(repo_path, "isort", content)
@@ -225,9 +226,9 @@ def _add_codecov(repo_path: Path):
     # step 1: add to pre-commit
     content = dedent(
         """
-        - repo: local
+          - repo: local
             hooks:
-            - id: pytest-check
+              - id: pytest-check
                 name: pytest-check
                 entry: pytest
                 language: system
@@ -246,9 +247,7 @@ def _add_codecov(repo_path: Path):
     _add_precommit_tool_if_missing(repo_path, "codecov", content)
 
     # step 2: add to pyproject.toml
-    subprocess.run(["poetry", "add", "pytest-cov"], cwd=repo_path)
-
-    # _add_pyproject_section_if_missing(repo_path, "[tool.codecov]", content)
+    subprocess.run(["poetry", "add", "--group", "test", "pytest-cov"], cwd=repo_path)
 
 
 def _update_pyproject_toml(repo_path: Path):
@@ -274,7 +273,9 @@ def _update_pyproject_toml(repo_path: Path):
         logger.info(f"Copied new template to clipboard. Opening {pyproject_toml_path} with Sublime.")
         subprocess.run(["subl", pyproject_toml_path])
     else:
-        logger.info("Looks like pyproject.toml is up to date. Skipping.")
+        logger.info(
+            "Looks like pyproject.toml is up to the standard of the latest template. (main, dev, extras, test) Skipping."
+        )
 
 
 def _update_dockerfile(repo_path: Path):
@@ -357,7 +358,7 @@ def fix_repo(
             _add_vulture(repo_path)
             _add_flake8(repo_path)
             _add_isort(repo_path)
-            _add_ruff(repo_path)
+            # _add_ruff(repo_path)
             _add_codecov(repo_path)
             _install_precommit(repo_path)
 
@@ -369,13 +370,13 @@ def fix_repo(
 
         elif operation == Operation.RUN_ALL:
             logger.info("Running all operations...")
+            _update_pyproject_toml(repo_path)
             _add_black(repo_path)
             _add_vulture(repo_path)
             _add_flake8(repo_path)
             _add_isort(repo_path)
-            _add_ruff(repo_path)
+            # _add_ruff(repo_path)
             _add_codecov(repo_path)
-            _update_pyproject_toml(repo_path)
             _update_dockerfile(repo_path)
             _update_yaml_tests(repo_path)
             _install_precommit(repo_path)
