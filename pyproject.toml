@@ -85,6 +85,7 @@ langfuse = "*"                 # Language model analytics
 [tool.poetry.group.test.dependencies]
 pytest = ">=6"
 pytest-mongodb = "*"
+pytest-cov = "^6.0.0"
 
 [tool.poetry.group.docs.dependencies]
 #mkdocs = ">=1.6"
@@ -115,3 +116,29 @@ version = "0.2.4"  # update python version because of langchain
 url = "https://github.com/calmmage/python-project-template.git"
 author = "Petr Lavrov <petrlavrov@calmmage.com>"
 description = "A template for creating a bot using calmapp and bot-lib"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 100
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+skip = [".git", "venv", ".env", "__pycache__"]
+# known_first_party = ["your_package_name"]  # Replace with your package name
+# known_third_party = [
+#     "aiogram",
+#     "fastapi",
+#     "pydantic",
+#     "pytest",
+#     "tqdm",
+#     "loguru"
+# ]
+# sections = [
+#     "FUTURE",
+#     "STDLIB",
+#     "THIRDPARTY",
+#     "FIRSTPARTY",
+#     "LOCALFOLDER"
+# ]
