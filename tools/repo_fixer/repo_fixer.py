@@ -4,7 +4,9 @@ import typer
 from enum import Enum
 from loguru import logger
 from pathlib import Path
+from pydantic_settings import BaseSettings
 from textwrap import dedent
+from typing import List
 
 app = typer.Typer()
 
@@ -165,6 +167,19 @@ def _update_dockerfile(repo_path: Path):
     pass
 
 
+def _update_yaml_tests(repo_path: Path):
+    """Update or create the GitHub Actions workflow file for tests."""
+    workflow_dir = repo_path / ".github" / "workflows"
+    workflow_dir.mkdir(parents=True, exist_ok=True)
+    workflow_file = workflow_dir / "main.yml"
+
+    template_path = Path(__file__).parent / "tests_workflow_template.txt"
+
+    template_content = template_path.read_text()
+    workflow_file.write_text(template_content)
+    logger.info(f"Updated GitHub Actions workflow file at {workflow_file}.")
+
+
 class Settings(BaseSettings):
     root_paths: List[Path] = [
         Path.home() / "work/projects",
@@ -193,60 +208,75 @@ def fix_repo(
     operation: Operation = typer.Option(..., help="Operation to perform"),
 ):
     """Fix repository according to modern standards"""
-    logger.info(f"Fixing repo at {path} with operation {operation}")
-
-    if not path.exists():
-        logger.error(f"Path {path} does not exist")
+    repo_path = _discover_project(project)
+    if repo_path is None:
+        logger.error(f"Project {project} not found in any of the root paths: {settings.root_paths}")
         raise typer.Exit(1)
 
-    if not path.is_dir():
-        logger.error(f"Path {path} is not a directory")
+    logger.info(f"Fixing repo at {repo_path} with operation {operation}")
+
+    if not repo_path.is_dir():
+        logger.error(f"Path {repo_path} is not a directory")
         raise typer.Exit(1)
 
     try:
         if operation == Operation.ADD_VULTURE:
-            _add_vulture(path)
+            _add_vulture(repo_path)
 
         elif operation == Operation.ADD_BLACK:
-            # TODO: Implement black integration
-            logger.info("Adding black...")
-            pass
+            _add_black(repo_path)
 
         elif operation == Operation.UPDATE_YAML_TESTS:
-            # TODO: Implement yaml test updates
-            logger.info("Updating yaml tests...")
-            pass
+            _update_yaml_tests(repo_path)
 
-        elif operation == Operation.UPGRADE_DOCKERFILE:
-            # TODO: Implement dockerfile upgrade
-            logger.info("Upgrading dockerfile...")
-            pass
+        elif operation == Operation.ADD_PRECOMMIT:
+            # Add all standard tools
+            _add_black(repo_path)
+            _add_vulture(repo_path)
+            _add_flake8(repo_path)
+            _add_isort(repo_path)
+            _add_ruff(repo_path)
+            _add_codecov(repo_path)
+            _install_precommit(repo_path)
 
         elif operation == Operation.UPGRADE_PYPROJECT:
-            # TODO: Implement pyproject.toml upgrade
-            logger.info("Upgrading pyproject.toml...")
-            pass
+            _update_pyproject_toml(repo_path)
 
-        elif operation == Operation.INSTALL_PRECOMMIT:
-            # TODO: Implement pre-commit setup
-            logger.info("Adding pre-commit...")
-            pass
-
-        elif operation == Operation.UPGRADE_LIBS:
-            # TODO: Implement library upgrades
-            logger.info("Upgrading libraries...")
-            pass
+        elif operation == Operation.UPGRADE_DOCKERFILE:
+            _update_dockerfile(repo_path)
 
         elif operation == Operation.RUN_ALL:
             logger.info("Running all operations...")
-            # TODO: Run all operations in sequence
-            pass
+            _add_black(repo_path)
+            _add_vulture(repo_path)
+            _add_flake8(repo_path)
+            _add_isort(repo_path)
+            _add_ruff(repo_path)
+            _add_codecov(repo_path)
+            _update_pyproject_toml(repo_path)
+            _update_dockerfile(repo_path)
+            _update_yaml_tests(repo_path)
+            _install_precommit(repo_path)
 
         logger.success(f"Successfully completed operation {operation}")
 
     except Exception as e:
         logger.error(f"Error during {operation}: {e}")
         raise typer.Exit(1)
+
+
+def _install_precommit(repo_path: Path):
+    """Install pre-commit hooks in the repository."""
+    pre_commit_config_path = repo_path / ".pre-commit-config.yaml"
+    if not pre_commit_config_path.exists():
+        logger.error(f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Cannot install pre-commit.")
+        return
+
+    try:
+        subprocess.run(["pre-commit", "install"], cwd=repo_path, check=True)
+        logger.info("Pre-commit hooks installed successfully.")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to install pre-commit hooks: {e}")
 
 
 if __name__ == "__main__":
