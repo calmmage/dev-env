@@ -102,24 +102,23 @@ def _add_vulture(repo_path: Path):
 def _add_black(repo_path: Path):
     content = dedent(
         """
-        - id: black-jupyter
-          name: black-jupyter
-          description:
-            "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
-          entry: black
-          language: python
-          minimum_pre_commit_version: 2.9.2
-          require_serial: true
-          types_or: [python, pyi, jupyter]
-          additional_dependencies: [".[jupyter]"]
+        - repo: https://github.com/psf/black
+          rev: 24.2.0
+          hooks:
+            # - id: black
+            #   args: [ --line-length=100 ]
+            - id: black-jupyter
+              name: black-jupyter
+              description:
+                "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
+              entry: black
+              language: python
+              minimum_pre_commit_version: 2.9.2
+              require_serial: true
+              types_or: [python, pyi, jupyter]
+              additional_dependencies: [".[jupyter]"]
         """
     )
-
-    # - repo: https://github.com/psf/black
-    #   rev: 24.2.0
-    #   hooks:
-    #     - id: black
-    #       args: [ --line-length=100 ]
 
     _add_precommit_tool_if_missing(repo_path, "black", content)
 
@@ -140,7 +139,7 @@ def _add_flake8(repo_path: Path):
                 args: [
                 "--max-line-length=100",
                 "--exclude=.git,__pycache__,build,dist",
-                "--ignore=E203,W503",  # Ignore some style errors that conflict with black
+                "--ignore=E203,W503",  # Ignore some style errors that conflict with other tools
                 ]
         """
     )
@@ -244,7 +243,7 @@ def _add_codecov(repo_path: Path):
     # - repo: https://github.com/codecov/codecov-action
     #   hooks:
     #     - id: codecov
-    _add_precommit_tool_if_missing(repo_path, "codecov", content)
+    _add_precommit_tool_if_missing(repo_path, "pytest-check", content)
 
     # step 2: add to pyproject.toml
     subprocess.run(["poetry", "add", "--group", "test", "pytest-cov"], cwd=repo_path)
@@ -325,6 +324,17 @@ def _discover_project(project: str) -> Path:
                 return project_path
 
 
+def _add_precommit(repo_path: Path):
+    _add_black(repo_path)
+    _add_vulture(repo_path)
+    _add_flake8(repo_path)
+    _add_isort(repo_path)
+    # _add_ruff(repo_path)
+    _add_codecov(repo_path)
+    _add_pyupgrade(repo_path)
+    _install_precommit(repo_path)
+
+
 @app.command()
 def fix_repo(
     project: str = typer.Argument(..., help="Project"),
@@ -354,13 +364,7 @@ def fix_repo(
 
         elif operation == Operation.ADD_PRECOMMIT:
             # Add all standard tools
-            _add_black(repo_path)
-            _add_vulture(repo_path)
-            _add_flake8(repo_path)
-            _add_isort(repo_path)
-            # _add_ruff(repo_path)
-            _add_codecov(repo_path)
-            _install_precommit(repo_path)
+            _add_precommit(repo_path)
 
         elif operation == Operation.UPGRADE_PYPROJECT:
             _update_pyproject_toml(repo_path)
@@ -371,15 +375,9 @@ def fix_repo(
         elif operation == Operation.RUN_ALL:
             logger.info("Running all operations...")
             _update_pyproject_toml(repo_path)
-            _add_black(repo_path)
-            _add_vulture(repo_path)
-            _add_flake8(repo_path)
-            _add_isort(repo_path)
-            # _add_ruff(repo_path)
-            _add_codecov(repo_path)
+            _add_precommit(repo_path)
             _update_dockerfile(repo_path)
             _update_yaml_tests(repo_path)
-            _install_precommit(repo_path)
 
         logger.success(f"Successfully completed operation {operation}")
 
