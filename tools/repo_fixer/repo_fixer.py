@@ -1,12 +1,15 @@
-import pyperclip
 import subprocess
-import typer
 from enum import Enum
-from loguru import logger
+from functools import lru_cache
 from pathlib import Path
-from pydantic_settings import BaseSettings
 from textwrap import dedent, indent
 from typing import List
+
+import pyperclip
+import typer
+import yaml
+from loguru import logger
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 app = typer.Typer()
 
@@ -23,14 +26,25 @@ class Operation(str, Enum):
 
 
 class Settings(BaseSettings):
-    root_paths: List[Path] = [
-        Path.home() / "work/projects",
-        Path.home() / "work/archive",
-        Path.home() / "work/experiments",
-    ]
+    root_paths: List[Path]
+    codecov_fail_under: int = 80
+
+    @classmethod
+    def from_yaml(cls, path: Path):
+        with open(path) as file:
+            config_data = yaml.safe_load(file)
+
+        # Expand user directory for each path in root_paths
+        config_data["root_paths"] = [
+            Path(p).expanduser() for p in config_data["root_paths"]
+        ]
+
+        return cls(**config_data)
 
 
-settings = Settings()
+# Initialize settings with the loaded configuration
+config_path = Path(__file__).parent / "config.yaml"
+settings = Settings.from_yaml(config_path)
 
 
 def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str):
@@ -49,13 +63,17 @@ def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str
         # see if it's not commented out
         existing_content = pre_commit_config_path.read_text()
         if tool_name in existing_content:
-            tool_line = [line for line in existing_content.splitlines() if tool_name in line][-1]
+            tool_line = [
+                line for line in existing_content.splitlines() if tool_name in line
+            ][-1]
             if tool_line.strip().startswith("#"):
                 logger.info(
                     f"Found {tool_name} in .pre-commit-config.yaml, but it's commented out. Will add {tool_name} anew."
                 )
             else:
-                logger.warning(f"Seems like {tool_name} is already in .pre-commit-config.yaml. Skipping.")
+                logger.warning(
+                    f"Seems like {tool_name} is already in .pre-commit-config.yaml. Skipping."
+                )
                 return
         content = existing_content.rstrip() + "\n" + content
 
@@ -77,6 +95,25 @@ def _add_pyproject_section_if_missing(repo_path: Path, section: str, content: st
     pyproject_toml_path.write_text(pyproject_toml_content)
 
 
+@lru_cache()
+def _get_source_dir_name(repo_path: Path) -> str:
+    source_dir_name = repo_path.name
+    if not (repo_path / source_dir_name).exists():
+        source_dir_name = source_dir_name.replace("-", "_")
+    if not (repo_path / source_dir_name).exists():
+        # ask user for project name
+        source_dir_name = typer.prompt(
+            f"Please provide a source directory name for {repo_path}: "
+        )
+        # option 1: user provided full path
+        if Path(source_dir_name).exists():
+            return Path(source_dir_name).name
+        # option 2: user provided name
+        if not (repo_path / source_dir_name).exists():
+            return None
+    return source_dir_name
+
+
 def _add_vulture(repo_path: Path):
     """Add vulture configuration to the repository
 
@@ -84,16 +121,22 @@ def _add_vulture(repo_path: Path):
     - check if vulture is already in it
     - if not, add it
     """
+
+    source_dir_name = _get_source_dir_name(repo_path)
+
     content = dedent(
-        """
-          - repo: https://github.com/jendrikseipp/vulture
-            rev: 'v2.10'  # Use the latest stable version
-            hooks:
-              - id: vulture
-                args: [
-                "--min-confidence", "80",
-                "--exclude", "**/migrations/*,**/__pycache__/*",
-                ]
+        rf"""
+        - repo: https://github.com/jendrikseipp/vulture
+          rev: 'v2.10'
+          hooks:
+            - id: vulture
+              args: [
+              "--min-confidence", "80",
+              "--exclude", "**/migrations/*,**/__pycache__/*",
+              "{source_dir_name}"  # project_name
+              ]
+              files: ^.*\.py$
+              exclude: ^(.git|.venv|venv|build|dist)/.*$
         """
     )
     _add_precommit_tool_if_missing(repo_path, "vulture", content)
@@ -222,9 +265,11 @@ def _add_ruff(repo_path: Path):
 
 
 def _add_codecov(repo_path: Path):
+    source_dir_name = _get_source_dir_name(repo_path)
+
     # step 1: add to pre-commit
     content = dedent(
-        """
+        f"""
           - repo: local
             hooks:
               - id: pytest-check
@@ -234,9 +279,9 @@ def _add_codecov(repo_path: Path):
                 pass_filenames: false
                 always_run: true
                 args: [
-                "--cov=your_package_name",
+                "--cov={source_dir_name}",
                 "--cov-report=xml",
-                "--cov-fail-under=80",
+                "--cov-fail-under={settings.codecov_fail_under}",
                 ]
         """
     )
@@ -269,7 +314,9 @@ def _update_pyproject_toml(repo_path: Path):
     keyword = "[tool.poetry.group.test.dependencies]"
     if keyword not in pyproject_toml_content:
         pyperclip.copy(template)
-        logger.info(f"Copied new template to clipboard. Opening {pyproject_toml_path} with Sublime.")
+        logger.info(
+            f"Copied new template to clipboard. Opening {pyproject_toml_path} with Sublime."
+        )
         subprocess.run(["subl", pyproject_toml_path])
     else:
         logger.info(
@@ -303,7 +350,9 @@ def _install_precommit(repo_path: Path):
     """Install pre-commit hooks in the repository."""
     pre_commit_config_path = repo_path / ".pre-commit-config.yaml"
     if not pre_commit_config_path.exists():
-        logger.error(f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Cannot install pre-commit.")
+        logger.error(
+            f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Cannot install pre-commit."
+        )
         return
 
     try:
@@ -343,7 +392,9 @@ def fix_repo(
     """Fix repository according to modern standards"""
     repo_path = _discover_project(project)
     if repo_path is None:
-        logger.error(f"Project {project} not found in any of the root paths: {settings.root_paths}")
+        logger.error(
+            f"Project {project} not found in any of the root paths: {settings.root_paths}"
+        )
         raise typer.Exit(1)
 
     logger.info(f"Fixing repo at {repo_path} with operation {operation}")
