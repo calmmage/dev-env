@@ -1,7 +1,8 @@
-import yaml
 from pathlib import Path
-from pydantic_settings import BaseSettings
 from typing import List, Set
+
+import yaml
+from pydantic_settings import BaseSettings
 
 
 class ProjectArrangerSettings(BaseSettings):
@@ -27,12 +28,37 @@ class ProjectArrangerSettings(BaseSettings):
     ## secondary groups
 
     # group 4: extras
-    ignored_dirs: Set[str] = {'.git', '.venv', 'venv', '__pycache__',
-                              'node_modules', 'build', 'dist', '.pytest_cache'}
-    source_extensions: Set[str] = {'.py', '.js', '.ts', '.jsx', '.tsx',
-                                   '.java', '.cpp', '.c', '.h', '.hpp',
-                                   '.rs', '.go', '.rb', '.php', '.html',
-                                   '.css', '.scss', '.sql', '.sh'}
+    ignored_dirs: Set[str] = {
+        ".git",
+        ".venv",
+        "venv",
+        "__pycache__",
+        "node_modules",
+        "build",
+        "dist",
+        ".pytest_cache",
+    }
+    source_extensions: Set[str] = {
+        ".py",
+        ".js",
+        ".ts",
+        ".jsx",
+        ".tsx",
+        ".java",
+        ".cpp",
+        ".c",
+        ".h",
+        ".hpp",
+        ".rs",
+        ".go",
+        ".rb",
+        ".php",
+        ".html",
+        ".css",
+        ".scss",
+        ".sql",
+        ".sh",
+    }
 
     @classmethod
     def from_yaml(cls, yaml_path: str | Path, **kwargs):
