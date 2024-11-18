@@ -51,5 +51,6 @@ class ProjectSettings(BaseSettings):
             yaml_settings = yaml.safe_load(f)
         return cls(**yaml_settings)
 
+
 # Usage:
 # settings = ProjectSettings.from_yaml('config.yaml')

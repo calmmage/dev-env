@@ -17,17 +17,17 @@ class Project(BaseModel):
         for file in self.path.rglob("*"):
             # Skip common non-source directories
             if any(
-                    part in str(file.relative_to(self.path))
-                    for part in [
-                        ".git",
-                        ".venv",
-                        "venv",
-                        "__pycache__",
-                        "node_modules",
-                        "build",
-                        "dist",
-                        ".pytest_cache",
-                    ]
+                part in str(file.relative_to(self.path))
+                for part in [
+                    ".git",
+                    ".venv",
+                    "venv",
+                    "__pycache__",
+                    "node_modules",
+                    "build",
+                    "dist",
+                    ".pytest_cache",
+                ]
             ):
                 continue
 
@@ -95,7 +95,7 @@ class ProjectArranger:
         return []
 
     def _merge_projects_lists(
-            self, local_projects: List[Project], github_projects: List[Project]
+        self, local_projects: List[Project], github_projects: List[Project]
     ) -> None:
         """Merge projects lists from local and GitHub"""
         # idea: merge projects that have the same github repo

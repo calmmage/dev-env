@@ -12,21 +12,21 @@ repos:
         files: \.ipynb$
         stages: [ pre-commit ]
 
-  #  - repo: https://github.com/psf/black
-  #    rev: 24.2.0
-  #    hooks:
-  #      # - id: black
-  #      #   args: [ --line-length=100 ]
-  #      - id: black-jupyter
-  #        name: black-jupyter
-  #        description:
-  #          "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
-  #        entry: black
-  #        language: python
-  #        minimum_pre_commit_version: 2.9.2
-  #        require_serial: true
-  #        types_or: [ python, pyi ] #, jupyter ]
-  #        # additional_dependencies: [ ".[jupyter]" ]
+  - repo: https://github.com/psf/black
+    rev: 24.2.0
+    hooks:
+      # - id: black
+      #   args: [ --line-length=100 ]
+      - id: black-jupyter
+        name: black-jupyter
+        description:
+          "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
+        entry: black
+        language: python
+        minimum_pre_commit_version: 2.9.2
+        require_serial: true
+        types_or: [ python, pyi ] #, jupyter ]
+        # additional_dependencies: [ ".[jupyter]" ]
 
   - repo: https://github.com/jendrikseipp/vulture
     rev: 'v2.10'
