@@ -1,3 +1,8 @@
+
+# tools 
+# Alias for repo fixer tool
+alias fix_repo="$DEV_ENV_PATH/.venv/bin/typer $DEV_ENV_PATH/tools/repo_fixer/repo_fixer.py run"
+
 # Add an alias to update dev-env
 alias update-dev-env='python3 $DEV_ENV_PATH/tools/dev_env_updater.py'
 
@@ -47,7 +52,7 @@ alias cpa="copy_absolute_path"
 
 # alias lnsafe="runp $CALMMAGE_DEV_ENV_PATH/dev_env/tools/lnsafe.py"
 alias lnsafe="python $DEV_ENV_PATH/tools/lnsafe.py"
-# alias typer=$CALMMAGE_POETRY_ENV_PATH/bin/typer
+# alias typer=$DEV_ENV_PATH/.venv/bin/typer
 # todo: need a script that runs and checks in the start of bashrc if $CALMMAGE_DEV_ENV_PATH is set and warn if not
 # typer_path = "$CALMMAGE_DEV_ENV_PATH/.venv/bin/typer"
 # new_project_tool_path = "$CALMMAGE_DEV_ENV_PATH/dev/draft/mvp/project_manager.py"
