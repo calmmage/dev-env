@@ -91,7 +91,7 @@ in
     dock = {
       enable = true;
       entries = [
-      # todo: updates a list of apps
+      # todo: update a list of apps
         { path = "/System/Applications/System Settings.app/"; }
         { path = "/Applications/Raycast.app/"; }
         { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }

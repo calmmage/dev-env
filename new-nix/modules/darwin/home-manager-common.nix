@@ -101,7 +101,7 @@ let name = "Petr Lavrov";
       init.defaultBranch = "main";
       core = {
       # todo: set to subl?
-	    editor = "vim";
+	    editor = "subl";
         autocrlf = "input";
       };
       commit.gpgsign = true;

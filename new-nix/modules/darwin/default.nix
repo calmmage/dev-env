@@ -6,13 +6,6 @@ in
 {
 
   nixpkgs = {
-    config = {
-      allowUnfree = true;
-      allowBroken = true;
-      allowInsecure = false;
-      allowUnsupportedSystem = true;
-    };
-
     overlays =
       # Apply each overlay found in the /overlays directory
       let path = ../../overlays; in with builtins;
@@ -25,7 +18,6 @@ in
         (final: prev: {
           unstable = nixpkgs-unstable.legacyPackages.${prev.system};
         })
-        poetry2nix.overlays.default
       ];
 
 #      ++ [(import (builtins.fetchTarball {

@@ -100,9 +100,12 @@
           inherit system;
           specialArgs = inputs;
           modules = [
-
-
-
+            {
+              nixpkgs.config.allowUnfree = true;
+              nixpkgs.config.allowBroken = true;
+              nixpkgs.config.allowInsecure = false;
+              nixpkgs.config.allowUnsupportedSystem = false;
+            }
             home-manager.darwinModules.home-manager
             nix-homebrew.darwinModules.nix-homebrew
             {
