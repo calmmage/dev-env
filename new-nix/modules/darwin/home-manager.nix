@@ -7,7 +7,10 @@ let
 #    #!/bin/sh
 #    emacsclient -c -n &
 #  '';
-  files = import ./files.nix { inherit user config pkgs; };
+
+# todo: re-enable files.nix when it's populated
+#  disable for now
+#  files = import ./files.nix { inherit user config pkgs; };
 in
 {
   imports = [
@@ -59,7 +62,7 @@ in
 
         stateVersion = "23.11";
       };
-      programs = {} // import ../shared/home-manager.nix { inherit config pkgs lib; };
+      programs = {} // import ./home-manager-common.nix { inherit config pkgs lib; };
 
       # Marked broken Oct 20, 2022 check later to remove this
       # https://github.com/nix-community/home-manager/issues/3344
@@ -72,16 +75,10 @@ in
     dock = {
       enable = true;
       entries = [
-        { path = "/Applications/Slack.app/"; }
-        { path = "/System/Applications/Messages.app/"; }
-        { path = "/System/Applications/Facetime.app/"; }
+      # todo: updates a list of apps
+        { path = "/System/Applications/System Settings.app/"; }
+        { path = "/Applications/Raycast.app/"; }
         { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
-        { path = "/System/Applications/Music.app/"; }
-        { path = "/System/Applications/News.app/"; }
-        { path = "/System/Applications/Photos.app/"; }
-        { path = "/System/Applications/Photo Booth.app/"; }
-        { path = "/System/Applications/TV.app/"; }
-        { path = "/System/Applications/Home.app/"; }
 #        {
 #          path = toString myEmacsLauncher;
 #          section = "others";

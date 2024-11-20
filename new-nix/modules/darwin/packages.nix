@@ -41,7 +41,7 @@ with pkgs; [
   hunspell
   iftop
   jetbrains-mono
-  unrar
+#  unrar # todo: re-enable when resolve license
   unzip
 
   # Python packages
@@ -74,11 +74,13 @@ with pkgs; [
     direnv        # Environment switcher for the shell
     devenv        # Development environment manager
     cachix        # Binary cache hosting service for Nix
-    postman       # API development environment
+    # todo: re-enable when resolve license
+#    postman       # API development environment
 
     # new - clear
     awscli2           # AWS command line interface v2
-    teams           # Microsoft Teams client
+    # todo: re-enable when resolve license
+    # teams           # Microsoft Teams client
 
     # new - unclear
     nixfmt-classic     # Nix code formatter

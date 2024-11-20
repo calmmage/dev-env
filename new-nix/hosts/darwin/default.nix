@@ -5,9 +5,9 @@ let user = "petr"; in
 {
 
   imports = [
-    ../../modules/darwin/secrets.nix
+  # todo: re-enable secrets
+#    ../../modules/darwin/secrets.nix
     ../../modules/darwin/home-manager.nix
-    ../../modules/shared
      agenix.darwinModules.default
   ];
 
@@ -40,9 +40,9 @@ let user = "petr"; in
 
   # Load configuration that is shared across systems
   environment.systemPackages = with pkgs; [
-    emacs-unstable
+#    emacs-unstable
     agenix.packages."${pkgs.system}".default
-  ] ++ (import ../../modules/shared/packages.nix { inherit pkgs; });
+  ] ++ (import ../../modules/darwin/packages.nix { inherit pkgs; });
 
 #  launchd.user.agents.emacs.path = [ config.environment.systemPath ];
 #  launchd.user.agents.emacs.serviceConfig = {

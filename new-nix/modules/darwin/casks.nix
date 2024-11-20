@@ -128,4 +128,4 @@ _:
     "iina"            # Modern media player for macOS
     # install via app store
     # "flow"
-];
+]
