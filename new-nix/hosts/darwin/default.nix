@@ -159,8 +159,6 @@ in
 
         AppleInterfaceStyle = "Dark";
         AppleInterfaceStyleSwitchesAutomatically = false;
-#        InitialKeyRepeat = 14;
-#        KeyRepeat = 1;
         AppleShowAllFiles = true;
         NSNavPanelExpandedStateForSaveMode = true;
       };
@@ -195,6 +193,8 @@ in
         AppleShowAllExtensions = true;
         _FXShowPosixPathInTitle = true;
         FXPreferredViewStyle = "Nlsv";
+  #     defaults write com.apple.finder ShowPathbar -bool true
+  #     defaults write com.apple.finder ShowStatusBar -bool true
       };
 
       trackpad = {

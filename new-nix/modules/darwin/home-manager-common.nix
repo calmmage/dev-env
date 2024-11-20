@@ -125,7 +125,7 @@ let name = "Petr Lavrov";
     extraConfig = ''
       "" General
       set number
-      set history=1000
+      set history=100000
       set nocompatible
       set modelines=0
       set encoding=utf-8

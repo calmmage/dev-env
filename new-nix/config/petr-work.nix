@@ -29,21 +29,5 @@
     ];
   };
 
-  homebrew = {
-    brews = [
-      # Development essentials that work better with brew
-      # "poetry"
-      # "ripgrep"
-      "python@3.11"
-      "python@3.12"
-      "node" # Node.js - often better to use brew for JS ecosystem
-      "git-lfs" # Git Large File Storage
-      "gcc" # GNU Compiler Collection
-      "sonar-scanner"
-      "yarn" # Adding yarn package manager
-      # add fkill? how?
-    ];
-
-  };
 
 }

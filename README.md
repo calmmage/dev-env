@@ -42,7 +42,7 @@ nixup
 
 ## Additional Documentation
 
-- [Nix Configuration](nix/README.md)
+- [Nix Configuration](new-nix/README.md)
 - [Python Tools Usage](docs/python-tools.md)
 - [Project Management](docs/project-management.md)
 
