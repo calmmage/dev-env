@@ -2,6 +2,7 @@
 # ADDED MANUALLY
 # ----------------------------------------
 
+local.nix
 *.session
 config*.toml
 *secret*.toml
