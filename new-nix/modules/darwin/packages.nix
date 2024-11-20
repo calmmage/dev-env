@@ -6,18 +6,15 @@ with pkgs; [
   aspell
   aspellDicts.en
   bash-completion
-  bat
   btop
   coreutils
   killall
   neofetch
   openssh
-  sqlite
   wget
   zip
 
   # Encryption and security tools
-  age
   age-plugin-yubikey
   gnupg
   libfido2
@@ -29,8 +26,6 @@ with pkgs; [
   # Media-related packages
   emacs-all-the-icons-fonts
   dejavu_fonts
-  ffmpeg
-  fd
   font-awesome
   hack-font
   noto-fonts
@@ -43,17 +38,11 @@ with pkgs; [
   nodejs
 
   # Text and terminal utilities
-  htop
   hunspell
   iftop
   jetbrains-mono
-  jq
-  ripgrep
-  tree
-  tmux
   unrar
   unzip
-  zsh-powerlevel10k
 
   # Python packages
   python3
