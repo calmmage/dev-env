@@ -1,8 +1,25 @@
 { agenix, config, pkgs, ... }:
 
-let user = "petr"; in
-
+let
+  user = "petr";
+  inherit (lib) mkEnableOption mkOption types;
+  # Add an overlay to disable tests for problematic Python packages
+  pythonOverlay = final: prev: {
+    python311 = prev.python311.override {
+      packageOverrides = pyFinal: pyPrev: {
+        dnspython = pyPrev.dnspython.overridePythonAttrs (old: {
+          doCheck = false;  # Disable tests for dnspython
+        });
+        cherrypy = pyPrev.cherrypy.overridePythonAttrs (old: {
+          doCheck = false;  # Disable tests for cherrypy
+        });
+      };
+    };
+  };
+in
 {
+  # Add the overlay to nixpkgs
+  nixpkgs.overlays = [ pythonOverlay ];
 
   imports = [
   # todo: re-enable secrets
@@ -39,10 +56,41 @@ let user = "petr"; in
   system.checks.verifyNixPath = false;
 
   # Load configuration that is shared across systems
-  environment.systemPackages = with pkgs; [
-#    emacs-unstable
-    agenix.packages."${pkgs.system}".default
-  ] ++ (import ../../modules/darwin/packages.nix { inherit pkgs; });
+  environment = {
+    shells = [ pkgs.bash pkgs.zsh ];
+    systemPackages = with pkgs; [
+      agenix.packages."${pkgs.system}".default
+      coreutils
+      (pkgs.poetry2nix.mkPoetryEnv {
+        projectDir = ../../..;
+        preferWheels = true;
+        python = python311;
+        # Add overrides to handle git dependencies
+        overrides = pkgs.poetry2nix.overrides.withDefaults (final: prev: {
+          calmlib = prev.calmlib.overridePythonAttrs (old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [
+              pkgs.poetry
+              final.poetry-core
+            ];
+          });
+        });
+        # Add extra packages that might be needed for building
+        extraPackages = ps: with ps; [
+          pip
+          setuptools
+          wheel
+          poetry
+          poetry-core
+        ];
+      })
+    ] ++ (import ../../modules/darwin/packages.nix { inherit pkgs; });
+
+    systemPath = [
+      "/opt/homebrew/bin"
+      # "$DEV_ENV_PATH/tools/" - remove for now - can't get it to work
+    ];
+    pathsToLink = [ "/Applications" ];
+  };
 
 #  launchd.user.agents.emacs.path = [ config.environment.systemPath ];
 #  launchd.user.agents.emacs.serviceConfig = {
@@ -56,8 +104,17 @@ let user = "petr"; in
 #    StandardOutPath = "/tmp/emacs.out.log";
 #  };
 
+  # Enable TouchID for sudo if option is enabled
+  security.pam.enableSudoTouchIdAuth = lib.mkDefault true;
+
   system = {
+    keyboard.enableKeyMapping = true;
+    keyboard.remapCapsLockToEscape = false;
     stateVersion = 4;
+    activationScripts.postActivation.text = ''
+      # Allow Karabiner-Elements to receive keyboard events
+      /usr/bin/sudo /usr/bin/security authorizationdb write system.privilege.taskport allow
+    '';
 
     defaults = {
       NSGlobalDomain = {
@@ -73,18 +130,47 @@ let user = "petr"; in
         "com.apple.mouse.tapBehavior" = 1;
         "com.apple.sound.beep.volume" = 0.0;
         "com.apple.sound.beep.feedback" = 0;
+
+        AppleInterfaceStyle = "Dark";
+        AppleInterfaceStyleSwitchesAutomatically = false;
+        AppleShowAllExtensions = true;
+#        InitialKeyRepeat = 14;
+#        KeyRepeat = 1;
+        AppleShowAllFiles = true;
+        NSNavPanelExpandedStateForSaveMode = true;
+        "com.apple.mouse.tapBehavior" = 1;
       };
 
       dock = {
-        autohide = false;
-        show-recents = false;
+        autohide = true;
+        show-recents = true;
         launchanim = true;
         orientation = "bottom";
-        tilesize = 48;
+        tilesize = 36;
+        largesize = 128;
+
+        magnification = true;
+        # expose-group-apps = userConfig.dock.settings.expose_group_by_app;
+        mru-spaces = false; # disable reordering spaces
+        minimize-to-application = true;
+        show-process-indicators = true;
+
+#        autohide = userConfig.dock.settings.autohide;
+#        largesize = userConfig.dock.settings.large_size;
+#        magnification = userConfig.dock.settings.magnification;
+#        tilesize = userConfig.dock.settings.tile_size;
+#        # orientation = userConfig.dock.settings.position;
+#        # expose-group-apps = userConfig.dock.settings.expose_group_by_app;
+#        mru-spaces = userConfig.dock.settings.mru_spaces;
+#        minimize-to-application = userConfig.dock.settings.minimize_to_application;
+#        show-recents = userConfig.dock.settings.show_recent_apps;
+#        show-process-indicators = userConfig.dock.settings.show_process_indicators;
       };
 
       finder = {
-        _FXShowPosixPathInTitle = false;
+        AppleShowAllExtensions = true;
+        _FXShowPosixPathInTitle = true;
+        FXPreferredViewStyle = "Nlsv";
       };
 
       trackpad = {
