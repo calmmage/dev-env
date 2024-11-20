@@ -1,4 +1,4 @@
-{ agenix, config, pkgs, ... }:
+{ agenix, config, pkgs, lib, ... }:
 
 let
   user = "petr";
@@ -133,12 +133,10 @@ in
 
         AppleInterfaceStyle = "Dark";
         AppleInterfaceStyleSwitchesAutomatically = false;
-        AppleShowAllExtensions = true;
 #        InitialKeyRepeat = 14;
 #        KeyRepeat = 1;
         AppleShowAllFiles = true;
         NSNavPanelExpandedStateForSaveMode = true;
-        "com.apple.mouse.tapBehavior" = 1;
       };
 
       dock = {
