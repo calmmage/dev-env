@@ -20,6 +20,13 @@ in
           (filter (n: match ".*\\.nix" n != null ||
                       pathExists (path + ("/" + n + "/default.nix")))
                   (attrNames (readDir path)))
+      # Base configuration overlays
+      ++ [
+        (final: prev: {
+          unstable = nixpkgs-unstable.legacyPackages.${prev.system};
+        })
+        poetry2nix.overlays.default
+      ];
 
 #      ++ [(import (builtins.fetchTarball {
 #               url = "https://github.com/dustinlyons/emacs-overlay/archive/refs/heads/master.tar.gz";

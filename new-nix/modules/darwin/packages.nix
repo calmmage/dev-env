@@ -32,9 +32,11 @@ with pkgs; [
   noto-fonts-emoji
   meslo-lgs-nf
 
+  ollama
   # Node.js development tools
   nodePackages.npm # globally install npm
   nodePackages.prettier
+  nodePackages.pnpm
   nodejs
 
   # Text and terminal utilities

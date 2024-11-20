@@ -119,19 +119,4 @@ in
   documentation.enable = false;
   nixpkgs.config.allowUnfree = true;
 
-  homebrew = {
-    enable = true;
-    caskArgs.no_quarantine = true;
-    global.brewfile = true;
-    onActivation = {
-      autoUpdate = true;
-      cleanup = "uninstall";
-      upgrade = true;
-    };
-    masApps = { };
-    
-    # Use brew packages from user config
-    brews = userConfig.homebrew.brews;
-    casks = userConfig.homebrew.casks;
-  };
 }

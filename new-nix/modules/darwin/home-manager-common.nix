@@ -4,21 +4,46 @@ let name = "Petr Lavrov";
     user = "petr";
     email = "petr@superlinear.com"; in
 {
+  bat = {
+    enable = true;
+    config.theme = "TwoDark";
+  };
+
+  direnv = { enable = true; };
+
+  zoxide = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
   # Shared shell configuration
   zsh = {
     enable = true;
+    enableCompletion = true;
+    autosuggestion.enable = true;
+    syntaxHighlighting.enable = true;
     autocd = false;
     cdpath = [ "~/.local/share/src" ];
     plugins = [
       {
-          name = "powerlevel10k";
-          src = pkgs.zsh-powerlevel10k;
-          file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+        name = "powerlevel10k";
+        src = pkgs.zsh-powerlevel10k;
+        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
       }
       {
-          name = "powerlevel10k-config";
-          src = lib.cleanSource ./config;
-          file = "p10k.zsh";
+        name = "powerlevel10k-config";
+        src = lib.cleanSource ./config;
+        file = "p10k.zsh";
+      }
+      {
+        name = "zsh-autosuggestions";
+        src = pkgs.zsh-autosuggestions;
+        file = "share/zsh-autosuggestions/zsh-autosuggestions.zsh";
+      }
+      {
+        name = "zsh-syntax-highlighting";
+        src = pkgs.zsh-syntax-highlighting;
+        file = "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
       }
     ];
     initExtraFirst = ''
@@ -38,14 +63,14 @@ let name = "Petr Lavrov";
       # Ripgrep alias
       alias search=rg -p --glob '!node_modules/*'  $@
 
-#      # Emacs is my editor
-#      export ALTERNATE_EDITOR=""
-#      export EDITOR="emacsclient -t"
-#      export VISUAL="emacsclient -c -a emacs"
+      #  # Emacs is my editor
+      #  export ALTERNATE_EDITOR=""
+      #  export EDITOR="emacsclient -t"
+      #  export VISUAL="emacsclient -c -a emacs"
 
-      e() {
-          emacsclient -t "$@"
-      }
+      #  e() {
+      #      emacsclient -t "$@"
+      #  }
 
       # nix shortcuts
       shell() {
@@ -75,12 +100,21 @@ let name = "Petr Lavrov";
     extraConfig = {
       init.defaultBranch = "main";
       core = {
+      # todo: set to subl?
 	    editor = "vim";
         autocrlf = "input";
       };
       commit.gpgsign = true;
       pull.rebase = true;
       rebase.autoStash = true;
+
+      user.name = "Petr Lavrov";
+      user.email = "petr@superlinear.com"; # lib.mkForce userConfig.email;
+      merge.tool = "opendiff";
+      diff.tool = "opendiff";
+      difftool.prompt = false;
+      difftool."opendiff" =
+        ''cmd = /usr/bin/opendiff "$LOCAL" "$REMOTE" -merge "$MERGED" | cat'';
     };
   };
 
@@ -283,6 +317,54 @@ let name = "Petr Lavrov";
       };
     };
   };
+  vscode = {
+    enable = true;
+    enableUpdateCheck = false;
+    enableExtensionUpdateCheck = false;
+    userSettings = {
+     "aws.telemetry" = false;
+     "sqltools.dependencyManager" = {
+       "packageManager" = "npm";
+       "installArgs" = [ "install" ];
+       "runScriptArgs" = [ "run" ];
+       "autoAccept" = false;
+     };
+     "sqltools.useNodeRuntime" = true;
+     "window.zoomLevel" = 1;
+     "redhat.telemetry.enabled" = false;
+     "markdown-pdf.executablePath" = "/Applications/Google Chrome.app";
+     "files.associations" = { "*.py" = "python"; };
+     "[typescript]" = { };
+     "[nix]" = { "editor.defaultFormatter" = "brettm12345.nixfmt-vscode"; };
+     "[python]" = {
+       "editor.formatOnType" = true;
+       "editor.defaultFormatter" = "charliermarsh.ruff";
+     };
+     "github.copilot.editor.enableAutoCompletions" = false;
+     "dev.containers.dockerPath" = "/etc/profiles/per-user/petr/bin/docker";
+     "direnv.path.executable" = "/etc/profiles/per-user/petr/bin/direnv";
+     "css.enabledLanguages" = "nunjucks html";
+     "amazonQ" = {
+       "shareContentWithAWS" = false;
+       "telemetry" = false;
+     };
+     "continue.enableTabAutocomplete" = false;
+    };
+    extensions = with pkgs.vscode-extensions; [
+     ms-vscode.cpptools-extension-pack
+     mkhl.direnv
+     bbenoist.nix
+     brettm12345.nixfmt-vscode
+     ms-python.python
+     ms-python.debugpy
+     charliermarsh.ruff
+     ms-toolsai.jupyter
+     ms-vscode-remote.remote-containers
+     ecmel.vscode-html-css
+     redhat.vscode-yaml
+     foxundermoon.shell-format
+    ];
+  };
 
   tmux = {
     enable = true;
@@ -319,7 +401,7 @@ let name = "Petr Lavrov";
     terminal = "screen-256color";
     prefix = "C-x";
     escapeTime = 10;
-    historyLimit = 50000;
+    historyLimit = 1000000;
     extraConfig = ''
       # Remove Vim mode delays
       set -g focus-events on
