@@ -1,5 +1,5 @@
 {
-  description = "Darwin System Configuration";
+  description = "Darwin System Configuration with secrets for MacOS";
 
   nixConfig = {
     extra-substituters = [
@@ -17,8 +17,11 @@
   };
 
   inputs = {
+#    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    agenix.url = "github:ryantm/agenix";
+#    home-manager.url = "github:nix-community/home-manager";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -27,71 +30,148 @@
       url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    homebrew-bundle.url = "github:homebrew/homebrew-bundle";
-    homebrew-bundle.flake = false;
-    homebrew-core.url = "github:homebrew/homebrew-core";
-    homebrew-core.flake = false;
-    homebrew-cask.url = "github:homebrew/homebrew-cask";
-    homebrew-cask.flake = false;
+    nix-homebrew = {
+      url = "github:zhaofengli-wip/nix-homebrew";
+    };
+    homebrew-bundle = {
+      url = "github:homebrew/homebrew-bundle";
+      flake = false;
+    };
+    homebrew-core = {
+      url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
+      flake = false;
+    }; 
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     poetry2nix = {
       url = "github:nix-community/poetry2nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # todo: add secrets back
+#    secrets = {
+#      url = "git+ssh://git@github.com/petrlavrov-sl/nix-secrets.git";
+#      flake = false;
+#    };
   };
-
-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, darwin, poetry2nix, ... }@inputs:
-    let
-      system = "aarch64-darwin";
+  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, nixpkgs-unstable, disko, poetry2nix, agenix, ... } @inputs: # , secrets # todo: add secrets back
+  let
+    lib = nixpkgs.lib;
+    system = "aarch64-darwin";
+    
+    # Define pythonOverlay here so it's available during initial pkgs setup
+    pythonOverlay = final: prev: {
+      ghostscript = prev.ghostscript.overrideAttrs (old: {
+        doCheck = false;
+      });
       
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
-
-      # Import user config
-      userConfig = import ./config/user.nix;
-
-      # Create specialArgs to pass to all modules
-      specialArgs = {
-        inherit userConfig;
-      };
-      
-    in {
-      darwinConfigurations.default = darwin.lib.darwinSystem {
-        inherit system specialArgs;
-        
-        modules = [
-          # Base configuration
-          {
-            nixpkgs.overlays = [ 
-              (final: prev: {
-                unstable = nixpkgs-unstable.legacyPackages.${prev.system};
-              })
-              poetry2nix.overlays.default
-            ];
-            nixpkgs.config.allowUnfree = true;
-          }
-
-          # User configuration
-          {
-            users.users.${userConfig.username}.home = "/Users/${userConfig.username}";
-          }
-
-          # Import modules
-          ./modules/darwin
-          ./configuration.nix
-
-          # Home Manager configuration
-          home-manager.darwinModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = specialArgs;  # Pass specialArgs to home-manager modules
-              users.${userConfig.username} = import ./modules/home-manager;
-            };
-          }
-        ];
+      python311 = prev.python311.override {
+        packageOverrides = pyFinal: pyPrev: {
+          dnspython = pyPrev.dnspython.overridePythonAttrs (old: {
+            doCheck = false;
+          });
+          cherrypy = pyPrev.cherrypy.overridePythonAttrs (old: {
+            doCheck = false;
+          });
+          matplotlib = pyPrev.matplotlib.overridePythonAttrs (old: {
+            doCheck = false;
+            buildInputs = builtins.filter (p: p.pname or "" != "ghostscript") (old.buildInputs or []);
+          });
+        };
       };
     };
+
+    # Initialize pkgs with both overlays
+    pkgs = import nixpkgs {
+      inherit system;
+      overlays = [
+        pythonOverlay
+        poetry2nix.overlays.default
+        (final: prev: {
+          # Add any additional overlays here
+        })
+      ];
+      config = {
+        allowUnfree = true;
+        allowBroken = true;
+      };
+    };
+
+    # Then load user configs with the properly initialized pkgs
+    userConfigs = (import ./config/default.nix { inherit pkgs; }).userconfigs;
+
+    # Define devShell for a single system
+    devShell = let pkgs = nixpkgs.legacyPackages.${system}; in {
+      default = with pkgs; mkShell {
+        nativeBuildInputs = [ bashInteractive git age age-plugin-yubikey ];
+        shellHook = ''
+          export EDITOR=vim
+        '';
+      };
+    };
+
+    # Define a single app wrapper
+    mkApp = scriptName: {
+      type = "app";
+      program = "${(nixpkgs.legacyPackages.${system}.writeScriptBin scriptName ''
+        #!/usr/bin/env bash
+        PATH=${nixpkgs.legacyPackages.${system}.git}/bin:$PATH
+        echo "Running ${scriptName} for ${system}"
+        exec ${self}/apps/aarch64-darwin/${scriptName}
+      '')}/bin/${scriptName}";
+    };
+
+    # Define specific apps directly
+    darwinApps = {
+      "apply" = mkApp "apply";
+      "build" = mkApp "build";
+      "build-switch" = mkApp "build-switch";
+      "copy-keys" = mkApp "copy-keys";
+      "create-keys" = mkApp "create-keys";
+      "check-keys" = mkApp "check-keys";
+      "rollback" = mkApp "rollback";
+    };
+  in
+  {
+    darwinConfigurations = lib.mapAttrs (user: userConfig: darwin.lib.darwinSystem {
+      inherit system;
+      specialArgs = inputs // {
+        inherit userConfig pkgs;
+      };
+      modules = [
+        {
+          nixpkgs.config = {
+            allowUnfree = true;
+            allowBroken = true;
+            allowInsecure = false;
+            allowUnsupportedSystem = false;
+          };
+        }
+        home-manager.darwinModules.home-manager
+        nix-homebrew.darwinModules.nix-homebrew
+        {
+          nix-homebrew = {
+            inherit user;
+            enable = true;
+            taps = {
+              "homebrew/homebrew-core" = homebrew-core;
+              "homebrew/homebrew-cask" = homebrew-cask;
+              "homebrew/homebrew-bundle" = homebrew-bundle;
+            };
+            mutableTaps = false;
+            autoMigrate = true;
+          };
+        }
+        ./hosts/darwin
+      ];
+    }) userConfigs;
+
+    devShells.default = devShell;
+    apps.default = darwinApps;
+  };
 }

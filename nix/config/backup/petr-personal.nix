@@ -3,7 +3,8 @@
   email = "petr.b.lavrov@gmail.com";
   computer_name = "Petr's MacBook Pro 2";
   host_name = "petrs-macbook-pro-2";
-  local_host_name = "petrs-macbook-pro-2";
+
+  default_browser = "chrome";
 
   dock = {
     settings = {
@@ -14,7 +15,7 @@
       large_size = 128;
       position = "bottom";  # Can be "bottom", "left", or "right"
       mru_spaces = false; # disable reordering spaces automatically based on recent usage (I hate them chaotically reordering)
-      
+
       # Behavior settings
       expose_group_by_app = true;
       minimize_to_application = true;
@@ -29,10 +30,10 @@
   };
 
   homebrew = {
-    brews = [   
+    brews = [
       # Development essentials that work better with brew
       # "poetry"
-      # "ripgrep" 
+      # "ripgrep"
       "python@3.11"
       "python@3.12"
       "node" # Node.js - often better to use brew for JS ecosystem
@@ -40,11 +41,11 @@
       "gcc" # GNU Compiler Collection
       "sonar-scanner"
       "yarn" # Adding yarn package manager
-      # add fkill? how? 
+      # add fkill? how?
     ];
 
     casks = [
-      
+
         # Development
         "docker"  # docker desktop app
         "jetbrains-toolbox"
@@ -58,7 +59,7 @@
         # "zed"
         "karabiner-elements"
         "sublime-text"
-        
+
         # Browsers & Communication
         "google-chrome"
         "slack"
@@ -93,33 +94,33 @@
         # "imagemagick"     # Powerful image manipulation tool
         # "handbrake"       # Video transcoder
         # "yt-dlp"          # Download videos from YouTube and other sites
-        
+
         # # Development Tools
         # "neovim"          # Modern, extensible text editor
         # "tmux"            # Terminal multiplexer for multiple sessions
         # "httpie"          # User-friendly HTTP client
         # "mkcert"          # Make locally-trusted development certificates
-        
+
         # # System Monitoring & Performance
         # "glances"         # System monitoring tool
-        
+
         # # Network Tools
         # "nmap"            # Network exploration and security scanning
         # "wireshark"       # Network protocol analyzer
         # "netcat"         # Networking utility for reading/writing network connections
         # "mtr"             # Network diagnostic tool
-        
+
         # # Security & Encryption
         # "gnupg"           # GNU Privacy Guard encryption
         # "bitwarden"       # Password manager
         # "1password"      # Popular password manager alternative
         # "veracrypt"       # Disk encryption software
-        
+
         # # Productivity
         # "taskwarrior"     # Command-line task management
         # "pandoc"          # Universal document converter
         # "asciinema"       # Terminal session recorder
-        
+
         # # Database Tools
         # - pgcli           # PostgreSQL CLI with auto-completion
         # - mycli           # MySQL/MariaDB CLI with auto-completion
@@ -145,12 +146,12 @@
         "kindle"           # Amazon's e-book reader
         "whatsapp"         # Messaging app
         "zoom"             # Video conferencing
-        
+
         # Gaming & Creative
         "blender"          # 3D creation suite
         "unity-hub"        # Game development platform
         "minecraft"        # Gaming
-        
+
         # System & Utilities
         "aldente"          # Battery management
         # "amphetamine"      # Keep system awake # missing in brew
@@ -160,7 +161,7 @@
         "lastpass"         # Password manager
         # "dropover"         # Drag and drop enhancement # missing in brew - install via setapp
         "flow"             # Focus timer
-        
+
         # Media & Entertainment
         "vlc"              # Media player
         "iina"            # Modern media player for macOS
@@ -175,13 +176,13 @@
     "less"          # Terminal pager for viewing file contents
     "cmake"           # Cross-platform build system generator
     "dlib"            # C++ toolkit for machine learning
-    "tree"            # Directory listing in tree-like format 
+    "tree"            # Directory listing in tree-like format
     "ffmpeg"          # Swiss army knife for audio/video processing
 
     # custom
     "gh"            # GitHub's official command line tool
     # "docker"        # CLI interface for Docker containers - conflicts with brew
-    
+
     # style
     "oh-my-zsh"     # Framework for managing zsh configuration
     "zsh-powerlevel10k"  # Modern, fast zsh theme
@@ -228,7 +229,7 @@
     "sqlite"         # Self-contained SQL database engine
     "xz"             # Data compression utility and library
     "zstd"           # Fast real-time compression algorithm
-    "SDL2"           # Multimedia library for audio, video, input and more 
+    "SDL2"           # Multimedia library for audio, video, input and more
     "gettext"        # Internationalization and localization system
     "libuv"          # Multi-platform support library with focus on asynchronous I/O
     # gcc is in brew instead
@@ -240,20 +241,20 @@
     "fd"             # User-friendly alternative to find
     "fzf"            # Command-line fuzzy finder
     "trash-cli"      # Safer alternative to rm
-    
+
     # Process & System Monitoring
     "bottom"         # System resource monitor (btop)
     "procs"         # Modern replacement for ps
-    
+
     # Text Processing & Viewing
     "sd"            # Simpler syntax for sed
     "most"          # More feature-rich pager than less
     "dust"          # More intuitive du
     "gping"         # Ping with graphs
     "mtr"           # Better traceroute
-    
+
     # File Operations
     "rsync"         # Advanced file copying
     "delta"           # Syntax highlighting pager for git diffs
   ];
-} 
+}
