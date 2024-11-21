@@ -62,6 +62,7 @@
   outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, nixpkgs-unstable, disko, poetry2nix, agenix, ... } @inputs: # , secrets # todo: add secrets back
   let
     user = "petr";
+    userConfig = (import ./config/default.nix).userconfigs.${user};
     darwinSystem = "default";
     system = "aarch64-darwin";
 
