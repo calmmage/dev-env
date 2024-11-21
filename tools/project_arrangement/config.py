@@ -22,10 +22,14 @@ class ProjectArrangerSettings(BaseSettings):
     ## secondary groups
     templates: Set[str] = set()
     libs: Set[str] = set()
+    cool: Set[str] = set()
 
     # group 3: auto sorting
     ## main groups
     ## secondary groups
+    auto_sort_days: int = 30
+    auto_sort_commits: int = 5
+    auto_sort_size: int = 10000
 
     # group 4: extras
     ignored_dirs: Set[str] = {

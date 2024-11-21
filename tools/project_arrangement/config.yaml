@@ -10,21 +10,26 @@ root_paths:
 
 # part 2: manual sorting
 
-# skip these projects
-ignored_projects:
+ignore:
+  - python-o365
+  - isnimschikov-bot-template
+actual:
+  - calmlib
+  - dev-env
+  - botspot
+  # - calmmage
+  # - calmmage-private
+archive:
+  - siri-ask-gpt
+experiments:
+  - taskzilla-cm
+
+# secondary groups
+cool:
+  - fedor-bot-idea
+templates:
   - base-template
-  - typescript-project-template
+#   - typescript-project-template
   - python-project-template
   - seasonal-dir-template
-  - foam-template
-  - teletalk-template
-  - bot-template
   - bot-lib-bot-template
-
-main_projects:
-  - calmmage
-  - calmlib
-  - bot-lib
-  - taskzilla-cm
-  - FastUI
-  - lessmore

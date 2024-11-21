@@ -55,9 +55,9 @@ nixup
 - interactively: runp alias
 - in scripts: 
   - option 1: direct path to python executable
-    - e.g. ~/.calmmage/dev_env/.venv/bin/python3 (should match the value of CALMMAGE_POETRY_ENV_PATH)
+    - e.g. ~/.calmmage/dev_env/.venv/bin/python3 (should match the value of DEV_ENV_PATH)
   - option 2: source ~/.zshrc and use runp alias
-  - todo: option 3 - add env vars to ~/.env and load them from there, then use CALMMAGE_POETRY_ENV_PATH path
+  - todo: option 3 - add env vars to ~/.env and load them from there, then use DEV_ENV_PATH path
 
 ## project management
 - np (new project) alias - create a new project
@@ -90,7 +90,7 @@ nixup
 What it does:
 1) clones dev_env repo to ~/.calmmage/dev_env
 2) sets up zshrc and aliases (add source to ~/.zshrc)
-3) sets up env variables CALMMAGE_POETRY_ENV_PATH and CALMMAGE_DEV_ENV_PATH
+3) sets up env variables DEV_ENV_PATH and CALMMAGE_DEV_ENV_PATH
 
 # Dev
 
@@ -107,7 +107,7 @@ https://www.notion.so/Troubleshoot-throwaway-11fbc5d57f7c80a993eff1ccaa7c253e?pv
     - Option 1: just use direct path to python executable
         - e.g. ~/.calmmage/dev_env/.venv/bin/python3
     - Option 2: use my custom alias `runp`
-        - It requires env variable $CALMMAGE_POETRY_ENV_PATH to be set
+        - It requires env variable $DEV_ENV_PATH to be set
 2. How to set up a new dev env from scratch - or refresh it
     - a) clone dev_env repo somewhere
     - b) run setup.py script using
