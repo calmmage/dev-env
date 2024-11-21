@@ -56,7 +56,7 @@ in
     users.${user} = { pkgs, config, lib, ... }: {
       home = {
         enableNixpkgsReleaseCheck = false;
-        packages = (pkgs.callPackage ./packages.nix {}) ++ userConfig.packages;
+        packages = userConfig.packages;
         # todo: for now, files.nix is disabled because it's empty.
         #  file = lib.mkMerge [
         #      files

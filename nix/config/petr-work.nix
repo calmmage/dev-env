@@ -17,7 +17,7 @@ in
 
     casks = shared.homebrew.casks ++ [
       # Communication
-      "microsoft-teams"
+#      "microsoft-teams"
     ];
 
     masApps = shared.homebrew.masApps // {
@@ -27,5 +27,8 @@ in
 
   packages = shared.packages ++ (with pkgs; [
     # Add work-specific packages here
+    ollama
+
+    teams           # Microsoft Teams client
   ]);
 }
