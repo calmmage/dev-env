@@ -31,7 +31,7 @@ in
     enable = true;
 
     brews = userConfig.homebrew.brews;
-    casks = pkgs.callPackage ./casks.nix {} ++ userConfig.homebrew.casks;
+    casks = userConfig.homebrew.casks;
     masApps = userConfig.homebrew.masApps;
 
     onActivation = {
