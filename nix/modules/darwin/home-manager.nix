@@ -31,7 +31,7 @@ in
     enable = true;
 
     brews = userConfig.homebrew.brews;
-    casks = pkgs.callPackage ./casks.nix {} ++ userConfig.homebrew.casks;
+    casks = userConfig.homebrew.casks;
     masApps = userConfig.homebrew.masApps;
 
     onActivation = {
@@ -56,7 +56,7 @@ in
     users.${user} = { pkgs, config, lib, ... }: {
       home = {
         enableNixpkgsReleaseCheck = false;
-        packages = (pkgs.callPackage ./packages.nix {}) ++ userConfig.packages;
+        packages = userConfig.packages;
         # todo: for now, files.nix is disabled because it's empty.
         #  file = lib.mkMerge [
         #      files

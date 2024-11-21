@@ -79,7 +79,7 @@ in
           poetry-core
         ];
       })
-    ] ++ (import ../../modules/darwin/packages.nix { inherit pkgs; }) ++ userConfig.packages;
+    ] ++ userConfig.packages;
 
     systemPath = [
       "/opt/homebrew/bin"

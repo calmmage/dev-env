@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dev-env"
-version = "0.0.2"
+version = "0.1.24"
 description = ""
 authors = ["Petr Lavrov <calmmage@gmail.com>"]
 readme = "README.md"
@@ -24,7 +24,7 @@ pyrogram = {git = "https://github.com/KurimuzonAkuma/pyrogram", branch = "master
 ##mtprotocrypt = "*"
 aiogram = "*"
 
-typer-cli = {version =  "0.12.5", extras = ["all"]}
+typer-cli = {version =  "0.13.1", extras = ["all"]}
 
 [tool.poetry.group.extras.dependencies]
 # dependencies for extra features
