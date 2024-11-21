@@ -1,4 +1,7 @@
 { pkgs }:
+let
+  shared = import ./shared.nix { inherit pkgs; };
+in
 {
   username = "petrlavrov";
   full_name = "Petr Lavrov";
@@ -8,11 +11,11 @@
   secrets_repo_url = "git+ssh://git@github.com/calmmage/nix-secrets.git";
 
   homebrew = {
-#    brews = [
-##      "sonar-scanner"
-#    ];
+    brews = shared.homebrew.brews ++ [
+      # "sonar-scanner" is commented out
+    ];
 
-    casks = [
+    casks = shared.homebrew.casks ++ [
         # Personal & Entertainment
         "discord"           # Gaming chat and communities
         "steam"            # Gaming platform
@@ -42,12 +45,13 @@
         "iina"            # Modern media player for macOS
     ];
 
-    masApps = {
+    masApps = shared.homebrew.masApps // {
       "hp-smart" = 1474276998;
       "amphetamine" = 937984704;
     };
   };
 
-#  packages = with pkgs; [
-#  ];
+  packages = shared.packages ++ (with pkgs; [
+    # Add personal-specific packages here
+  ]);
 }
