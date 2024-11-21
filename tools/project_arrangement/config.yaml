@@ -1,0 +1,35 @@
+# Project sorting configuration
+
+# part 1: general
+dry_run: true
+root_paths:
+  - ~/work/projects
+  - ~/work/archive
+  - ~/work/experiments
+
+
+# part 2: manual sorting
+
+ignore:
+  - python-o365
+  - isnimschikov-bot-template
+actual:
+  - calmlib
+  - dev-env
+  - botspot
+  # - calmmage
+  # - calmmage-private
+archive:
+  - siri-ask-gpt
+experiments:
+  - taskzilla-cm
+
+# secondary groups
+cool:
+  - fedor-bot-idea
+templates:
+  - base-template
+#   - typescript-project-template
+  - python-project-template
+  - seasonal-dir-template
+  - bot-lib-bot-template

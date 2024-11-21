@@ -9,6 +9,19 @@ if [ -z "$DEV_ENV_PATH" ]; then
     echo "Warning: DEV_ENV_PATH is not set. Please run dev-env/bootstrap.sh to configure it."
 fi
 
+# Function to explain how to add a new tool alias
+add_tool() {
+    echo "Instructions for adding a new tool alias:"
+    echo "1. Make sure DEV_ENV_PATH is set correctly at ~/.dev-env-location"
+    echo "2. Add your tool script to dev_env repo in tools/"
+    echo "3. Add an alias to dev_env/nix/modules/home-manager/dotfiles/zshrc in one of these formats:"
+    echo "   - For direct Python scripts:"
+    echo "     alias toolname=\"$DEV_ENV_PATH/.venv/bin/python \$DEV_ENV_PATH/tools/your_tool.py\""
+    echo "   - For Typer CLI tools:" 
+    echo "     alias toolname=\"\$DEV_ENV_PATH/.venv/bin/typer \$DEV_ENV_PATH/tools/your_tool/your_tool.py\""
+    echo "4. nix-shell -p zsh"
+    echo "5. source ~/.zshrc (or restart your terminal)"
+}
 
 
 # ------------------------------------------------------------------------------
@@ -123,14 +136,14 @@ change_dir_regexp() {
 }
 
 
-# requires export CALMMAGE_POETRY_ENV_PATH="/path/to/poetry/env"
-# default - CALMMAGE_POETRY_ENV_PATH="$HOME/.calmmage/dev_env/.venv"
+# requires export DEV_ENV_PATH="/path/to/poetry/env"
+# default - DEV_ENV_PATH="$HOME/.calmmage/dev_env/.venv"
 # export PROJECTS_ROOT="$HOME/work/projects"
 
 run_with_poetry() {
     # Check if the environment variable is set
-    if [ -z "$CALMMAGE_POETRY_ENV_PATH" ]; then
-        echo "Error: CALMMAGE_POETRY_ENV_PATH must be set"
+    if [ -z "$DEV_ENV_PATH" ]; then
+        echo "Error: DEV_ENV_PATH must be set"
         return 1
     fi
 
@@ -153,7 +166,7 @@ run_with_poetry() {
 
     # Activate the Poetry environment, run the script with any additional args, and deactivate
     (
-        source "$CALMMAGE_POETRY_ENV_PATH/bin/activate" && \
+        source "$DEV_ENV_PATH/bin/activate" && \
         python "$SCRIPT_PATH" "$@" && \
         deactivate
     )

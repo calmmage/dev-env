@@ -1,0 +1,6 @@
+root_paths:
+  - ~/work/projects
+  - ~/work/archive
+  - ~/work/experiments
+
+codecov_fail_under: 50
