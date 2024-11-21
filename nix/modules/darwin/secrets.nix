@@ -14,7 +14,7 @@ let user = "petr"; in
   #       instead, you can reference the age files and specify the symlink path here. Then add your
   #       public key in shared/files.nix.
   #
-  #       If you change the key name, you'll need to update the SSH configuration in shared/home-manager-common.nix
+  #       If you change the key name, you'll need to update the SSH configuration in programs.nix
   #       so Github reads it correctly.
 
   #

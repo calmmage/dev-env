@@ -14,7 +14,7 @@ let
 in
 {
   imports = [
-   ./dock
+    ./dock
   ];
 
   # It me
@@ -92,7 +92,7 @@ in
         #  ];
         stateVersion = "23.11";
       };
-      programs = {} // import ./home-manager-common.nix { inherit config pkgs lib; };
+      programs = {} // import ./programs.nix { inherit config pkgs lib; };
 
       # Marked broken Oct 20, 2022 check later to remove this
       # https://github.com/nix-community/home-manager/issues/3344
