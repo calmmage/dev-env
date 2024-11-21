@@ -64,10 +64,33 @@
     lib = nixpkgs.lib;
     system = "aarch64-darwin";
     
-    # Initialize poetry2nix first
+    # Define pythonOverlay here so it's available during initial pkgs setup
+    pythonOverlay = final: prev: {
+      ghostscript = prev.ghostscript.overrideAttrs (old: {
+        doCheck = false;
+      });
+      
+      python311 = prev.python311.override {
+        packageOverrides = pyFinal: pyPrev: {
+          dnspython = pyPrev.dnspython.overridePythonAttrs (old: {
+            doCheck = false;
+          });
+          cherrypy = pyPrev.cherrypy.overridePythonAttrs (old: {
+            doCheck = false;
+          });
+          matplotlib = pyPrev.matplotlib.overridePythonAttrs (old: {
+            doCheck = false;
+            buildInputs = builtins.filter (p: p.pname or "" != "ghostscript") (old.buildInputs or []);
+          });
+        };
+      };
+    };
+
+    # Initialize pkgs with both overlays
     pkgs = import nixpkgs {
       inherit system;
       overlays = [
+        pythonOverlay
         poetry2nix.overlays.default
         (final: prev: {
           # Add any additional overlays here

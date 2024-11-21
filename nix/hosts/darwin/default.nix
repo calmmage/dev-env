@@ -1,40 +1,10 @@
 { agenix, config, pkgs, lib, poetry2nix, userConfig, ... }:
 
 let
-  user = userConfig.username;
   inherit (lib) mkEnableOption mkOption types;
   # Add an overlay to disable tests for problematic Python packages
-  pythonOverlay = final: prev: {
-    # Disable ghostscript tests that are failing on Darwin
-    ghostscript = prev.ghostscript.overrideAttrs (old: {
-      doCheck = false;
-    });
-    
-    python311 = prev.python311.override {
-      packageOverrides = pyFinal: pyPrev: {
-        dnspython = pyPrev.dnspython.overridePythonAttrs (old: {
-          doCheck = false;  # Disable tests for dnspython
-        });
-        cherrypy = pyPrev.cherrypy.overridePythonAttrs (old: {
-          doCheck = false;  # Disable tests for cherrypy
-        });
-        # Add matplotlib override to skip ghostscript dependency
-        matplotlib = pyPrev.matplotlib.overridePythonAttrs (old: {
-          doCheck = false;
-          # Optionally disable ghostscript dependency if you don't need PDF support
-          buildInputs = builtins.filter (p: p.pname or "" != "ghostscript") (old.buildInputs or []);
-        });
-      };
-    };
-  };
 in
 {
-  # Extend the overlays
-  nixpkgs.overlays = lib.mkAfter [
-    pythonOverlay
-    poetry2nix.overlays.default
-  ];
-
   imports = [
   # todo: re-enable secrets
 #    ../../modules/darwin/secrets.nix
@@ -45,12 +15,11 @@ in
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
 
-  # todo: user config
-#  networking = {
-#    computerName = userConfig.computer_name;
-#    hostName = userConfig.host_name;
-#    localHostName = userConfig.local_host_name;
-#  };
+  networking = {
+    computerName = userConfig.computer_name;
+    hostName = userConfig.host_name;
+    localHostName = userConfig.host_name;
+  };
 
   # fonts.fontDir.enable = true; # DANGER
   fonts.packages = [ (pkgs.nerdfonts.override { fonts = [ "Meslo" ]; }) ];
@@ -61,7 +30,7 @@ in
   nix = {
     package = pkgs.nix;
     settings = {
-      trusted-users = [ "root" "@admin" "${user}" ];
+      trusted-users = [ "root" "@admin" "${userConfig.username}" ];
       substituters = [ "https://nix-community.cachix.org" "https://cache.nixos.org" ];
       trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];
     };
