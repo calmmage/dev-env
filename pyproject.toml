@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dev-env"
-version = "0.1.12"
+version = "0.1.13"
 description = ""
 authors = ["Petr Lavrov <calmmage@gmail.com>"]
 readme = "README.md"
@@ -81,10 +81,10 @@ openai = ">=1.45"             # OpenAI API client
 ##scp = "*"                   # Secure copy
 ##pymorphy2 = "*"             # Morphological analyzer
 #
-#[tool.poetry.group.test.dependencies]
-#pytest = ">=6"
-#pytest-mongodb = "*"
-#
+[tool.poetry.group.test.dependencies]
+pytest = ">=6"
+pytest-mongodb = "*"
+
 #[tool.poetry.group.docs.dependencies]
 ##mkdocs = ">=1.6"
 #
