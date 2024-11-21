@@ -2,7 +2,7 @@
 
 with pkgs; [
   # General packages for development and system management
-  alacritty
+  # alacritty
   aspell
   aspellDicts.en
   bash-completion
@@ -18,6 +18,7 @@ with pkgs; [
   age-plugin-yubikey
   gnupg
   libfido2
+
 
   # Cloud-related tools and SDKs
   docker

@@ -42,6 +42,7 @@ in
       "gcc" # GNU Compiler Collection
       "sonar-scanner"
       "yarn" # Adding yarn package manager
+      "pinentry-mac"
       # add fkill? how?
     ];
     #  casks = userConfig.homebrew.casks;
@@ -107,7 +108,7 @@ in
       # todo: update a list of apps
         { path = "/System/Applications/System Settings.app/"; }
         { path = "/Applications/Raycast.app/"; }
-        { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
+        # { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
 #        {
 #          path = toString myEmacsLauncher;
 #          section = "others";

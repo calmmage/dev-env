@@ -7,6 +7,7 @@ _:
 
     # Utility Tools
     # "syncthing"
+    "pinentry-mac"  # GPG password manager
 
     # Development
     "docker"  # docker desktop app
