@@ -51,8 +51,8 @@ let name = userConfig.full_name;
       ll = "ls -la";
       g = "git";
       dc = "docker-compose";
-      nixnix= "nix flake update; darwin-rebuild switch --flake .#${user}";
-      nixswitch = "darwin-rebuild switch --flake $DEV_ENV_PATH/nix/.#${user}";
+      nixnix= "nix flake update; darwin-rebuild switch --flake .#$USER";
+      nixswitch = "darwin-rebuild switch --flake $DEV_ENV_PATH/nix/.#$USER";
       nixup = "pushd $DEV_ENV_PATH/nix; git stash; git pull; nix flake update; nixswitch; popd";
     };
 

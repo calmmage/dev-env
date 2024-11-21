@@ -7,5 +7,6 @@ in
   userconfigs = {
     petr = shared // petrWork;
     petrlavrov = shared // petrPersonal;
+    default = shared;
   };
 }
