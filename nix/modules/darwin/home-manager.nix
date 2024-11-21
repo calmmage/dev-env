@@ -28,47 +28,16 @@ in
   homebrew = {
     caskArgs.no_quarantine = true;
     global.brewfile = true;
-
-    # todo: Use brew packages from user config
-    #  brews = userConfig.homebrew.brews;
-    brews = [
-      # Development essentials that work better with brew
-      # "poetry"
-      # "ripgrep"
-      "python@3.11"
-      "python@3.12"
-      "node" # Node.js - often better to use brew for JS ecosystem
-      "git-lfs" # Git Large File Storage
-      "gcc" # GNU Compiler Collection
-      "sonar-scanner"
-      "yarn" # Adding yarn package manager
-      "pinentry-mac"
-      # add fkill? how?
-    ];
-    #  casks = userConfig.homebrew.casks;
     enable = true;
-    casks = pkgs.callPackage ./casks.nix {};
+
+    brews = userConfig.homebrew.brews;
+    casks = pkgs.callPackage ./casks.nix {} ++ userConfig.homebrew.casks;
+    masApps = userConfig.homebrew.masApps;
+
     onActivation = {
       autoUpdate = true;
       cleanup = "uninstall";
       upgrade = true;
-    };
-
-    # These app IDs are from using the mas CLI app
-    # mas = mac app store
-    # https://github.com/mas-cli/mas
-    #
-    # $ nix shell nixpkgs#mas
-    # $ mas search <app name>
-    #
-    # If you have previously added these apps to your Mac App Store profile (but not installed them on this system),
-    # you may receive an error message "Redownload Unavailable with This Apple ID".
-    # This message is safe to ignore. (https://github.com/dustinlyons/nixos-config/issues/83)
-
-    masApps = {
-      "flow" = 1423210932;
-      #  "1password" = 1333542190;
-      #  "wireguard" = 1451685025;
     };
   };
 
@@ -84,10 +53,10 @@ in
     };
     #  users.${userConfig.username} = import ./modules/home-manager;
     # todo: unify username and use config
-    users.${user} = { pkgs, config, lib, ... }:{
+    users.${user} = { pkgs, config, lib, ... }: {
       home = {
         enableNixpkgsReleaseCheck = false;
-        packages = pkgs.callPackage ./packages.nix {};
+        packages = (pkgs.callPackage ./packages.nix {}) ++ userConfig.packages;
         # todo: for now, files.nix is disabled because it's empty.
         #  file = lib.mkMerge [
         #      files

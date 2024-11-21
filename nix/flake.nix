@@ -62,7 +62,8 @@
   outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, nixpkgs-unstable, disko, poetry2nix, agenix, ... } @inputs: # , secrets # todo: add secrets back
   let
     lib = nixpkgs.lib;
-    userConfigs = (import ./config/default.nix).userconfigs;
+    pkgs = nixpkgs.legacyPackages.${system};
+    userConfigs = (import ./config/default.nix { inherit pkgs; }).userconfigs;
     darwinSystem = "default";
     system = "aarch64-darwin";
 
@@ -102,7 +103,7 @@
     darwinConfigurations = lib.mapAttrs (user: userConfig: darwin.lib.darwinSystem {
       inherit system;
       specialArgs = inputs // {
-        inherit userConfig;
+        inherit userConfig pkgs;
       };
       modules = [
         {
