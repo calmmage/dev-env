@@ -90,14 +90,17 @@ in
         #      files
         #    { "emacs-launcher.command".source = myEmacsLauncher; }
         #  ];
-        stateVersion = "23.11";
+        stateVersion = "24.05"; # backup: "23.11";
       };
       programs = {} // import ./programs.nix { inherit config pkgs lib; };
 
       # Marked broken Oct 20, 2022 check later to remove this
       # https://github.com/nix-community/home-manager/issues/3344
       manual.manpages.enable = false;
+      imports = [ ../shell ];
     };
+    # users.${user}.imports = [ ../shell ];
+
   };
 
   # Fully declarative dock using the latest from Nix Store

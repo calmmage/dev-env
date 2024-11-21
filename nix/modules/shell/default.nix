@@ -4,8 +4,6 @@ let
   user = "petr";
 in
 {
-  # Don't change this when you change package input. Leave it alone.
-  home.stateVersion = "24.05";
 
   # Use packages from user config
   # todo: user config
