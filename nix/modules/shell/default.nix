@@ -1,14 +1,15 @@
 { config, lib, pkgs, ... }: # userConfig,
 
 let
-  dockApps = userConfig.dock.apps;
+  user = "petr";
 in
 {
   # Don't change this when you change package input. Leave it alone.
   home.stateVersion = "24.05";
 
   # Use packages from user config
-  home.packages = map (name: pkgs.${name}) userConfig.home_manager.packages;
+  # todo: user config
+#  home.packages = map (name: pkgs.${name}) userConfig.home_manager.packages;
 
   home.sessionVariables = {
     PAGER = "less";
@@ -21,7 +22,7 @@ in
   imports = [
     ./aliases
     ./scripts
-    ./dotfiles
+#    ./dotfiles
   ];
 
   home.file = {
@@ -45,23 +46,22 @@ in
       /usr/bin/defaults write com.apple.WindowManager EnableTilingOptionAccelerator -bool false
     '';
 
-    dock = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      # Remove all apps from dock first
-      ${pkgs.dockutil}/bin/dockutil --remove all \
-        --no-restart \
-        "$HOME/Library/Preferences/com.apple.dock.plist"
-
-      # Add apps from our config
-      ${lib.concatMapStringsSep "\n" (app: ''
-        ${pkgs.dockutil}/bin/dockutil --add "${app}" \
-          "$HOME/Library/Preferences/com.apple.dock.plist"
-      '') userConfig.dock.apps}
-
-      # Restart dock to apply changes
-      /usr/bin/killall Dock
-    '';
+#    dock = lib.hm.dag.entryAfter ["writeBoundary"] ''
+#      # Remove all apps from dock first
+#      ${pkgs.dockutil}/bin/dockutil --remove all \
+#        --no-restart \
+#        "$HOME/Library/Preferences/com.apple.dock.plist"
+#
+#      # Add apps from our config
+#      ${lib.concatMapStringsSep "\n" (app: ''
+#        ${pkgs.dockutil}/bin/dockutil --add "${app}" \
+#          "$HOME/Library/Preferences/com.apple.dock.plist"
+#      '') userConfig.dock.apps}
+#
+#      # Restart dock to apply changes
+#      /usr/bin/killall Dock
+#    '';
   };
-
 
   # Define help message that was previously in zshrc
   programs.zsh.initExtra = ''
