@@ -60,70 +60,74 @@
 #    };
   };
   outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, nixpkgs-unstable, disko, poetry2nix, agenix, ... } @inputs: # , secrets # todo: add secrets back
-    let
-      user = "petr";
-      darwinSystems = [ "aarch64-darwin" ];
-      forAllSystems = f: nixpkgs.lib.genAttrs (darwinSystems) f;
-      devShell = system: let pkgs = nixpkgs.legacyPackages.${system}; in {
-        default = with pkgs; mkShell {
-          nativeBuildInputs = with pkgs; [ bashInteractive git age age-plugin-yubikey ];
-          shellHook = with pkgs; ''
-            export EDITOR=vim
-          '';
-        };
-      };
-      mkApp = scriptName: system: {
-        type = "app";
-        program = "${(nixpkgs.legacyPackages.${system}.writeScriptBin scriptName ''
-          #!/usr/bin/env bash
-          PATH=${nixpkgs.legacyPackages.${system}.git}/bin:$PATH
-          echo "Running ${scriptName} for ${system}"
-          exec ${self}/apps/${system}/${scriptName}
-        '')}/bin/${scriptName}";
-      };
-      mkDarwinApps = system: {
-        "apply" = mkApp "apply" system;
-        "build" = mkApp "build" system;
-        "build-switch" = mkApp "build-switch" system;
-        "copy-keys" = mkApp "copy-keys" system;
-        "create-keys" = mkApp "create-keys" system;
-        "check-keys" = mkApp "check-keys" system;
-        "rollback" = mkApp "rollback" system;
-      };
-    in
-    {
-      devShells = forAllSystems devShell;
-      apps = nixpkgs.lib.genAttrs darwinSystems mkDarwinApps;
+  let
+    user = "petr";
+    darwinSystem = "default";
+    system = "aarch64-darwin";
 
-      darwinConfigurations = nixpkgs.lib.genAttrs darwinSystems (system:
-        darwin.lib.darwinSystem {
-          inherit system;
-          specialArgs = inputs;
-          modules = [
-            {
-              nixpkgs.config.allowUnfree = true;
-              nixpkgs.config.allowBroken = true;
-              nixpkgs.config.allowInsecure = false;
-              nixpkgs.config.allowUnsupportedSystem = false;
-            }
-            home-manager.darwinModules.home-manager
-            nix-homebrew.darwinModules.nix-homebrew
-            {
-              nix-homebrew = {
-                inherit user;
-                enable = true;
-                taps = {
-                  "homebrew/homebrew-core" = homebrew-core;
-                  "homebrew/homebrew-cask" = homebrew-cask;
-                  "homebrew/homebrew-bundle" = homebrew-bundle;
-                };
-                mutableTaps = false;
-                autoMigrate = true;
-              };
-            }
-            ./hosts/darwin
-          ];
-        }
-      );
+    # Define devShell for a single system
+    devShell = let pkgs = nixpkgs.legacyPackages.${darwinSystem}; in {
+      default = with pkgs; mkShell {
+        nativeBuildInputs = [ bashInteractive git age age-plugin-yubikey ];
+        shellHook = ''
+          export EDITOR=vim
+        '';
+      };
     };
+
+    # Define a single app wrapper
+    mkApp = scriptName: {
+      type = "app";
+      program = "${(nixpkgs.legacyPackages.${darwinSystem}.writeScriptBin scriptName ''
+        #!/usr/bin/env bash
+        PATH=${nixpkgs.legacyPackages.${darwinSystem}.git}/bin:$PATH
+        echo "Running ${scriptName} for ${darwinSystem}"
+        exec ${self}/apps/aarch64-darwin/${scriptName}
+      '')}/bin/${scriptName}";
+    };
+
+    # Define specific apps directly
+    darwinApps = {
+      "apply" = mkApp "apply";
+      "build" = mkApp "build";
+      "build-switch" = mkApp "build-switch";
+      "copy-keys" = mkApp "copy-keys";
+      "create-keys" = mkApp "create-keys";
+      "check-keys" = mkApp "check-keys";
+      "rollback" = mkApp "rollback";
+    };
+  in
+  {
+    darwinConfigurations.default = darwin.lib.darwinSystem {
+      inherit system;
+      specialArgs = inputs;
+      modules = [
+        {
+          nixpkgs.config.allowUnfree = true;
+          nixpkgs.config.allowBroken = true;
+          nixpkgs.config.allowInsecure = false;
+          nixpkgs.config.allowUnsupportedSystem = false;
+        }
+        home-manager.darwinModules.home-manager
+        nix-homebrew.darwinModules.nix-homebrew
+        {
+          nix-homebrew = {
+            inherit user;
+            enable = true;
+            taps = {
+              "homebrew/homebrew-core" = homebrew-core;
+              "homebrew/homebrew-cask" = homebrew-cask;
+              "homebrew/homebrew-bundle" = homebrew-bundle;
+            };
+            mutableTaps = false;
+            autoMigrate = true;
+          };
+        }
+        ./hosts/darwin
+      ];
+    };
+
+    devShells.default = devShell;
+    apps.default = darwinApps;
+  };
 }

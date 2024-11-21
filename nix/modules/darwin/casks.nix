@@ -47,7 +47,7 @@ _:
     # hazeover
 
     # Creative
-    "adobe-creative-cloud"
+#    "adobe-creative-cloud"
 
     # Suggestions from Claude
 
