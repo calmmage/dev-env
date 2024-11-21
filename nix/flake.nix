@@ -62,13 +62,28 @@
   outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, nixpkgs-unstable, disko, poetry2nix, agenix, ... } @inputs: # , secrets # todo: add secrets back
   let
     lib = nixpkgs.lib;
-    pkgs = nixpkgs.legacyPackages.${system};
-    userConfigs = (import ./config/default.nix { inherit pkgs; }).userconfigs;
-    darwinSystem = "default";
     system = "aarch64-darwin";
+    
+    # Initialize poetry2nix first
+    pkgs = import nixpkgs {
+      inherit system;
+      overlays = [
+        poetry2nix.overlays.default
+        (final: prev: {
+          # Add any additional overlays here
+        })
+      ];
+      config = {
+        allowUnfree = true;
+        allowBroken = true;
+      };
+    };
+
+    # Then load user configs with the properly initialized pkgs
+    userConfigs = (import ./config/default.nix { inherit pkgs; }).userconfigs;
 
     # Define devShell for a single system
-    devShell = let pkgs = nixpkgs.legacyPackages.${darwinSystem}; in {
+    devShell = let pkgs = nixpkgs.legacyPackages.${system}; in {
       default = with pkgs; mkShell {
         nativeBuildInputs = [ bashInteractive git age age-plugin-yubikey ];
         shellHook = ''
@@ -80,10 +95,10 @@
     # Define a single app wrapper
     mkApp = scriptName: {
       type = "app";
-      program = "${(nixpkgs.legacyPackages.${darwinSystem}.writeScriptBin scriptName ''
+      program = "${(nixpkgs.legacyPackages.${system}.writeScriptBin scriptName ''
         #!/usr/bin/env bash
-        PATH=${nixpkgs.legacyPackages.${darwinSystem}.git}/bin:$PATH
-        echo "Running ${scriptName} for ${darwinSystem}"
+        PATH=${nixpkgs.legacyPackages.${system}.git}/bin:$PATH
+        echo "Running ${scriptName} for ${system}"
         exec ${self}/apps/aarch64-darwin/${scriptName}
       '')}/bin/${scriptName}";
     };
@@ -107,10 +122,12 @@
       };
       modules = [
         {
-          nixpkgs.config.allowUnfree = true;
-          nixpkgs.config.allowBroken = true;
-          nixpkgs.config.allowInsecure = false;
-          nixpkgs.config.allowUnsupportedSystem = false;
+          nixpkgs.config = {
+            allowUnfree = true;
+            allowBroken = true;
+            allowInsecure = false;
+            allowUnsupportedSystem = false;
+          };
         }
         home-manager.darwinModules.home-manager
         nix-homebrew.darwinModules.nix-homebrew
