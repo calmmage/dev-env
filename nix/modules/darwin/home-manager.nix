@@ -1,7 +1,7 @@
-{ config, pkgs, lib, home-manager, ... }:
+{ config, pkgs, lib, home-manager, userConfig, ... }:
 
 let
-  user = "petr";
+  user = userConfig.username;
   # Define the content of your file as a derivation
 #  myEmacsLauncher = pkgs.writeScript "emacs-launcher.command" ''
 #    #!/bin/sh
@@ -79,6 +79,9 @@ in
     backupFileExtension = "backup";
     # todo: use config here
     #  extraSpecialArgs = specialArgs;  # Pass specialArgs to home-manager modules
+    extraSpecialArgs = {
+      inherit userConfig;
+    };
     #  users.${userConfig.username} = import ./modules/home-manager;
     # todo: unify username and use config
     users.${user} = { pkgs, config, lib, ... }:{
@@ -92,7 +95,7 @@ in
         #  ];
         stateVersion = "24.05"; # backup: "23.11";
       };
-      programs = {} // import ./programs.nix { inherit config pkgs lib; };
+      programs = {} // import ./programs.nix { inherit config pkgs lib userConfig; };
 
       # Marked broken Oct 20, 2022 check later to remove this
       # https://github.com/nix-community/home-manager/issues/3344

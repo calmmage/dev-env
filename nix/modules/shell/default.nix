@@ -1,7 +1,7 @@
-{ config, lib, pkgs, ... }: # userConfig,
+{ config, lib, pkgs, userConfig, ... }:
 
 let
-  user = "petr";
+  user = userConfig.username;
 in
 {
 

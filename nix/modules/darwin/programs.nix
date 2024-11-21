@@ -1,8 +1,8 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, userConfig, ... }:
 
-let name = "Petr Lavrov";
-    user = "petr";
-    email = "petr@superlinear.com"; in
+let name = userConfig.full_name;
+    user = userConfig.username;
+    email = userConfig.email; in
 {
   bat = {
     enable = true;

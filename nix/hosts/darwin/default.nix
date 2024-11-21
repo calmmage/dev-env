@@ -1,7 +1,7 @@
-{ agenix, config, pkgs, lib, poetry2nix, ... }:
+{ agenix, config, pkgs, lib, poetry2nix, userConfig, ... }:
 
 let
-  user = "petr";
+  user = userConfig.username;
   inherit (lib) mkEnableOption mkOption types;
   # Add an overlay to disable tests for problematic Python packages
   pythonOverlay = final: prev: {

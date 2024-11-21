@@ -101,7 +101,9 @@
   {
     darwinConfigurations.default = darwin.lib.darwinSystem {
       inherit system;
-      specialArgs = inputs;
+      specialArgs = inputs // {
+        inherit userConfig;
+      };
       modules = [
         {
           nixpkgs.config.allowUnfree = true;

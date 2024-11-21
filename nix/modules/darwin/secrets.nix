@@ -1,7 +1,7 @@
-{ config, pkgs, agenix, secrets, ... }:
+{ config, pkgs, agenix, secrets, userConfig, ... }:
 
 # todo: reintroduce this file
-let user = "petr"; in
+let user = userConfig.username; in
 {
   age.identityPaths = [
     "/Users/${user}/.ssh/id_ed25519"
