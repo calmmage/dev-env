@@ -8,55 +8,46 @@
   secrets_repo_url = "git+ssh://git@github.com/calmmage/nix-secrets.git";
 
   homebrew = {
-    brews = [
-      "sonar-scanner"
-    ];
+#    brews = [
+##      "sonar-scanner"
+#    ];
 
     casks = [
-      # Gaming & Entertainment
-      "discord"
-      "steam"
-      "epic-games"
-      "minecraft"
-      
-      # Creative
-      "blender"
-      "unity-hub"
-      "obs"
-      
-      # Media & Communication
-      "kindle"
-      "whatsapp"
-      "zoom"
-      "vlc"
-      "iina"
-      
-      # System & Utilities
-      "aldente"
-      "grandperspective"
-      "lastpass"
-      "flow"
+        # Personal & Entertainment
+        "discord"           # Gaming chat and communities
+        "steam"            # Gaming platform
+        "epic-games"       # Epic Games store
+        "obs"              # Streaming and recording
+        "kindle"           # Amazon's e-book reader
+        "whatsapp"         # Messaging app
+        "zoom"             # Video conferencing
+
+        # Gaming & Creative
+        "blender"          # 3D creation suite
+        "unity-hub"        # Game development platform
+        "minecraft"        # Gaming
+        # "adobe-creative-cloud"
+
+        # System & Utilities
+        "grandperspective" # Disk space visualization
+        "lastpass"         # Password manager
+
+        # installing via setapp
+        # "dropover"         # Drag and drop enhancement 
+        # "hand-mirror"      # Quick camera check
+        # "aldente"          # Battery management
+
+        # Media & Entertainment
+        "vlc"              # Media player
+        "iina"            # Modern media player for macOS
     ];
+
+    masApps = {
+      "hp-smart" = 1474276998;
+      "amphetamine" = 937984704;
+    };
   };
 
-  packages = with pkgs; [
-    # AWS & Cloud
-    awscli2
-    
-    # Development
-    cmake
-    dlib
-    
-    # System Monitoring
-    bottom
-    procs
-    htop
-    duf
-    
-    # Additional Utils
-    sd
-    dust
-    gping
-    mtr
-  ];
+#  packages = with pkgs; [
+#  ];
 }

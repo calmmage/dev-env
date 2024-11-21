@@ -13,34 +13,11 @@
     ];
 
     casks = [
-      # Development
-      "cursor"
-      "karabiner-elements"
-      "launchcontrol"
-      
       # Communication
       "microsoft-teams"
-      
-      # Productivity
-      "adobe-creative-cloud"
     ];
   };
 
-  packages = with pkgs; [
-    # Development Tools
-    nixfmt-classic
-    pgbadger
-    git-remote-codecommit
-    gitflow
-    
-    # AWS & Cloud
-    awscli2
-    
-    # System Tools
-    inetutils
-    
-    # Additional Utils
-    age
-    shntool
-  ];
+#  packages = with pkgs; [
+#  ];
 }
