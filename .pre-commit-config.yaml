@@ -10,4 +10,4 @@ repos:
     hooks:
       - id: nbstripout
         files: \.ipynb$
-        stages: [commit]
+        stages: [pre-commit]
