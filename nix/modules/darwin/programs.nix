@@ -46,6 +46,27 @@ let name = userConfig.full_name;
         file = "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
       }
     ];
+
+    shellAliases = {
+      ll = "ls -la";
+      g = "git";
+      dc = "docker-compose";
+      nixnix= "nix flake update; darwin-rebuild switch --flake .#${user}";
+      nixswitch = "darwin-rebuild switch --flake $DEV_ENV_PATH/nix/.#${user}";
+      nixup = "pushd $DEV_ENV_PATH/nix; git stash; git pull; nix flake update; nixswitch; popd";
+    };
+
+    initExtra = ''
+      # Any custom zsh code goes here
+      source ~/.p10k.zsh
+      source ~/.aliases
+      source ~/.zshrc.local
+      source ~/.zsh-custom-functions
+
+      # Initialize zoxide
+      eval "$(zoxide init zsh)"
+    '';
+
     initExtraFirst = ''
       if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
         . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
@@ -87,6 +108,24 @@ let name = userConfig.full_name;
       # Always color ls and group directories
       alias ls='ls --color=auto'
     '';
+
+    oh-my-zsh = {
+      enable = true;
+      theme = "robbyrussell";
+      plugins = [
+        # "git"
+        "kubectl"
+        "helm"
+        "docker"
+        "poetry"
+        "aws"
+        "gcloud"
+        "npm"
+        "python"
+        "macos"
+        # "z"
+      ];
+    };
   };
 
   git = {
@@ -108,8 +147,8 @@ let name = userConfig.full_name;
       pull.rebase = true;
       rebase.autoStash = true;
 
-      user.name = "Petr Lavrov";
-      user.email = "petr@superlinear.com"; # lib.mkForce userConfig.email;
+#      user.name = name;
+#      user.email = "petr@superlinear.com"; # lib.mkForce userConfig.email;
       merge.tool = "opendiff";
       diff.tool = "opendiff";
       difftool.prompt = false;
