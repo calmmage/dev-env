@@ -87,6 +87,7 @@ in
     systemPackages = with pkgs; [
       agenix.packages."${pkgs.system}".default
       coreutils
+      defaultbrowser
       (pkgs.poetry2nix.mkPoetryEnv {
         projectDir = ../../..;
         preferWheels = true;

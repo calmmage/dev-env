@@ -7,7 +7,7 @@ with pkgs; [
   aspellDicts.en
   bash-completion
   btop
-  coreutils
+#  coreutils
   killall
   neofetch
   openssh

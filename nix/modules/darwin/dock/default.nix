@@ -39,6 +39,7 @@ in
     mkIf cfg.enable
       (
         let
+          default_browser = "chrome";
           normalize = path: if hasSuffix ".app" path then path + "/" else path;
           entryURI = path: "file://" + (builtins.replaceStrings
             [" "   "!"   "\""  "#"   "$"   "%"   "&"   "'"   "("   ")"]
@@ -53,18 +54,28 @@ in
             cfg.entries;
         in
         {
-          system.activationScripts.postUserActivation.text = ''
-            echo >&2 "Setting up the Dock..."
-            haveURIs="$(${dockutil}/bin/dockutil --list | ${pkgs.coreutils}/bin/cut -f2)"
-            if ! diff -wu <(echo -n "$haveURIs") <(echo -n '${wantURIs}') >&2 ; then
-              echo >&2 "Resetting Dock."
-              ${dockutil}/bin/dockutil --no-restart --remove all
-              ${createEntries}
-              killall Dock
-            else
-              echo >&2 "Dock setup complete."
-            fi
-          '';
+          # todo use userConfig.default_browser
+          system.activationScripts = {
+            postActivation.text = ''
+              # Ensure defaultbrowser is in PATH
+              export PATH=${pkgs.defaultbrowser}/bin:$PATH
+              defaultbrowser ${default_browser}
+
+              # Allow Karabiner-Elements to receive keyboard events
+              /usr/bin/sudo /usr/bin/security authorizationdb write system.privilege.taskport allow
+
+              echo >&2 "Setting up the Dock..."
+              haveURIs="$(${dockutil}/bin/dockutil --list | ${pkgs.coreutils}/bin/cut -f2)"
+              if ! diff -wu <(echo -n "$haveURIs") <(echo -n '${wantURIs}') >&2 ; then
+                echo >&2 "Resetting Dock."
+                ${dockutil}/bin/dockutil --no-restart --remove all
+                ${createEntries}
+                killall Dock
+              else
+                echo >&2 "Dock setup complete."
+              fi
+            '';
+          };
         }
       );
 }
