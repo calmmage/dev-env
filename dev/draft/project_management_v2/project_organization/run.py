@@ -30,9 +30,7 @@ def main(config_path: str = "config.yaml", dry_run: bool = True):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Project arrangement tool")
     default_config_path = Path(__file__).parent / "config.yaml"
-    parser.add_argument(
-        "--config", default=default_config_path, help="Path to config file"
-    )
+    parser.add_argument("--config", default=default_config_path, help="Path to config file")
     parser.add_argument(
         "--dry-run",
         action="store_true",

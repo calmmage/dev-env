@@ -3,7 +3,9 @@ from pathlib import Path
 
 from loguru import logger
 
-from dev_env.core.lib import discover_local_projects
+from dev.draft.project_management_v2.shared.repo_discovery import discover_local_projects
+
+# from dev_env.core.lib import discover_local_projects
 
 # Disable debug logging to keep output clean
 logger.remove()

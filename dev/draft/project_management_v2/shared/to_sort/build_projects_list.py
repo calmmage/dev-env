@@ -87,9 +87,7 @@ class ProjectCollector:
                 continue
 
             # Check if project already exists locally
-            existing_project = next(
-                (p for p in self.projects if p.name == repo.name), None
-            )
+            existing_project = next((p for p in self.projects if p.name == repo.name), None)
 
             if existing_project:
                 # Merge GitHub info with local project
@@ -136,7 +134,7 @@ def main():
     collector = ProjectCollector()
     collector.discover_local_projects()
 
-    output_path = Path("projects_list.json")
+    output_path = Path("../../../../../tools/project_arrangement/dev/projects_list.json")
     collector.save_projects(output_path)
     logger.info(f"Projects list saved to {output_path}")
 
