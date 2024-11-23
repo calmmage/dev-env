@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dev-env"
-version = "0.1.28"
+version = "0.1.29"
 description = ""
 authors = ["Petr Lavrov <calmmage@gmail.com>"]
 readme = "README.md"
@@ -91,10 +91,10 @@ pytest-cov = "^6.0.0"
 #
 [tool.poetry.group.dev.dependencies]
 ## dev / research utils
-#jupyter = ">=1.0.0"          # Interactive notebooks
+jupyter = ">=1.0.0"          # Interactive notebooks
 ##jupyter-nbextensions-configurator = "*"
 ##jupyter_contrib_nbextensions = "*"
-#black = ">=24.0.0"           # Code formatter
+black = ">=24.0.0"           # Code formatter
 pre-commit = ">=3.8.0"       # Pre-commit hooks
 tqdm = "*"                   # Progress bars
 poetry-bumpversion = "*"
