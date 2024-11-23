@@ -1,7 +1,8 @@
 
 # tools 
 # Alias for repo fixer tool
-alias fix_repo="$DEV_ENV_PATH/.venv/bin/typer $DEV_ENV_PATH/tools/repo_fixer/repo_fixer.py run"
+# alias fix_repo="$DEV_ENV_PATH/.venv/bin/typer $DEV_ENV_PATH/tools/repo_fixer/repo_fixer.py run"
+alias fix_repo="typer $DEV_ENV_PATH/tools/repo_fixer/repo_fixer.py run"
 
 # Add an alias to update dev-env
 alias update-dev-env='python3 $DEV_ENV_PATH/tools/dev_env_updater.py'
@@ -43,6 +44,7 @@ alias cdz='z'
 
 # add alias to ~/.alias - aa name "command mommand" "Description and examples"
 alias aa='add_alias'
+alias at='add_tool'
 
 # copy absolute path of the current dir
 alias cpa="copy_absolute_path"
