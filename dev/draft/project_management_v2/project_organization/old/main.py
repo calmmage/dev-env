@@ -129,14 +129,14 @@ class ProjectArranger:
 
     def sort_projects(self, projects: List[Project]) -> Dict[str, List[Project]]:
         """Sort projects into categories"""
-        groups = defaultdict(list)
+        groups = {"main": defaultdict(list), "secondary": defaultdict(list)}
         for project in projects:
             main_group = self._sort_projects_into_main_groups(project)
             secondary_groups = self._sort_projects_into_secondary_groups(project)
 
-            groups[main_group].append(project)
+            groups["main"][main_group].append(project)
             for group in secondary_groups:
-                groups[group].append(project)
+                groups["secondary"][group].append(project)
         return groups
 
     def _sort_projects_into_main_groups(self, project: Project) -> None:
@@ -184,7 +184,7 @@ class ProjectArranger:
             # look at project size
             if project.size > self.settings.auto_sort_size:
                 return "archive"
-            return "ignored"
+            return "ignore"
 
     def _sort_projects_into_secondary_groups(self, project: Project) -> List[str]:
         """Sort projects into secondary groups"""
@@ -217,8 +217,17 @@ class ProjectArranger:
     @staticmethod
     def print_results(groups) -> None:
         """Print sorted projects"""
-        print("Project Groups:")
-        for group, proj_list in groups.items():
+        print("Main Project Groups:")
+        for group, proj_list in groups["main"].items():
+            print(f"{group.title()}:")
+            for proj in sorted(proj_list, key=lambda x: x.name):
+                print(f"- {proj.name}")
+            print()
+
+        print("\n" + "=" * 50 + "\n")
+
+        print("Secondary Project Groups:")
+        for group, proj_list in groups["secondary"].items():
             print(f"{group.title()}:")
             for proj in sorted(proj_list, key=lambda x: x.name):
                 print(f"- {proj.name}")
