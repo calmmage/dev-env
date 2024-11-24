@@ -1,7 +1,9 @@
 - [x] primary and secondary groups - sort, print
-- [ ] print group size (in brackets?)
+- [x] print group size (in brackets?)
     - [x] make cached?
     - [x] make cached all properties - last modified
+- [ ] print project info 
+
 
 - [ ] handle 'clone from start' scenario
   - [ ] use old 'clone_all_projects' script - deduplicate and reuse
@@ -26,6 +28,8 @@
 
 - [ ] Better project sorting
   - [ ] Anomaly decetion - analysis / research tools
+  - [ ] make it so secondary projects can't be ignored (if ignored -> move to archive instead?)
+    - or not? 1) templates - yes 2) cool - no (will distract me?)
   - [ ] automatic sorting: 
     - sticky groups (don't change groups for no reason)
       - if recently modified -> stays in 'actual' even if not hardcoded
@@ -39,3 +43,9 @@
   - [ ] auto-commit? warn? Block? 
     - [ ] 1) before removing
     - [ ] 2) before moving? 
+
+
+- [ ] ai features
+  - ai categorization (to which primary / secondary to move?)
+  - ai summary of the project
+  - ai ... 

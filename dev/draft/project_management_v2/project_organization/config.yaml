@@ -27,6 +27,8 @@ experiments:
 # secondary groups
 cool:
   - fedor-bot-idea
+  - video-to-audio-bot
+  - generate-dir-link
 templates:
   - base-template
 #   - typescript-project-template

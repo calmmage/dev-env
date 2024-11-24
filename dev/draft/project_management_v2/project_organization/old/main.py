@@ -19,11 +19,11 @@ from dev.draft.project_management_v2.project_organization.old.utils import (
 
 # todo: use everywhere?
 class Group(str, Enum):
-    ignore = "ignore"
     experiments = "experiments"
     projects = "projects"
-    archive = "archive"
     unsorted = "unsorted"
+    archive = "archive"
+    ignore = "ignore"
 
 
 class Project(BaseModel):
@@ -46,23 +46,24 @@ class Project(BaseModel):
 
     __source_extensions = [
         ".py",
-        ".js",
-        ".ts",
-        ".jsx",
-        ".tsx",
-        ".java",
+        ".md",
+        # ".js",
+        # ".ts",
+        # ".jsx",
+        # ".tsx",
+        # ".java",
         ".cpp",
-        ".c",
-        ".h",
-        ".hpp",
-        ".rs",
-        ".go",
-        ".rb",
-        ".php",
-        ".html",
-        ".css",
-        ".scss",
-        ".sql",
+        # ".c",
+        # ".h",
+        # ".hpp",
+        # ".rs",
+        # ".go",
+        # ".rb",
+        # ".php",
+        # ".html",
+        # ".css",
+        # ".scss",
+        # ".sql",
         ".sh",
     ]
 
@@ -78,6 +79,27 @@ class Project(BaseModel):
             if file.is_file() and file.suffix in self.__source_extensions:
                 total_size += file.stat().st_size
         return total_size
+
+    FORMAT_MODE: int = 2
+
+    # todo: show main language?
+    @property
+    def size_formatted(self) -> str:
+        """Format size with appropriate units and alignment"""
+        if self.FORMAT_MODE == 1:
+            if self.size >= 1_000_000:  # 1M+
+                return f"{self.size/1_000_000:>8.2f}M"
+            elif self.size >= 1_000:  # 1K+
+                return f"{self.size/1_000:>8.2f}K"
+            else:
+                return f"{self.size:>8}B"
+        elif self.FORMAT_MODE == 2:
+            # Round to 3 significant digits and add commas
+            if self.size >= 1000:
+                magnitude = len(str(self.size)) - 3
+                rounded = (self.size // (10**magnitude)) * (10**magnitude)
+                return f"{rounded:>10,}"
+            return f"{self.size:>10}"
 
     @cached_property
     def date(self) -> datetime:
@@ -214,9 +236,9 @@ class ProjectArranger:
                     get_commit_count(project.path, days=self.settings.auto_sort_days)
                     > self.settings.auto_sort_commits
                 ):
-                    return "actual"
+                    return "projects"  # "actual"
             elif project.size > self.settings.auto_sort_size:
-                return "actual"
+                return "projects"  # "actual"
             return "experiments"
         else:
             # look at project size
@@ -253,20 +275,23 @@ class ProjectArranger:
         return res
 
     @staticmethod
-    def print_results(groups) -> None:
+    def print_results(groups, print_sizes: bool = False) -> None:
         """Print sorted projects"""
         print("Main Project Groups:")
-        for group, proj_list in groups["main"].items():
-            print(f"{group.title()}:")
+        for group in Group.__members__:
+            proj_list = groups["main"][group]
+            print(f"{group.title()} ({len(proj_list)}):")
             for proj in sorted(proj_list, key=lambda x: x.name):
-                print(f"- {proj.name}")
+                size_str = f"[{proj.size_formatted}] " if print_sizes else ""
+                print(f"- {size_str}{proj.name}")
             print()
 
         print("\n" + "=" * 50 + "\n")
 
         print("Secondary Project Groups:")
-        for group, proj_list in groups["secondary"].items():
-            print(f"{group.title()}:")
+        for group, proj_list in sorted(groups["secondary"].items()):
+            print(f"{group.title()} ({len(proj_list)}):")
             for proj in sorted(proj_list, key=lambda x: x.name):
-                print(f"- {proj.name}")
+                size_str = f"[{proj.size_formatted}] " if print_sizes else ""
+                print(f"- {size_str}{proj.name}")
             print()
