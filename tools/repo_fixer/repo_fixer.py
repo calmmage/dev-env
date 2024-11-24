@@ -35,9 +35,7 @@ class Settings(BaseSettings):
             config_data = yaml.safe_load(file)
 
         # Expand user directory for each path in root_paths
-        config_data["root_paths"] = [
-            Path(p).expanduser() for p in config_data["root_paths"]
-        ]
+        config_data["root_paths"] = [Path(p).expanduser() for p in config_data["root_paths"]]
 
         return cls(**config_data)
 
@@ -63,9 +61,7 @@ def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str
         # see if it's not commented out
         existing_content = pre_commit_config_path.read_text()
         if tool_name in existing_content:
-            tool_line = [
-                line for line in existing_content.splitlines() if tool_name in line
-            ][-1]
+            tool_line = [line for line in existing_content.splitlines() if tool_name in line][-1]
             if tool_line.strip().startswith("#"):
                 logger.info(
                     f"Found {tool_name} in .pre-commit-config.yaml, but it's commented out. Will add {tool_name} anew."
@@ -102,9 +98,7 @@ def _get_source_dir_name(repo_path: Path) -> str:
         source_dir_name = source_dir_name.replace("-", "_")
     if not (repo_path / source_dir_name).exists():
         # ask user for project name
-        source_dir_name = typer.prompt(
-            f"Please provide a source directory name for {repo_path}: "
-        )
+        source_dir_name = typer.prompt(f"Please provide a source directory name for {repo_path}: ")
         # option 1: user provided full path
         if Path(source_dir_name).exists():
             return Path(source_dir_name).name
@@ -392,9 +386,7 @@ def fix_repo(
     """Fix repository according to modern standards"""
     repo_path = _discover_project(project)
     if repo_path is None:
-        logger.error(
-            f"Project {project} not found in any of the root paths: {settings.root_paths}"
-        )
+        logger.error(f"Project {project} not found in any of the root paths: {settings.root_paths}")
         raise typer.Exit(1)
 
     logger.info(f"Fixing repo at {repo_path} with operation {operation}")
