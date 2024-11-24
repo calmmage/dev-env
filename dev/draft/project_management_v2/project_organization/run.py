@@ -6,7 +6,12 @@ from loguru import logger
 from dev.draft.project_management_v2.project_organization.old.main import ProjectArranger
 
 
-def main(config_path: str = "config.yaml", dry_run: bool = True, verbose: bool = False):
+def main(
+    config_path: str = "config.yaml",
+    dry_run: bool = True,
+    verbose: bool = False,
+    show_all: bool = False,
+):
     logger.info(f"Running project arranger with config from {config_path}")
 
     if dry_run:
@@ -15,8 +20,14 @@ def main(config_path: str = "config.yaml", dry_run: bool = True, verbose: bool =
     try:
         arranger = ProjectArranger(Path(config_path))
         projects = arranger.build_projects_list()
-        groups = arranger.sort_projects(projects)
-        arranger.print_results(groups, print_sizes=verbose)
+        new_groups = arranger.sort_projects(projects)
+
+        if show_all:
+            arranger.print_all_results(new_groups, print_sizes=verbose)
+        else:
+            # Get current groups based on filesystem structure
+            current_groups = arranger.get_current_groups(projects)
+            arranger.print_changes(current_groups, new_groups, print_sizes=verbose)
 
         if not dry_run:
             logger.warning(
@@ -42,6 +53,16 @@ if __name__ == "__main__":
         action="store_true",
         help="Print additional information like project sizes",
     )
+    #  todo: Move into a separate tool / typer command
+    parser.add_argument(
+        "--show-all",
+        action="store_true",
+        help="Show full project list instead of just changes",
+    )
 
     args = parser.parse_args()
-    main(config_path=args.config, dry_run=args.dry_run, verbose=args.verbose)
+    main(
+        config_path=args.config, dry_run=args.dry_run, verbose=args.verbose, show_all=args.show_all
+    )
+
+# TODO: Consider moving this into a separate tool or typer command

@@ -1,8 +1,23 @@
-- [x] primary and secondary groups - sort, print
-- [x] print group size (in brackets?)
-    - [x] make cached?
-    - [x] make cached all properties - last modified
-- [ ] print project info 
+
+- [ ] print project date info 
+  - if edited > 1 month ago -> print that
+  - if edited recently but created long ago -> print both
+  - if edited recently and created recently -> print only when edited
+
+- add new tech - github info
+  - [ ] merge with clone_all_projects script
+  - [ ] init github client
+  - [ ] see github remote for the repo
+  - [ ] if remote project name 
+  - [ ] see all remote projects
+    - configure which remote sources (orgs) to use
+  - [ ] merge remote and local lists 
+    - [ ] handle "a project that is cloned several times" scenario
+    - [ ] handle "a project that is cloned under a different name" scenario. Ask user:
+      - rename local
+      - rename remote? 
+      - keep as is
+- [ ] if t
 
 
 - [ ] handle 'clone from start' scenario
@@ -10,11 +25,8 @@
     - copy code to project arranger
     - use in the script to reproduce behavior
     - merge old and new code to remove duplicate functionality
+
 - [ ] handle 'already cloned, now sort'
-  - [x] determine current group based on path 
-  - [ ] add two view options: 
-    - show only changes
-    - show all
   - [ ] non-dry-run
     -  [ ] move projects
     -  [ ] projects that are to be deleted (ignored but present on disk) - move to 'to_remove' folder
@@ -24,7 +36,6 @@
       - notice small non-ignored projects (except recent) 
     - b) view project dates
 
-- [x] fix 'ignore' and 'ignored' issue
 
 - [ ] Better project sorting
   - [ ] Anomaly decetion - analysis / research tools
@@ -49,3 +60,23 @@
   - ai categorization (to which primary / secondary to move?)
   - ai summary of the project
   - ai ... 
+
+
+
+
+
+
+
+
+# Done
+- [x] fix 'ignore' and 'ignored' issue
+- [ ] handle 'already cloned, now sort'
+  - [x] determine current group based on path
+  - [x] add two view options:
+    - show only changes
+    - show all
+
+- [x] primary and secondary groups - sort, print
+- [x] print group size (in brackets?)
+  - [x] make cached?
+  - [x] make cached all properties - last modified

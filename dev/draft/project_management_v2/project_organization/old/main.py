@@ -20,7 +20,7 @@ from dev.draft.project_management_v2.project_organization.old.utils import (
 # todo: use everywhere?
 class Group(str, Enum):
     experiments = "experiments"
-    projects = "projects"
+    projects = "projects"  # rename to actual? - but folder stays as projects/
     unsorted = "unsorted"
     archive = "archive"
     ignore = "ignore"
@@ -187,8 +187,25 @@ class ProjectArranger:
         # idea: merge projects that have the same github repo
         return local_projects + github_projects
 
-    def sort_projects(self, projects: List[Project]) -> Dict[str, List[Project]]:
-        """Sort projects into categories"""
+    def get_current_groups(self, projects: List[Project]) -> Dict[str, Dict[str, List[Project]]]:
+        """Build groups dictionary based on current filesystem structure"""
+        groups = {"main": defaultdict(list), "secondary": defaultdict(list)}
+
+        # Sort into main groups based on current directory structure
+        for project in projects:
+            current_group = project.current_group
+            groups["main"][current_group].append(project)
+
+        # TODO: Implement secondary groups scanning
+        # Will need to:
+        # 1. Scan additional folders like 'templates/', 'ai-projects/', etc.
+        # 2. Add a method to detect current secondary groups for a project
+        # 3. Update Project class to support multiple current groups
+
+        return groups
+
+    def sort_projects(self, projects: List[Project]) -> Dict[str, Dict[str, List[Project]]]:
+        """Sort projects into target categories based on config"""
         groups = {"main": defaultdict(list), "secondary": defaultdict(list)}
         for project in projects:
             main_group = self._sort_projects_into_main_groups(project)
@@ -275,8 +292,8 @@ class ProjectArranger:
         return res
 
     @staticmethod
-    def print_results(groups, print_sizes: bool = False) -> None:
-        """Print sorted projects"""
+    def print_all_results(groups, print_sizes: bool = False) -> None:
+        """Print all projects in their groups"""
         print("Main Project Groups:")
         for group in Group.__members__:
             proj_list = groups["main"][group]
@@ -295,3 +312,53 @@ class ProjectArranger:
                 size_str = f"[{proj.size_formatted}] " if print_sizes else ""
                 print(f"- {size_str}{proj.name}")
             print()
+
+    @staticmethod
+    def print_changes(old_groups, new_groups, print_sizes: bool = False) -> None:
+        """Print only the changes between old and new groups"""
+        # Compare main groups
+        print("Changes in Main Project Groups:")
+        for group in Group.__members__:
+            old_projects = {p.name for p in old_groups["main"].get(group, [])}
+            new_projects = {p.name for p in new_groups["main"].get(group, [])}
+
+            added = new_projects - old_projects
+            removed = old_projects - new_projects
+
+            if added or removed:
+                print(f"\n{group.title()}:")
+                if added:
+                    print("  Added:")
+                    for proj_name in sorted(added):
+                        proj = next(p for p in new_groups["main"][group] if p.name == proj_name)
+                        size_str = f"[{proj.size_formatted}] " if print_sizes else ""
+                        print(f"  + {size_str}{proj_name}")
+                if removed:
+                    print("  Removed:")
+                    for proj_name in sorted(removed):
+                        print(f"  - {proj_name}")
+
+        # Compare secondary groups
+        if any(old_groups["secondary"]) or any(new_groups["secondary"]):
+            print("\nChanges in Secondary Project Groups:")
+            for group in set(old_groups["secondary"].keys()) | set(new_groups["secondary"].keys()):
+                old_projects = {p.name for p in old_groups["secondary"].get(group, [])}
+                new_projects = {p.name for p in new_groups["secondary"].get(group, [])}
+
+                added = new_projects - old_projects
+                removed = old_projects - new_projects
+
+                if added or removed:
+                    print(f"\n{group.title()}:")
+                    if added:
+                        print("  Added:")
+                        for proj_name in sorted(added):
+                            proj = next(
+                                p for p in new_groups["secondary"][group] if p.name == proj_name
+                            )
+                            size_str = f"[{proj.size_formatted}] " if print_sizes else ""
+                            print(f"  + {size_str}{proj_name}")
+                    if removed:
+                        print("  Removed:")
+                        for proj_name in sorted(removed):
+                            print(f"  - {proj_name}")

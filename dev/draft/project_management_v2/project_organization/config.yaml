@@ -21,6 +21,8 @@ actual:
   # - calmmage-private
 archive:
   - siri-ask-gpt
+  - calmapp
+  - new-bot-lib
 experiments:
   - taskzilla-cm
 
