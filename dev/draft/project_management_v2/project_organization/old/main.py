@@ -70,10 +70,13 @@ class Project(BaseModel):
         if is_git_repo(self.path):
             return get_last_commit_date(self.path)
         # idea 2: if no git repo - look at file dates
+        paths = list(self.path.iterdir())
+        paths.append(self.path)
         max_mtime = max(
             file.stat().st_mtime
-            for file in self.path.iterdir()
-            if file.is_file() and not file.name.startswith(".")
+            for file in paths
+            if not file.name.startswith(".")
+            # if file.is_file() and not file.name.startswith(".")
         )
         return datetime.fromtimestamp(max_mtime)
 
