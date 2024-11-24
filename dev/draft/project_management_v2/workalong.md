@@ -1,7 +1,7 @@
 - [x] primary and secondary groups - sort, print
 - [ ] print group size (in brackets?)
-    - make cached?
-    - make cached all properties - last modified
+    - [x] make cached?
+    - [x] make cached all properties - last modified
 
 - [ ] handle 'clone from start' scenario
   - [ ] use old 'clone_all_projects' script - deduplicate and reuse
@@ -9,6 +9,33 @@
     - use in the script to reproduce behavior
     - merge old and new code to remove duplicate functionality
 - [ ] handle 'already cloned, now sort'
-  - [] determine current group based on path 
+  - [x] determine current group based on path 
+  - [ ] add two view options: 
+    - show only changes
+    - show all
+  - [ ] non-dry-run
+    -  [ ] move projects
+    -  [ ] projects that are to be deleted (ignored but present on disk) - move to 'to_remove' folder
+  - debug / research tools
+    - a) view project sizes
+      - notice big ignored projects
+      - notice small non-ignored projects (except recent) 
+    - b) view project dates
 
 - [x] fix 'ignore' and 'ignored' issue
+
+- [ ] Better project sorting
+  - [ ] Anomaly decetion - analysis / research tools
+  - [ ] automatic sorting: 
+    - sticky groups (don't change groups for no reason)
+      - if recently modified -> stays in 'actual' even if not hardcoded
+    - by date -> 
+      - if created this month - stays in experiments
+      - if before
+        - if modified this month -> actual
+        - if before
+          - if big -> archive
+          - if not -> ignore (to_remove)
+  - [ ] auto-commit? warn? Block? 
+    - [ ] 1) before removing
+    - [ ] 2) before moving? 

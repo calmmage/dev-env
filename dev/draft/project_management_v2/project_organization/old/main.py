@@ -1,5 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
+from enum import Enum
+from functools import cached_property
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -9,9 +11,19 @@ from pydantic import BaseModel
 from dev.draft.project_management_v2.project_organization.old.config import ProjectArrangerSettings
 from dev.draft.project_management_v2.project_organization.old.utils import (
     get_commit_count,
+    get_first_commit_date,
     get_last_commit_date,
     is_git_repo,
 )
+
+
+# todo: use everywhere?
+class Group(str, Enum):
+    ignore = "ignore"
+    experiments = "experiments"
+    projects = "projects"
+    archive = "archive"
+    unsorted = "unsorted"
 
 
 class Project(BaseModel):
@@ -19,71 +31,97 @@ class Project(BaseModel):
     path: Path
     github_repo: Optional[str] = None
 
-    @property
+    # todo: use external ignore rules
+    #  option 1: gitignore
+    __ignored_paths = [
+        ".git",
+        ".venv",
+        "venv",
+        "__pycache__",
+        "node_modules",
+        "build",
+        "dist",
+        ".pytest_cache",
+    ]
+
+    __source_extensions = [
+        ".py",
+        ".js",
+        ".ts",
+        ".jsx",
+        ".tsx",
+        ".java",
+        ".cpp",
+        ".c",
+        ".h",
+        ".hpp",
+        ".rs",
+        ".go",
+        ".rb",
+        ".php",
+        ".html",
+        ".css",
+        ".scss",
+        ".sql",
+        ".sh",
+    ]
+
+    @cached_property
     def size(self) -> int:
         total_size = 0
         for file in self.path.rglob("*"):
             # Skip common non-source directories
-            if any(
-                part in str(file.relative_to(self.path))
-                for part in [
-                    ".git",
-                    ".venv",
-                    "venv",
-                    "__pycache__",
-                    "node_modules",
-                    "build",
-                    "dist",
-                    ".pytest_cache",
-                ]
-            ):
+            if any(part in str(file.relative_to(self.path)) for part in self.__ignored_paths):
                 continue
 
             # Only count source code files
-            if file.is_file() and file.suffix in [
-                ".py",
-                ".js",
-                ".ts",
-                ".jsx",
-                ".tsx",
-                ".java",
-                ".cpp",
-                ".c",
-                ".h",
-                ".hpp",
-                ".rs",
-                ".go",
-                ".rb",
-                ".php",
-                ".html",
-                ".css",
-                ".scss",
-                ".sql",
-                ".sh",
-            ]:
+            if file.is_file() and file.suffix in self.__source_extensions:
                 total_size += file.stat().st_size
-
         return total_size
 
-    @property
+    @cached_property
     def date(self) -> datetime:
         """
         Essential data when the project was last meaningfully changed.
         """
-
         # idea 1: if git repo - look at last commit date
         if is_git_repo(self.path):
-            return get_last_commit_date(self.path)
+            try:
+                return get_last_commit_date(self.path)
+            except ValueError:
+                pass
         # idea 2: if no git repo - look at file dates
         paths = list(self.path.iterdir())
         paths.append(self.path)
-        max_mtime = max(
-            file.stat().st_mtime
-            for file in paths
-            if not file.name.startswith(".")
-            # if file.is_file() and not file.name.startswith(".")
-        )
+        max_mtime = max(file.stat().st_mtime for file in paths if not file.name.startswith("."))
         return datetime.fromtimestamp(max_mtime)
+
+    @cached_property
+    def created_date(self) -> datetime:
+        """
+        Essential data when the project was created.
+        """
+        # idea 1: if git repo - look at first commit date
+        if is_git_repo(self.path):
+            try:
+                return get_first_commit_date(self.path)
+            except ValueError:
+                pass
+        # idea 2: if no git repo - look at file dates
+        paths = list(self.path.iterdir())
+        paths.append(self.path)
+        min_mtime = min(file.stat().st_mtime for file in paths if not file.name.startswith("."))
+        return datetime.fromtimestamp(min_mtime)
+
+    @cached_property
+    def current_group(self) -> str:
+        if self.path is None:
+            return Group.ignore
+        group = self.path.parent.name
+        if group not in Group.__members__:
+            logger.warning(f"Unknown group {group}")
+            return Group.unsorted
+        return Group(group)
 
 
 class ProjectArranger:
