@@ -208,10 +208,12 @@ class ProjectArranger:
             res.append("templates")
         return res
 
-    def print_results(self) -> None:
+    @staticmethod
+    def print_results(groups) -> None:
         """Print sorted projects"""
-        print("\nProject Groups:")
-        for group, proj_list in self.sorted_projects.items():
-            print(f"\n{group.title()}:")
+        print("Project Groups:")
+        for group, proj_list in groups.items():
+            print(f"{group.title()}:")
             for proj in sorted(proj_list, key=lambda x: x.name):
                 print(f"- {proj.name}")
+            print()
