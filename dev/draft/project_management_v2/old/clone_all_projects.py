@@ -6,7 +6,6 @@ from loguru import logger
 from tqdm.auto import tqdm
 
 import dev_env.core.git_utils
-from dev_env.dev_env import CalmmageDevEnv, logger
 
 load_dotenv()
 
@@ -44,11 +43,21 @@ def clone_repos(repos, target_dir):
 
 
 if __name__ == "__main__":
-    dev_env = CalmmageDevEnv()
+    # dev_env = CalmmageDevEnv()
+    # todo: rework this better
     target_dir = dev_env.all_projects_dir
 
+    import os
+
+    from github import Github
+
+    token = os.getenv("GITHUB_API_TOKEN")
+    if token is None:
+        raise ValueError("Missing GitHub API token")
+    github_client = Github(token)
+
     # get all my projects
-    my_repos = list(dev_env.core.git_utils.github_client.get_user().get_repos())
+    my_repos = list(github_client.get_user().get_repos())
 
     stats = clone_repos(my_repos, target_dir)
     print(stats)

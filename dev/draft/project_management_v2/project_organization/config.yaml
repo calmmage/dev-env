@@ -18,21 +18,26 @@ date_format:
 
 # part 2: manual sorting
 
-ignore:
-  - python-o365
-  - isnimschikov-bot-template
 actual:
   - calmlib
   - dev-env
   - botspot
   # - calmmage
-  # - calmmage-private
+  - calmmage-private
+  - examples
+  - codechat
+
 archive:
   - siri-ask-gpt
   - calmapp
   - new-bot-lib
+
 experiments:
   - taskzilla-cm
+
+ignore:
+  - python-o365
+  - isnimschikov-bot-template
 
 # secondary groups
 cool:
@@ -40,6 +45,8 @@ cool:
   - video-to-audio-bot
   - generate-dir-link
   - gpt-chatbot-that-stays-on-point
+
+
 templates:
   - base-template
 #   - typescript-project-template

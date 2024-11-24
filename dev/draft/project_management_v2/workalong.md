@@ -1,17 +1,33 @@
 Main things I'm trying to do:
 - display relevant info about projects
-  - github name, if different
-  - github org, if not personal
-  - date, if interesting
+  - [x] add github tech - old clone_all_projects script
+  - [x] github name, if different
+  - [x] github org, if not personal
+  - [x] date, if interesting
 - improve project sorting algorithms / rules
   - based on date
   - hardcode more rules
-- do actual sorting
+- do actual sorting (move and clone projects)
   - arrive at a state where I'm happy with the result (key projects not removed)
   - move dirs around (with confirmation?)
 
 something else?
+- (auto)-commit code before moving stuff around.
 - merge with clone_all_projects script
+
+# Tools
+- tool to compare local and github projects
+- tool to clone all projects from github
+
+# Focus
+- 1) Now, that we added github client
+  - make github project lists
+  - merge / compare with local
+- 2) improve project sorting algos
+- 3) Start thinking about
+  - new project creation 
+  - miniproject
+  - project location abstraction? (Destination class?)
 
 Refactoings
 - [ ] return the reason for group selection together with ... group
@@ -20,19 +36,31 @@ Refactoings
   - dict? group_name -> dir? configurable somehow? 
 - [ ] Resolve python config warnings about types of fields (config.py, BaseSettings)
 
-- [x] print project date info 
-  - if edited > 1 month ago -> print that
-  - if edited recently but created long ago -> print both
-  - if edited recently and created recently -> print only when edited
 - [ ] Add a flag to show 1) date or 2) reason for group selection 
   - in brackets to the right of the project
 - [ ] Sort projects by recency within groups.
 
+- [ ] add config for which github orgs to use
+- [ ] add a simple clone_all_projects script based on our tool
+  - specify target root? create main and secondary groups folders in there?
+  - make sure to just add the ability to clone repos to our script
+- make things work faster
+  - [ ] add cache or something - like what ]
+
+Legacy
+- 
+-----
+
+ - [ ] Old projects go into projects, not experiments, if edited recently
+   - Experiments: Added: + [    16,400] forwarder-bot    (Edited 6 days ago, Created 8 months ago)
+
+
+
 - add new tech - github info
   - [ ] merge with clone_all_projects script
-  - [ ] init github client
-  - [ ] see github remote for the repo
-  - [ ] if remote project name 
+  - [x] init github client
+  - [x] see github remote for the repo
+  - [x] if remote project name 
   - [ ] see all remote projects
     - configure which remote sources (orgs) to use
   - [ ] merge remote and local lists 
@@ -107,3 +135,9 @@ Plan:
 - [x] print group size (in brackets?)
   - [x] make cached?
   - [x] make cached all properties - last modified
+
+
+- [x] print project date info
+  - if edited > 1 month ago -> print that
+  - if edited recently but created long ago -> print both
+  - if edited recently and created recently -> print only when edited

@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+from dotenv import load_dotenv
 from loguru import logger
 
 from dev.draft.project_management_v2.project_organization.old.main import ProjectArranger
@@ -41,6 +42,8 @@ def main(
 
 
 if __name__ == "__main__":
+    load_dotenv()
+
     parser = argparse.ArgumentParser(description="Project arrangement tool")
     default_config_path = Path(__file__).parent / "config.yaml"
     parser.add_argument("--config", default=default_config_path, help="Path to config file")

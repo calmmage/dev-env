@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from enum import Enum
@@ -18,6 +19,10 @@ from dev.draft.project_management_v2.project_organization.old.utils import (
 )
 
 
+def MISSING():
+    pass
+
+
 # todo: use everywhere?
 class Group(str, Enum):
     experiments = "experiments"
@@ -32,10 +37,61 @@ class Project:
     path: Optional[Path] = None
     github_repo: Optional[str] = None
 
-    def __init__(self, name: str, path: Path = None, github_repo: Optional[str] = None):
+    def __init__(self, name: str, path: Path = None):
         self.name = name
-        self.path = Path(path)
-        self.github_repo = github_repo
+        self.path = Path(path) if path else None
+        self._github_client = MISSING
+
+    @staticmethod
+    def _extract_repo_info(url: str) -> tuple[str, str]:
+        """Extract GitHub repository name and organization from the project path"""
+        if "github.com" not in url:
+            raise ValueError(f"URL {url} is not a GitHub URL")
+        # Extract org and repo from URL
+        # Handles both HTTPS and SSH URLs:
+        # https://github.com/org/repo.git
+        # git@github.com:org/repo.git
+        parts = url.split("github.com")[-1].strip("/:").replace(".git", "").split("/")
+        if len(parts) == 2:
+            org_name, repo_name = parts
+            return repo_name, org_name
+        raise ValueError(f"Failed to extract repo info from {url}")
+
+    @cached_property
+    def _repo_info(self) -> tuple[str, str]:
+        """Get GitHub repository name and organization for a local repository
+
+        Returns:
+            Tuple of (repo_name, org_name) or None if not found/available
+        """
+        if self.github_repo:
+            return self._extract_repo_info(self.github_repo)
+
+        try:
+            from git import Repo
+
+            repo = Repo(self.path)
+
+            # Get the GitHub remote URL
+            for remote in repo.remotes:
+                url = remote.url
+                if "github.com" not in url:
+                    continue
+                return self._extract_repo_info(url)
+
+            raise ValueError(f"Failed to find GitHub remote URL in {self.path}")
+
+        except Exception as e:
+            logger.debug(f"Failed to get repo info for {self.path}: {e}")
+            return None, None
+
+    @property
+    def github_name(self) -> Optional[str]:
+        return self._repo_info[0]
+
+    @property
+    def github_org(self) -> Optional[str]:
+        return self._repo_info[1]
 
     # todo: use external ignore rules
     #  option 1: gitignore
@@ -181,6 +237,7 @@ class Project:
         show_date: bool = True,
         format: DateFormatSettings = DateFormatSettings(),
         target_width: int = 100,
+        github_user: Optional[str] = None,
     ) -> str:
         """Format project information into a display line
 
@@ -202,8 +259,17 @@ class Project:
         if show_size:
             parts.append(f"[{self.size_formatted}] ")
 
-        # Add project name
-        parts.append(self.name)
+        # Add project name with GitHub info if available
+        name_part = self.name
+        flag_1 = self.github_name and self.github_name != self.name
+        flag_2 = github_user and self.github_org and self.github_org != github_user
+        if flag_1 and flag_2:
+            name_part = f" ({self.github_org}/{self.github_name})"
+        elif flag_1:
+            name_part += f" ({self.github_name})"
+        elif flag_2:
+            name_part = f"{self.github_org}/{name_part}"
+        parts.append(name_part)
 
         # Add date if requested
         if show_date:
@@ -220,6 +286,7 @@ class Project:
 class ProjectArranger:
     def __init__(self, config_path: Path, **kwargs):
         self.settings = ProjectArrangerSettings.from_yaml(config_path, **kwargs)
+        self._github_client = MISSING
 
     def build_projects_list(self) -> List[Project]:
         """Discover all projects in configured paths"""
@@ -362,15 +429,37 @@ class ProjectArranger:
             res.append("templates")
         return res
 
-    @staticmethod
-    def print_all_results(groups, print_sizes: bool = False) -> None:
+    @property
+    def github_client(self):
+        # todo: make sure to give warning instead of crashing
+        if self._github_client is MISSING:
+            from github import Github
+
+            token = os.getenv("GITHUB_API_TOKEN")
+            if token is None:
+                # raise ValueError('Missing GitHub API token')
+                logger.warning("Missing GitHub API token")
+                self._github_client = None
+            else:
+                self._github_client = Github(token)
+        return self._github_client
+
+    @cached_property
+    def github_username(self) -> Optional[str]:
+        if self.github_client is None:
+            return None
+        return self.github_client.get_user().login
+
+    def print_all_results(self, groups, print_sizes: bool = False) -> None:
         """Print all projects in their groups"""
         print("Main Project Groups:")
         for group in Group.__members__:
             proj_list = groups["main"][group]
             print(f"{group.title()} ({len(proj_list)}):")
             for proj in sorted(proj_list, key=lambda x: x.name):
-                print(f"- {proj.format_line(show_size=print_sizes)}")
+                print(
+                    f"- {proj.format_line(show_size=print_sizes, github_user=self.github_username)}"
+                )
             print()
 
         print("\n" + "=" * 50 + "\n")
@@ -379,11 +468,12 @@ class ProjectArranger:
         for group, proj_list in sorted(groups["secondary"].items()):
             print(f"{group.title()} ({len(proj_list)}):")
             for proj in sorted(proj_list, key=lambda x: x.name):
-                print(f"- {proj.format_line(show_size=print_sizes)}")
+                print(
+                    f"- {proj.format_line(show_size=print_sizes, github_user=self.github_username)}"
+                )
             print()
 
-    @staticmethod
-    def print_changes(old_groups, new_groups, print_sizes: bool = False) -> None:
+    def print_changes(self, old_groups, new_groups, print_sizes: bool = False) -> None:
         """Print only the changes between old and new groups"""
         print("Changes in Main Project Groups:")
         for group in Group.__members__:
@@ -399,12 +489,22 @@ class ProjectArranger:
                     print("  Added:")
                     for proj_name in sorted(added):
                         proj = next(p for p in new_groups["main"][group] if p.name == proj_name)
-                        print("  " + proj.format_line(prefix="+", show_size=print_sizes))
+                        print(
+                            "  "
+                            + proj.format_line(
+                                prefix="+", show_size=print_sizes, github_user=self.github_username
+                            )
+                        )
                 if removed:
                     print("  Removed:")
                     for proj_name in sorted(removed):
                         old_proj = next(p for p in old_groups["main"][group] if p.name == proj_name)
-                        print("  " + old_proj.format_line(prefix="-", show_size=print_sizes))
+                        print(
+                            "  "
+                            + old_proj.format_line(
+                                prefix="-", show_size=print_sizes, github_user=self.github_username
+                            )
+                        )
 
         # Compare secondary groups
         if any(old_groups["secondary"]) or any(new_groups["secondary"]):
@@ -424,11 +524,25 @@ class ProjectArranger:
                             proj = next(
                                 p for p in new_groups["secondary"][group] if p.name == proj_name
                             )
-                            print("  " + proj.format_line(prefix="+", show_size=print_sizes))
+                            print(
+                                "  "
+                                + proj.format_line(
+                                    prefix="+",
+                                    show_size=print_sizes,
+                                    github_user=self.github_username,
+                                )
+                            )
                     if removed:
                         print("  Removed:")
                         for proj_name in sorted(removed):
                             old_proj = next(
                                 p for p in old_groups["secondary"][group] if p.name == proj_name
                             )
-                            print("  " + old_proj.format_line(prefix="-", show_size=print_sizes))
+                            print(
+                                "  "
+                                + old_proj.format_line(
+                                    prefix="-",
+                                    show_size=print_sizes,
+                                    github_user=self.github_username,
+                                )
+                            )
