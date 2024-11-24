@@ -3,10 +3,15 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from config import ProjectArrangerSettings
 from loguru import logger
 from pydantic import BaseModel
-from utils import get_commit_count, get_last_commit_date, is_git_repo
+
+from dev.draft.project_management_v2.project_organization.old.config import ProjectArrangerSettings
+from dev.draft.project_management_v2.project_organization.old.utils import (
+    get_commit_count,
+    get_last_commit_date,
+    is_git_repo,
+)
 
 
 class Project(BaseModel):
@@ -84,8 +89,6 @@ class Project(BaseModel):
 class ProjectArranger:
     def __init__(self, config_path: Path, **kwargs):
         self.settings = ProjectArrangerSettings.from_yaml(config_path, **kwargs)
-        # self.projects: List[Project] = []
-        self.sorted_projects: Dict[str, List[Project]] = defaultdict(list)
 
     def build_projects_list(self) -> List[Project]:
         """Discover all projects in configured paths"""

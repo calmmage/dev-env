@@ -2,7 +2,8 @@ import argparse
 from pathlib import Path
 
 from loguru import logger
-from main import ProjectArranger
+
+from dev.draft.project_management_v2.project_organization.old.main import ProjectArranger
 
 
 def main(config_path: str = "config.yaml", dry_run: bool = True):
@@ -15,7 +16,7 @@ def main(config_path: str = "config.yaml", dry_run: bool = True):
         arranger = ProjectArranger(Path(config_path))
         projects = arranger.build_projects_list()
         groups = arranger.sort_projects(projects)
-        arranger.print_results()
+        arranger.print_results(groups)
 
         if not dry_run:
             logger.warning(
