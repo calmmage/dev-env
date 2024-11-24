@@ -5,6 +5,8 @@ from loguru import logger
 
 from dev.draft.project_management_v2.project_organization.old.main import ProjectArranger
 
+ENABLED = False
+
 
 def main(
     config_path: str = "config.yaml",
@@ -30,9 +32,8 @@ def main(
             arranger.print_changes(current_groups, new_groups, print_sizes=verbose)
 
         if not dry_run:
-            logger.warning(
-                "Apply mode not yet implemented. Use --dry-run to see what would be done."
-            )
+            if not ENABLED:
+                raise NotImplementedError("Apply mode forbidden for now!")
 
     except Exception as e:
         logger.error(f"Error during project arrangement: {e}")

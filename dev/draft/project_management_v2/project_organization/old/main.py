@@ -26,10 +26,15 @@ class Group(str, Enum):
     ignore = "ignore"
 
 
-class Project(BaseModel):
+class Project:
     name: str
-    path: Path
+    path: Optional[Path] = None
     github_repo: Optional[str] = None
+
+    def __init__(self, name: str, path: Path = None, github_repo: Optional[str] = None):
+        self.name = name
+        self.path = Path(path)
+        self.github_repo = github_repo
 
     # todo: use external ignore rules
     #  option 1: gitignore

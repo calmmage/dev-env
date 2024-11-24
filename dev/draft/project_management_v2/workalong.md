@@ -1,3 +1,24 @@
+Main things I'm trying to do:
+- display relevant info about projects
+  - github name, if different
+  - github org, if not personal
+  - date, if interesting
+- improve project sorting algorithms / rules
+  - based on date
+  - hardcode more rules
+- do actual sorting
+  - arrive at a state where I'm happy with the result (key projects not removed)
+  - move dirs around (with confirmation?)
+
+something else?
+- merge with clone_all_projects script
+
+Refactoings
+- [ ] return the reason for group selection together with ... group
+- [ ] change everything to return instance of Group
+- [ ] Add a new 'destination' class or something
+  - dict? group_name -> dir? configurable somehow? 
+- [ ] Resolve python config warnings about types of fields (config.py, BaseSettings)
 
 - [ ] print project date info 
   - if edited > 1 month ago -> print that
@@ -17,7 +38,10 @@
       - rename local
       - rename remote? 
       - keep as is
-- [ ] if t
+
+Plan:
+
+
 
 
 - [ ] handle 'clone from start' scenario
