@@ -23,6 +23,17 @@ something else?
 - 1) Now, that we added github client
   - make github project lists
   - merge / compare with local
+
+- [ ] Get project metadata for github-only projects as well
+  - create a separate Github project class?
+- [ ] Show project owner at least
+- [ ] add config for which github orgs to use. Debug / info about the ones not used.
+
+- [ ] load_github_projects in the project arranger, not in typer app..
+- [ ] sort by org, before date.
+Bonus
+- [ ] handle "project present twice" corner case
+
 - 2) improve project sorting algos
 - 3) Start thinking about
   - new project creation 
@@ -40,7 +51,6 @@ Refactoings
   - in brackets to the right of the project
 - [ ] Sort projects by recency within groups.
 
-- [ ] add config for which github orgs to use
 - [ ] add a simple clone_all_projects script based on our tool
   - specify target root? create main and secondary groups folders in there?
   - make sure to just add the ability to clone repos to our script
