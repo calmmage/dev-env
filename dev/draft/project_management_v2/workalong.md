@@ -20,10 +20,13 @@ Refactoings
   - dict? group_name -> dir? configurable somehow? 
 - [ ] Resolve python config warnings about types of fields (config.py, BaseSettings)
 
-- [ ] print project date info 
+- [x] print project date info 
   - if edited > 1 month ago -> print that
   - if edited recently but created long ago -> print both
   - if edited recently and created recently -> print only when edited
+- [ ] Add a flag to show 1) date or 2) reason for group selection 
+  - in brackets to the right of the project
+- [ ] Sort projects by recency within groups.
 
 - add new tech - github info
   - [ ] merge with clone_all_projects script

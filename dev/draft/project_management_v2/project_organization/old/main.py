@@ -1,15 +1,16 @@
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from loguru import logger
-from pydantic import BaseModel
 
 from dev.draft.project_management_v2.project_organization.old.config import ProjectArrangerSettings
 from dev.draft.project_management_v2.project_organization.old.utils import (
+    DateFormatSettings,
+    format_date,
     get_commit_count,
     get_first_commit_date,
     get_last_commit_date,
@@ -114,7 +115,7 @@ class Project:
         # idea 1: if git repo - look at last commit date
         if is_git_repo(self.path):
             try:
-                return get_last_commit_date(self.path)
+                return get_last_commit_date(self.path).replace(tzinfo=None)  # Make naive
             except ValueError:
                 pass
         # idea 2: if no git repo - look at file dates
@@ -131,7 +132,7 @@ class Project:
         # idea 1: if git repo - look at first commit date
         if is_git_repo(self.path):
             try:
-                return get_first_commit_date(self.path)
+                return get_first_commit_date(self.path).replace(tzinfo=None)  # Make naive
             except ValueError:
                 pass
         # idea 2: if no git repo - look at file dates
@@ -149,6 +150,71 @@ class Project:
             logger.warning(f"Unknown group {group}")
             return Group.unsorted
         return Group(group)
+
+    def date_formatted(self, format: DateFormatSettings = DateFormatSettings()) -> str:
+        """Format date information based on project timeline:
+        - if edited > 1 month ago -> print that
+        - if edited recently but created long ago -> print both
+        - if edited recently and created recently -> print only when edited
+        """
+        today = datetime.now()  # Naive datetime
+        one_month_ago = today - timedelta(days=30)
+        three_months_ago = today - timedelta(days=90)
+
+        edited_date = self.date
+        created_date = self.created_date
+
+        if edited_date < one_month_ago:
+            return f"Edited {format_date(edited_date, format)}"
+        elif created_date < three_months_ago:
+            return (
+                f"Edited {format_date(edited_date, format)}, "
+                f"Created {format_date(created_date, format)}"
+            )
+        else:
+            return f"Edited {format_date(edited_date, format)}"
+
+    def format_line(
+        self,
+        prefix: str = "",
+        show_size: bool = False,
+        show_date: bool = True,
+        format: DateFormatSettings = DateFormatSettings(),
+        target_width: int = 100,
+    ) -> str:
+        """Format project information into a display line
+
+        Args:
+            prefix: Optional prefix (e.g., "+", "-" for changes)
+            show_size: Whether to show project size
+            show_date: Whether to show date information
+
+        Returns:
+            Formatted line string
+        """
+        parts = []
+
+        # Add prefix if provided
+        if prefix:
+            parts.append(f"{prefix} ")
+
+        # Add size if requested
+        if show_size:
+            parts.append(f"[{self.size_formatted}] ")
+
+        # Add project name
+        parts.append(self.name)
+
+        # Add date if requested
+        if show_date:
+            date_str = self.date_formatted(format=format)
+            to_pad = target_width - len(date_str) - sum(len(p) for p in parts)
+
+            if to_pad > 0:
+                parts.append(" " * to_pad)
+            parts.append(f" ({date_str})")
+
+        return "".join(parts)
 
 
 class ProjectArranger:
@@ -175,7 +241,7 @@ class ProjectArranger:
                     continue
                 if path.name.startswith("."):
                     continue
-                # if path.name in self.settings.ignored_projects:
+                # if path.name in self.format.ignored_projects:
                 #     continue
 
                 projects.append(Project(name=path.name, path=path.resolve()))
@@ -304,8 +370,7 @@ class ProjectArranger:
             proj_list = groups["main"][group]
             print(f"{group.title()} ({len(proj_list)}):")
             for proj in sorted(proj_list, key=lambda x: x.name):
-                size_str = f"[{proj.size_formatted}] " if print_sizes else ""
-                print(f"- {size_str}{proj.name}")
+                print(f"- {proj.format_line(show_size=print_sizes)}")
             print()
 
         print("\n" + "=" * 50 + "\n")
@@ -314,14 +379,12 @@ class ProjectArranger:
         for group, proj_list in sorted(groups["secondary"].items()):
             print(f"{group.title()} ({len(proj_list)}):")
             for proj in sorted(proj_list, key=lambda x: x.name):
-                size_str = f"[{proj.size_formatted}] " if print_sizes else ""
-                print(f"- {size_str}{proj.name}")
+                print(f"- {proj.format_line(show_size=print_sizes)}")
             print()
 
     @staticmethod
     def print_changes(old_groups, new_groups, print_sizes: bool = False) -> None:
         """Print only the changes between old and new groups"""
-        # Compare main groups
         print("Changes in Main Project Groups:")
         for group in Group.__members__:
             old_projects = {p.name for p in old_groups["main"].get(group, [])}
@@ -336,12 +399,12 @@ class ProjectArranger:
                     print("  Added:")
                     for proj_name in sorted(added):
                         proj = next(p for p in new_groups["main"][group] if p.name == proj_name)
-                        size_str = f"[{proj.size_formatted}] " if print_sizes else ""
-                        print(f"  + {size_str}{proj_name}")
+                        print("  " + proj.format_line(prefix="+", show_size=print_sizes))
                 if removed:
                     print("  Removed:")
                     for proj_name in sorted(removed):
-                        print(f"  - {proj_name}")
+                        old_proj = next(p for p in old_groups["main"][group] if p.name == proj_name)
+                        print("  " + old_proj.format_line(prefix="-", show_size=print_sizes))
 
         # Compare secondary groups
         if any(old_groups["secondary"]) or any(new_groups["secondary"]):
@@ -361,9 +424,11 @@ class ProjectArranger:
                             proj = next(
                                 p for p in new_groups["secondary"][group] if p.name == proj_name
                             )
-                            size_str = f"[{proj.size_formatted}] " if print_sizes else ""
-                            print(f"  + {size_str}{proj_name}")
+                            print("  " + proj.format_line(prefix="+", show_size=print_sizes))
                     if removed:
                         print("  Removed:")
                         for proj_name in sorted(removed):
-                            print(f"  - {proj_name}")
+                            old_proj = next(
+                                p for p in old_groups["secondary"][group] if p.name == proj_name
+                            )
+                            print("  " + old_proj.format_line(prefix="-", show_size=print_sizes))

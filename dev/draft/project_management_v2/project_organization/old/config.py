@@ -4,6 +4,8 @@ from typing import List, Set
 import yaml
 from pydantic_settings import BaseSettings
 
+from dev.draft.project_management_v2.project_organization.old.utils import DateFormatSettings
+
 
 class ProjectArrangerSettings(BaseSettings):
     # group 1: general
@@ -63,6 +65,9 @@ class ProjectArrangerSettings(BaseSettings):
         ".sql",
         ".sh",
     }
+
+    # Date formatting format
+    date_format: DateFormatSettings = DateFormatSettings()
 
     @classmethod
     def from_yaml(cls, yaml_path: str | Path, **kwargs):

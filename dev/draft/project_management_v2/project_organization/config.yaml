@@ -7,6 +7,14 @@ root_paths:
   - ~/work/archive
   - ~/work/experiments
 
+# Date formatting
+date_format:
+  use_relative_dates: true
+  short_format: true
+
+  # Only used if use_relative_dates disabled  Use relative dates for dates within a week
+#  use_relative_for_recent: true
+#  recent_threshold_days: 7
 
 # part 2: manual sorting
 
@@ -31,6 +39,7 @@ cool:
   - fedor-bot-idea
   - video-to-audio-bot
   - generate-dir-link
+  - gpt-chatbot-that-stays-on-point
 templates:
   - base-template
 #   - typescript-project-template
