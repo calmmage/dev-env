@@ -6,6 +6,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from github.Repository import Repository
 from loguru import logger
 
 from dev.draft.project_management_v2.project_organization.old.config import ProjectArrangerSettings
@@ -35,11 +36,12 @@ class Group(str, Enum):
 class Project:
     name: str
     path: Optional[Path] = None
-    github_repo: Optional[str] = None
+    github_repo: Optional[Repository] = None
 
-    def __init__(self, name: str, path: Path = None):
+    def __init__(self, name: str, path: Path = None, github_repo: Repository = None):
         self.name = name
         self.path = Path(path) if path else None
+        self.github_repo = github_repo
         self._github_client = MISSING
 
     @staticmethod
@@ -65,7 +67,7 @@ class Project:
             Tuple of (repo_name, org_name) or None if not found/available
         """
         if self.github_repo:
-            return self._extract_repo_info(self.github_repo)
+            return self._extract_repo_info(self.github_repo.html_url)
 
         try:
             from git import Repo
@@ -87,10 +89,14 @@ class Project:
 
     @property
     def github_name(self) -> Optional[str]:
+        if self.github_repo:
+            return self.github_repo.name
         return self._repo_info[0]
 
     @property
     def github_org(self) -> Optional[str]:
+        if self.github_repo:
+            return self.github_repo.owner.login
         return self._repo_info[1]
 
     # todo: use external ignore rules
@@ -165,9 +171,10 @@ class Project:
 
     @cached_property
     def date(self) -> datetime:
-        """
-        Essential data when the project was last meaningfully changed.
-        """
+        """Last meaningful change date - from git or filesystem"""
+        if self.github_repo:
+            return self.github_repo.pushed_at.replace(tzinfo=None)
+
         # idea 1: if git repo - look at last commit date
         if is_git_repo(self.path):
             try:
@@ -182,9 +189,10 @@ class Project:
 
     @cached_property
     def created_date(self) -> datetime:
-        """
-        Essential data when the project was created.
-        """
+        """Project creation date - from git or filesystem"""
+        if self.github_repo:
+            return self.github_repo.created_at.replace(tzinfo=None)
+
         # idea 1: if git repo - look at first commit date
         if is_git_repo(self.path):
             try:
@@ -316,14 +324,49 @@ class ProjectArranger:
 
     def _build_projets_list_github(self) -> List[Project]:
         """Discover all projects in GitHub"""
-        return []
+        if self.github_client is None:
+            logger.warning("GitHub client not available - skipping GitHub projects")
+            return []
+
+        projects = []
+        try:
+            for repo in self.github_client.get_user().get_repos():
+                if repo.fork:  # Skip forked repos
+                    continue
+                # Create Project instance with GitHub metadata
+                projects.append(Project(name=repo.name, github_repo=repo))
+        except Exception as e:
+            logger.error(f"Failed to get GitHub projects: {e}")
+            return []
+
+        return projects
 
     def _merge_projects_lists(
         self, local_projects: List[Project], github_projects: List[Project]
     ) -> List[Project]:
         """Merge projects lists from local and GitHub"""
-        # idea: merge projects that have the same github repo
-        return local_projects + github_projects
+        # Create lookup by GitHub URL for local projects
+        local_by_github = {
+            (p.github_org, p.github_name): p
+            for p in local_projects
+            if p.github_name and p.github_org
+        }
+
+        # Add GitHub metadata to matching local projects
+        # todo: actually, we can try to pre-fill github_repo with just local remote
+        #  warn user if there's a missmatch - conflicitng remotes
+        for github_proj in github_projects:
+            key = (github_proj.github_org, github_proj.github_name)
+            if key in local_by_github:
+                local_proj = local_by_github[key]
+                local_proj.github_repo = github_proj.github_repo
+
+        # Add GitHub-only projects
+        github_only = [
+            p for p in github_projects if (p.github_org, p.github_name) not in local_by_github
+        ]
+
+        return local_projects + github_only
 
     def get_current_groups(self, projects: List[Project]) -> Dict[str, Dict[str, List[Project]]]:
         """Build groups dictionary based on current filesystem structure"""
