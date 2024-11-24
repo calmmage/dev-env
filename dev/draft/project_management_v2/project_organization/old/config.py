@@ -69,6 +69,10 @@ class ProjectArrangerSettings(BaseSettings):
     # Date formatting format
     date_format: DateFormatSettings = DateFormatSettings()
 
+    # GitHub settings
+    github_orgs: List[str] = []  # List of GitHub organizations to include
+    github_skip_orgs: List[str] = []  # List of GitHub organizations to exclude
+
     @classmethod
     def from_yaml(cls, yaml_path: str | Path, **kwargs):
         with open(yaml_path) as f:

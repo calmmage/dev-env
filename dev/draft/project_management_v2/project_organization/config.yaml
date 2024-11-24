@@ -7,6 +7,15 @@ root_paths:
   - ~/work/archive
   - ~/work/experiments
 
+github_orgs:
+  - calmmage
+github_skip_orgs:
+  - tgneuro
+#  - akudrinsky
+  - OlejaTheHuman
+#  - MikhailVodolagin
+  - AlexanderAbramovPav
+
 # Date formatting
 date_format:
   use_relative_dates: true

@@ -27,10 +27,10 @@ something else?
 - [ ] Get project metadata for github-only projects as well
   - create a separate Github project class?
 - [ ] Show project owner at least
-- [ ] add config for which github orgs to use. Debug / info about the ones not used.
+- [x] add config for which github orgs to use. Debug / info about the ones not used.
 
 - [ ] load_github_projects in the project arranger, not in typer app..
-- [ ] sort by org, before date.
+- [x] sort by org, before date.
 Bonus
 - [ ] handle "project present twice" corner case
 
@@ -71,9 +71,9 @@ Legacy
   - [x] init github client
   - [x] see github remote for the repo
   - [x] if remote project name 
-  - [ ] see all remote projects
-    - configure which remote sources (orgs) to use
-  - [ ] merge remote and local lists 
+  - [x] see all remote projects
+    - [x] configure which remote sources (orgs) to use
+  - [x] merge remote and local lists 
     - [ ] handle "a project that is cloned several times" scenario
     - [ ] handle "a project that is cloned under a different name" scenario. Ask user:
       - rename local
