@@ -435,6 +435,9 @@ class ProjectArranger:
             main_group, reason = self._sort_projects_into_main_groups(project)
             secondary_groups = self._sort_projects_into_secondary_groups(project)
 
+            if secondary_groups and (main_group in [Group.unsorted, Group.ignore]):
+                reason = "has secondary groups"
+                main_group = Group.archive
             groups["main"][main_group].append(project)
             groups["main_reason"][project.name] = reason
             for group in secondary_groups:
@@ -506,6 +509,8 @@ class ProjectArranger:
             res.append("cool")
         if project.name in self.settings.templates:
             res.append("templates")
+        if project.name in self.settings.unfinished:
+            res.append("unfinished")
         return res
 
     def _sort_secondary_auto(self, project: Project) -> List[str]:

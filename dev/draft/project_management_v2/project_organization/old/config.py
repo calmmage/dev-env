@@ -25,6 +25,7 @@ class ProjectArrangerSettings(BaseSettings):
     templates: Set[str] = set()
     libs: Set[str] = set()
     cool: Set[str] = set()
+    unfinished: Set[str] = set()
 
     # group 3: auto sorting
     ## main groups
