@@ -1,3 +1,4 @@
+import re
 import subprocess
 from enum import Enum
 from functools import lru_cache
@@ -121,8 +122,9 @@ def check_and_fix_poetry_project_name(path: Path, candidate: str) -> None:
     # replace with candidate
     if current_name == "project-name":
         logger.info(f"Replacing placeholder project name with {candidate}")
-        pyproject_data["tool"]["poetry"]["name"] = candidate
-        pyproject_path.write_text(toml.dumps(pyproject_data))
+        content = pyproject_path.read_text()
+        content = re.sub(r'name\s*=\s*"project-name"', f'name = "{candidate}"', content)
+        pyproject_path.write_text(content)
     # if name is present:
     #  compare with candidate
     #  raise warning if different, return
@@ -161,10 +163,23 @@ def add_source_package_to_pyproject_toml(path: Path, package_name: str):
     #   { include = "src", from = "." },
     #   { include = "swe_bench", from = "." }
     # ]
-    if not any(p.get("include") == package_name for p in current_packages):
-        current_packages.append({"include": package_name, "from": "."})
-        pyproject_data["tool"]["poetry"]["packages"] = current_packages
-        pyproject_path.write_text(toml.dumps(pyproject_data))
+    if not current_packages:
+        # add a new section with regexp
+        new_text = dedent(
+            f"""
+            [tool.poetry.packages]
+            include = "{package_name}"
+            """
+        )
+        pyproject_path.write_text(pyproject_content.rstrip() + "\n" + new_text)
+    # if not any(p.get("include") == package_name for p in current_packages):
+    elif not any(p.get("include") == package_name for p in current_packages):
+        raise NotImplementedError("Adding packages to existing list is not implemented yet")
+        # current_packages.append({"include": package_name, "from": "."})
+        # pyproject_data["tool"]["poetry"]["packages"] = current_packages
+        # pyproject_path.write_text(toml.dumps(pyproject_data))
+        # 1) a - if ppackages= is present -
+        # 2) b - asd
 
 
 @lru_cache()
@@ -236,7 +251,10 @@ def _get_source_dir_name(repo_path: Path) -> str:
             logger.debug(f"Created source directory: {source_dir_name}")
 
     # add it as package to pyproject.toml
-    add_source_package_to_pyproject_toml(repo_path, source_dir_name)
+    try:
+        add_source_package_to_pyproject_toml(repo_path, source_dir_name)
+    except NotImplementedError:
+        logger.warning("Adding packages to existing list is not implemented yet - skipping")
 
     return source_dir_name
 
@@ -259,8 +277,7 @@ def _add_vulture(repo_path: Path):
             - id: vulture
               args: [
               "--min-confidence", "80",
-              "--exclude", "**/migrations/*,**/__pycache__/*",
-              "{source_dir_name}"  # project_name
+              "{source_dir_name}"  # project_name - path to scan
               ]
               files: ^.*\.py$
               exclude: ^(.git|.venv|venv|build|dist)/.*$
@@ -272,21 +289,19 @@ def _add_vulture(repo_path: Path):
 def _add_black(repo_path: Path):
     content = dedent(
         """
-        - repo: https://github.com/psf/black
-          rev: 24.2.0
-          hooks:
-            # - id: black
-            #   args: [ --line-length=100 ]
-            - id: black-jupyter
-              name: black-jupyter
-              description:
-                "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
-              entry: black
-              language: python
-              minimum_pre_commit_version: 2.9.2
-              require_serial: true
-              types_or: [python, pyi, jupyter]
-              additional_dependencies: [".[jupyter]"]
+          - repo: https://github.com/psf/black
+            rev: 24.2.0
+            hooks:
+              - id: black
+                args: [ --line-length=100 ]
+                name: black
+                description: "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
+                entry: black
+                language: python
+                minimum_pre_commit_version: 2.9.2
+                require_serial: true
+                types_or: [python, pyi, jupyter]
+                additional_dependencies: [".[jupyter]"]
         """
     )
 
