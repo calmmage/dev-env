@@ -1,9 +1,9 @@
 - [x] check if repo name in pyproject.toml is still 'project_name'
-  - [ ] see if there's still a folder 'project_name' in the root
+  - [x] see if there's still a folder 'project_name' in the root
   -  if yes - ask user the project name and change it in pyproject.toml and in the folder name
-- [ ] use project name to fill all .pre-commit-config.yaml values where it is required.
-- [ ] remove duplicate --exclude flags in vulture pre-commit
-
+- [x] use project name to fill all .pre-commit-config.yaml values where it is required.
+- [x] remove duplicate --exclude flags in vulture pre-commit
+- [ ] move tools folder to dev_env - and update aliases
 
 - [x] line 1-7 (nbstripout removal): Add a new function `_add_nbstripout(repo_path: Path)` with the original nbstripout config and call it in `_add_precommit()`
 
