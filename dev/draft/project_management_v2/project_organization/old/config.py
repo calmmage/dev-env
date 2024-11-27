@@ -70,7 +70,9 @@ class ProjectArrangerSettings(BaseSettings):
     date_format: DateFormatSettings = DateFormatSettings()
 
     # GitHub settings
-    github_orgs: List[str] = []  # List of GitHub organizations to include
+    # will include only these orgs
+    github_orgs: List[str] = []
+    # will include all except these
     github_skip_orgs: List[str] = []  # List of GitHub organizations to exclude
 
     @classmethod

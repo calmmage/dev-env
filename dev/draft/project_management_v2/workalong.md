@@ -26,7 +26,7 @@ something else?
 
 - [ ] Get project metadata for github-only projects as well
   - create a separate Github project class?
-- [ ] Show project owner at least
+- [x] Show project owner at least
 - [x] add config for which github orgs to use. Debug / info about the ones not used.
 
 - [ ] load_github_projects in the project arranger, not in typer app..

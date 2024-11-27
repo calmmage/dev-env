@@ -329,12 +329,35 @@ class ProjectArranger:
             return []
 
         projects = []
+        all_orgs = set()
         try:
             for repo in self.github_client.get_user().get_repos():
                 if repo.fork:  # Skip forked repos
                     continue
+
+                org = repo.owner.login
+                all_orgs.add(org)
+
+                # Skip if org is in skip list
+                if org in self.settings.github_skip_orgs:
+                    logger.debug(f"Skipping repo {repo.name} from org {org} (in skip list)")
+                    continue
+
+                # Skip if org list is specified and org not in it
+                if self.settings.github_orgs and org not in self.settings.github_orgs:
+                    logger.debug(f"Skipping repo {repo.name} from org {org} (not in include list)")
+                    continue
+
                 # Create Project instance with GitHub metadata
                 projects.append(Project(name=repo.name, github_repo=repo))
+
+            # Log org info
+            logger.info(f"Found repos from orgs: {sorted(all_orgs)}")
+            if self.settings.github_orgs:
+                logger.info(f"Including only orgs: {sorted(self.settings.github_orgs)}")
+            if self.settings.github_skip_orgs:
+                logger.info(f"Skipping orgs: {sorted(self.settings.github_skip_orgs)}")
+
         except Exception as e:
             logger.error(f"Failed to get GitHub projects: {e}")
             return []

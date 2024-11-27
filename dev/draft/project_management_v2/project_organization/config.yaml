@@ -7,8 +7,9 @@ root_paths:
   - ~/work/archive
   - ~/work/experiments
 
-github_orgs:
-  - calmmage
+# will include only these orgs
+# github_orgs:
+#   - calmmage
 github_skip_orgs:
   - tgneuro
 #  - akudrinsky
