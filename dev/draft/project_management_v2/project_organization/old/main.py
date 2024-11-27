@@ -435,13 +435,13 @@ class ProjectArranger:
         """Sort projects into main groups manually"""
         # todo: figure out what to do if local name and github name are different
         if project.name in self.settings.ignore:
-            return "ignore"
+            return Group.ignore
         elif project.name in self.settings.actual:
-            return "projects"
+            return Group.projects
         elif project.name in self.settings.archive:
-            return "archive"
+            return Group.archive
         elif project.name in self.settings.experiments:
-            return "experiments"
+            return Group.experiments
         return None
 
     def _sort_main_auto(self, project: Project) -> str:
@@ -457,15 +457,15 @@ class ProjectArranger:
                     get_commit_count(project.path, days=self.settings.auto_sort_days)
                     > self.settings.auto_sort_commits
                 ):
-                    return "projects"  # "actual"
+                    return Group.projects  # "actual"
             elif project.size > self.settings.auto_sort_size:
-                return "projects"  # "actual"
-            return "experiments"
+                return Group.projects  # "actual"
+            return Group.experiments
         else:
             # look at project size
             if project.size > self.settings.auto_sort_size:
-                return "archive"
-            return "ignore"
+                return Group.archive
+            return Group.ignore
 
     def _sort_projects_into_secondary_groups(self, project: Project) -> List[str]:
         """Sort projects into secondary groups"""
