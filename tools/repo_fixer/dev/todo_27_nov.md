@@ -1,0 +1,5 @@
+- [x] check if repo name in pyproject.toml is still 'project_name'
+  - [ ] see if there's still a folder 'project_name' in the root
+  -  if yes - ask user the project name and change it in pyproject.toml and in the folder name
+- [ ] use project name to fill all .pre-commit-config.yaml values where it is required.
+- [ ] remove duplicate --exclude flags in vulture pre-commit

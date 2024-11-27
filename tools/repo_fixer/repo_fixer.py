@@ -6,8 +6,10 @@ from textwrap import dedent, indent
 from typing import List
 
 import pyperclip
+import toml
 import typer
 import yaml
+from calmlib.utils import fix_path
 from loguru import logger
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -91,20 +93,151 @@ def _add_pyproject_section_if_missing(repo_path: Path, section: str, content: st
     pyproject_toml_path.write_text(pyproject_toml_content)
 
 
+def check_and_fix_poetry_project_name(path: Path, candidate: str) -> None:
+    """Check and fix project name in pyproject.toml if needed.
+
+    Args:
+        path: Path to the repository root
+        candidate: Candidate project name to use
+    """
+    # step 1: find pyproject toml path, check if exists
+    pyproject_path = path / "pyproject.toml"
+    if not pyproject_path.exists():
+        logger.warning(f"No pyproject.toml found at {pyproject_path}. Skipping.")
+        return
+
+    # step 2: load pyproject toml
+    pyproject_content = pyproject_path.read_text()
+    pyproject_data = toml.loads(pyproject_content)
+
+    if "tool" not in pyproject_data or "poetry" not in pyproject_data["tool"]:
+        logger.warning("No [tool.poetry] section found in pyproject.toml. Skipping.")
+        return
+
+    # step 3: check what is the name
+    current_name = pyproject_data["tool"]["poetry"].get("name")
+
+    # - if name is 'project_name'
+    # replace with candidate
+    if current_name == "project-name":
+        logger.info(f"Replacing placeholder project name with {candidate}")
+        pyproject_data["tool"]["poetry"]["name"] = candidate
+        pyproject_path.write_text(toml.dumps(pyproject_data))
+    # if name is present:
+    #  compare with candidate
+    #  raise warning if different, return
+    elif current_name and current_name != candidate:
+        logger.warning(
+            f"Project name mismatch: {current_name} in pyproject.toml vs {candidate} provided. "
+            "Not changing existing name."
+        )
+        return current_name
+
+
+def add_source_package_to_pyproject_toml(path: Path, package_name: str):
+    """Add a package to the pyproject.toml file.
+
+    Args:
+        path: Path to the repository root
+        candidate: Candidate project name to use
+    """
+
+    # step 1: find pyproject toml path, check if exists
+    pyproject_path = path / "pyproject.toml"
+    if not pyproject_path.exists():
+        logger.warning(f"No pyproject.toml found at {pyproject_path}. Skipping.")
+        return
+
+    # step 2: load pyproject toml
+    pyproject_content = pyproject_path.read_text()
+    pyproject_data = toml.loads(pyproject_content)
+
+    if "tool" not in pyproject_data or "poetry" not in pyproject_data["tool"]:
+        logger.warning("No [tool.poetry] section found in pyproject.toml. Skipping.")
+        return
+
+    current_packages = pyproject_data["tool"]["poetry"].get("packages", [])
+    # packages=[
+    #   { include = "src", from = "." },
+    #   { include = "swe_bench", from = "." }
+    # ]
+    if not any(p.get("include") == package_name for p in current_packages):
+        current_packages.append({"include": package_name, "from": "."})
+        pyproject_data["tool"]["poetry"]["packages"] = current_packages
+        pyproject_path.write_text(toml.dumps(pyproject_data))
+
+
 @lru_cache()
 def _get_source_dir_name(repo_path: Path) -> str:
-    source_dir_name = repo_path.name
-    if not (repo_path / source_dir_name).exists():
-        source_dir_name = source_dir_name.replace("-", "_")
-    if not (repo_path / source_dir_name).exists():
+    """
+
+    :param repo_path:
+    :return:
+    """
+    # step 1: fix path to work with abs_path
+    repo_path = fix_path(repo_path)
+    candidates = []
+
+    source_dir_name = None
+    candidates.append(repo_path.name)
+
+    # step 2: check and fix project name in pyproject.toml
+    res = check_and_fix_poetry_project_name(repo_path, candidate=repo_path.name)
+    if res is not None:
+        # logger.warning(
+        #     f"Name conflict in pyproject.toml: folder name - {repo_path.name}, project name - {res}. "
+        #     # f"Using {res}"
+        # )
+        # source_dir_name = res
+        candidates.append(res)
+
+    candidates.append("src")
+
+    for candidate in candidates:
+        if (repo_path / candidate).exists():
+            logger.info(f"Found source directory: {candidate}. Using it for pre-commit setup.")
+            source_dir_name = candidate
+            break
+        if (repo_path / candidate.replace("-", "_")).exists():
+            logger.info(f"Found source directory: {candidate}. Using it for pre-commit setup.")
+            source_dir_name = candidate.replace("-", "_")
+            break
+
+    # if none of the candadtes exist, ask user for a name
+    if source_dir_name is None:
         # ask user for project name
-        source_dir_name = typer.prompt(f"Please provide a source directory name for {repo_path}: ")
-        # option 1: user provided full path
-        if Path(source_dir_name).exists():
-            return Path(source_dir_name).name
-        # option 2: user provided name
-        if not (repo_path / source_dir_name).exists():
-            return None
+        default = repo_path.name.replace("-", "_")
+        try:
+            source_dir_name = typer.prompt(
+                f"Please provide a source directory name for {repo_path}, will be used to run pre-commit checks (default: {default}): ",
+                default=default,
+            )
+        except:
+            source_dir_name = default
+
+    if not source_dir_name:
+        # something went wrong
+        raise ValueError("No source directory name identified")
+    # option 1: user provided full path
+    if Path(source_dir_name).exists():
+        source_dir_name = Path(source_dir_name).name
+    # option 2: user provided name
+    # if not (repo_path / source_dir_name).exists():
+    #     return None
+
+    x = repo_path / source_dir_name
+    if not x.exists():
+        y = repo_path / "project_name"
+        if y.exists():
+            y.rename(repo_path / source_dir_name)
+            logger.debug(f"Renamed project_name to {source_dir_name}")
+        else:
+            x.mkdir()
+            logger.debug(f"Created source directory: {source_dir_name}")
+
+    # add it as package to pyproject.toml
+    add_source_package_to_pyproject_toml(repo_path, source_dir_name)
+
     return source_dir_name
 
 
