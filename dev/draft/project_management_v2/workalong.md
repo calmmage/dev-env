@@ -1,3 +1,16 @@
+
+# New
+
+- [x] improve main auto sorting
+- [ ] apply groups. sort
+  - if same group - skip
+  - if not cloned - clone
+  - if ignore - move to 'to_remove'
+  - all the rest - move
+  - first - make a list of actions - and verify
+- [ ] add mini-project concept
+
+# Old
 Main things I'm trying to do:
 - display relevant info about projects
   - [x] add github tech - old clone_all_projects script

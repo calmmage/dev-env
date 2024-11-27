@@ -472,6 +472,14 @@ class ProjectArranger:
         """Sort projects into main groups automatically. If not specified manually."""
         # idea 1: look at project date
         today = datetime.now()
+        this_month = today - timedelta(days=30)
+
+        # If created this month -> experiments
+        if project.created_date > this_month:
+            if project.current_group == Group.actual:
+                return Group.actual, "already in actual"
+            return Group.experiments, "created this month"
+
         if project.date > today - timedelta(days=self.settings.auto_sort_days):
             # look at the size / activity
             if (
@@ -484,6 +492,8 @@ class ProjectArranger:
                 return Group.actual, "5+ recent commits"  # "actual"
             elif project.size > self.settings.auto_sort_size:
                 return Group.actual, "recent and big"  # "actual"
+            if project.current_group == Group.actual:
+                return Group.actual, "already in actual"
             return Group.experiments, "recent but yet small"
         else:
             # look at project size
