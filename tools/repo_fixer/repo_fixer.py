@@ -49,6 +49,13 @@ settings = Settings.from_yaml(config_path)
 
 
 def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str):
+    """Add a pre-commit tool configuration if it's not already present.
+
+    Args:
+        repo_path: Path to the repository
+        tool_name: Name of the tool to add
+        content: Tool configuration content
+    """
     logger.debug(f"Adding pre-commit tool if missing: {tool_name}")
     pre_commit_config_path = repo_path / ".pre-commit-config.yaml"
 
@@ -56,13 +63,20 @@ def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str
 
     if not pre_commit_config_path.exists():
         logger.warning(
-            f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Creating. Don't forget to install"
+            f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Creating new file."
         )
+        # Create new file with repos: header
+        pre_commit_config_path.write_text("repos:\n" + content)
+        return
+
+    # Read existing content
+    existing_content = pre_commit_config_path.read_text().strip()
+
+    # If file is empty or doesn't have repos: header
+    if not existing_content.strip() or "repos:" not in existing_content:
+        existing_content = "repos:\n" + content
     else:
-        # check if tools is already in it
-        # find the line
-        # see if it's not commented out
-        existing_content = pre_commit_config_path.read_text()
+        # Check if tool is already in it
         if tool_name in existing_content:
             tool_line = [line for line in existing_content.splitlines() if tool_name in line][-1]
             if tool_line.strip().startswith("#"):
@@ -74,9 +88,9 @@ def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str
                     f"Seems like {tool_name} is already in .pre-commit-config.yaml. Skipping."
                 )
                 return
-        content = existing_content.rstrip() + "\n" + content
+        existing_content = existing_content.rstrip() + "\n" + content
 
-    pre_commit_config_path.write_text(content)
+    pre_commit_config_path.write_text(existing_content)
 
 
 def _add_pyproject_section_if_missing(repo_path: Path, section: str, content: str):
@@ -289,8 +303,8 @@ def _add_vulture(repo_path: Path):
           hooks:
             - id: vulture
               args: [
-              "--min-confidence", "80",
-              "{source_dir_name}"  # project_name - path to scan
+                "--min-confidence", "80",
+                "{source_dir_name}"  # project_name - path to scan
               ]
               files: ^.*\.py$
               exclude: ^(.git|.venv|venv|build|dist)/.*$
@@ -331,15 +345,15 @@ def _add_flake8(repo_path: Path):
           hooks:
             - id: flake8
               additional_dependencies: [
-              'flake8-docstrings',
-              'flake8-bugbear',
-              'flake8-comprehensions',
-              'flake8-simplify',
+                'flake8-docstrings',
+                'flake8-bugbear',
+                'flake8-comprehensions',
+                'flake8-simplify',
               ]
               args: [
-              "--max-line-length=100",
-              "--exclude=.venv,.git,__pycache__,build,dist",
-              "--ignore=E203,W503",  # Ignore some style errors that conflict with other tools
+                "--max-line-length=100",
+                "--exclude=.venv,.git,__pycache__,build,dist",
+                "--ignore=E203,W503",  # Ignore some style errors that conflict with other tools
               ]
               files: ^{source_dir_name}/.*\.py$ # project_name - path to scan
         """
@@ -439,9 +453,9 @@ def _add_codecov(repo_path: Path):
                 pass_filenames: false
                 always_run: true
                 args: [
-                "--cov={source_dir_name}", # project_name - path to scan
-                "--cov-report=xml",
-                "--cov-fail-under={settings.codecov_fail_under}",
+                  "--cov={source_dir_name}",  # project_name - path to scan
+                  "--cov-report=xml",
+                  "--cov-fail-under={settings.codecov_fail_under}",
                 ]
         """
     )
