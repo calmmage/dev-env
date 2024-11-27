@@ -137,6 +137,10 @@ class Project:
 
     @cached_property
     def size(self) -> int:
+        if self.path is None:
+            # todo: can we get size from github?
+            logger.warning(f"No path set for project {self.name}, can't calculate size")
+            return 0
         total_size = 0
         for file in self.path.rglob("*"):
             # Skip common non-source directories
@@ -210,10 +214,11 @@ class Project:
         if self.path is None:
             return Group.ignore
         group = self.path.parent.name
-        if group not in Group.__members__:
+        try:
+            return Group(group)
+        except:
             logger.warning(f"Unknown group {group}")
             return Group.unsorted
-        return Group(group)
 
     def date_formatted(self, format: DateFormatSettings = DateFormatSettings()) -> str:
         """Format date information based on project timeline:
@@ -237,6 +242,21 @@ class Project:
             )
         else:
             return f"Edited {format_date(edited_date, format)}"
+
+    def is_git_repo(self):
+        if self.github_repo:
+            return True
+        if self.path is None:
+            return False
+        return is_git_repo(self.path)
+
+    def get_recent_commit_count(self, days: int = 30) -> int:
+        if self.github_repo:
+            since = datetime.now(timezone.utc) - timedelta(days=days)
+            return self.github_repo.get_commits(since=since).totalCount
+        elif self.is_git_repo():
+            return get_commit_count(self.path, days=days)
+        raise ValueError("Project is not a git repo")
 
     def format_line(
         self,
@@ -410,26 +430,27 @@ class ProjectArranger:
 
     def sort_projects(self, projects: List[Project]) -> Dict[str, Dict[str, List[Project]]]:
         """Sort projects into target categories based on config"""
-        groups = {"main": defaultdict(list), "secondary": defaultdict(list)}
+        groups = {"main": defaultdict(list), "secondary": defaultdict(list), "main_reason": {}}
         for project in projects:
-            main_group = self._sort_projects_into_main_groups(project)
+            main_group, reason = self._sort_projects_into_main_groups(project)
             secondary_groups = self._sort_projects_into_secondary_groups(project)
 
             groups["main"][main_group].append(project)
+            groups["main_reason"][project.name] = reason
             for group in secondary_groups:
                 groups["secondary"][group].append(project)
         return groups
 
-    def _sort_projects_into_main_groups(self, project: Project) -> None:
+    def _sort_projects_into_main_groups(self, project: Project) -> tuple[str, str]:
         """Sort projects into main groups"""
         # main groups: experiments, projects, archive and ignored
         # part 1: manually
         main_group = self._sort_main_manual(project)
         if main_group is not None:
-            return main_group
+            return main_group, "manual"
         # part 2: automatically
-        main_group = self._sort_main_auto(project)
-        return main_group
+        main_group, reason = self._sort_main_auto(project)
+        return main_group, reason
 
     def _sort_main_manual(self, project: Project) -> Optional[str]:
         """Sort projects into main groups manually"""
@@ -444,28 +465,28 @@ class ProjectArranger:
             return Group.experiments
         return None
 
-    def _sort_main_auto(self, project: Project) -> str:
+    def _sort_main_auto(self, project: Project) -> tuple[str, str]:
         """Sort projects into main groups automatically. If not specified manually."""
         # idea 1: look at project date
         today = datetime.now()
         if project.date > today - timedelta(days=self.settings.auto_sort_days):
             # look at the size / activity
-            if is_git_repo(project.path):
+            if (
+                project.is_git_repo()
+                and project.get_recent_commit_count(self.settings.auto_sort_days)
+                > self.settings.auto_sort_commits
+            ):
                 # look at commit activity
                 # - if more than 5 commits in the last 30 days - "actual"
-                if (
-                    get_commit_count(project.path, days=self.settings.auto_sort_days)
-                    > self.settings.auto_sort_commits
-                ):
-                    return Group.actual  # "actual"
+                return Group.actual, "5+ recent commits"  # "actual"
             elif project.size > self.settings.auto_sort_size:
-                return Group.actual  # "actual"
-            return Group.experiments
+                return Group.actual, "recent and big"  # "actual"
+            return Group.experiments, "recent but yet small"
         else:
             # look at project size
             if project.size > self.settings.auto_sort_size:
-                return Group.archive
-            return Group.ignore
+                return Group.archive, "old but big"  # "archive"
+            return Group.ignore, "old and small"  # "ignore"
 
     def _sort_projects_into_secondary_groups(self, project: Project) -> List[str]:
         """Sort projects into secondary groups"""
@@ -523,8 +544,9 @@ class ProjectArranger:
             proj_list = groups["main"][group]
             print(f"{group.title()} ({len(proj_list)}):")
             for proj in sorted(proj_list, key=lambda x: x.name):
+                reason = groups["main_reason"].get(proj.name, "")
                 print(
-                    f"- {proj.format_line(show_size=print_sizes, github_user=self.github_username)}"
+                    f"- {proj.format_line(show_size=print_sizes, github_user=self.github_username)} [{reason}]"
                 )
             print()
 
@@ -555,11 +577,13 @@ class ProjectArranger:
                     print("  Added:")
                     for proj_name in sorted(added):
                         proj = next(p for p in new_groups["main"][group] if p.name == proj_name)
+                        reason = new_groups["main_reason"].get(proj.name, "")
                         print(
                             "  "
                             + proj.format_line(
                                 prefix="+", show_size=print_sizes, github_user=self.github_username
                             )
+                            + f" [{reason}]"
                         )
                 if removed:
                     print("  Removed:")

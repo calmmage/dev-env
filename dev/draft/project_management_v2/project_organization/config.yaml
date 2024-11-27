@@ -55,7 +55,7 @@ cool:
   - video-to-audio-bot
   - generate-dir-link
   - gpt-chatbot-that-stays-on-point
-
+  - dnd-dice-thrower
 
 templates:
   - base-template
@@ -63,3 +63,7 @@ templates:
   - python-project-template
   - seasonal-dir-template
   - bot-lib-bot-template
+
+unfinished:
+  - resu_me_hh_app
+  - dnd-dice-thrower
