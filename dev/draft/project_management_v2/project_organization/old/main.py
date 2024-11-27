@@ -507,10 +507,14 @@ class ProjectArranger:
         res = []
         if project.name in self.settings.cool:
             res.append("cool")
+        if project.name in self.settings.libs:
+            res.append("libs")
         if project.name in self.settings.templates:
             res.append("templates")
         if project.name in self.settings.unfinished:
             res.append("unfinished")
+        if project.name in self.settings.memorable:
+            res.append("memorable")
         return res
 
     def _sort_secondary_auto(self, project: Project) -> List[str]:
@@ -569,7 +573,7 @@ class ProjectArranger:
     def print_changes(self, old_groups, new_groups, print_sizes: bool = False) -> None:
         """Print only the changes between old and new groups"""
         print("Changes in Main Project Groups:")
-        for group in Group.__members__:
+        for group in Group.__members__.values():
             old_projects = {p.name for p in old_groups["main"].get(group, [])}
             new_projects = {p.name for p in new_groups["main"].get(group, [])}
 

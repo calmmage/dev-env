@@ -23,9 +23,10 @@ class ProjectArrangerSettings(BaseSettings):
 
     ## secondary groups
     templates: Set[str] = set()
-    libs: Set[str] = set()
-    cool: Set[str] = set()
-    unfinished: Set[str] = set()
+    libs: Set[str] = set()  # shared libraries and collections for reusing
+    cool: Set[str] = set()  # ideas worth revisiting
+    unfinished: Set[str] = set()  # have some work done, but not completed
+    memorable: Set[str] = set()  # cool artifacts that were finished
 
     # group 3: auto sorting
     ## main groups
