@@ -27,7 +27,7 @@ def MISSING():
 # todo: use everywhere?
 class Group(str, Enum):
     experiments = "experiments"
-    projects = "projects"  # rename to actual? - but folder stays as projects/
+    actual = "projects"  # rename to actual? - but folder stays as projects/
     unsorted = "unsorted"
     archive = "archive"
     ignore = "ignore"
@@ -437,7 +437,7 @@ class ProjectArranger:
         if project.name in self.settings.ignore:
             return Group.ignore
         elif project.name in self.settings.actual:
-            return Group.projects
+            return Group.actual
         elif project.name in self.settings.archive:
             return Group.archive
         elif project.name in self.settings.experiments:
@@ -457,9 +457,9 @@ class ProjectArranger:
                     get_commit_count(project.path, days=self.settings.auto_sort_days)
                     > self.settings.auto_sort_commits
                 ):
-                    return Group.projects  # "actual"
+                    return Group.actual  # "actual"
             elif project.size > self.settings.auto_sort_size:
-                return Group.projects  # "actual"
+                return Group.actual  # "actual"
             return Group.experiments
         else:
             # look at project size
