@@ -167,9 +167,60 @@ in
   #     defaults write com.apple.finder ShowStatusBar -bool true
       };
 
+      # todo: move to user config?
+
       trackpad = {
         Clicking = true;
-        TrackpadThreeFingerDrag = true;
+
+        # https://support.apple.com/en-us/102341
+        # TrackpadThreeFingerDrag = false;
+
+        # 2 = Mission Control
+        TrackpadThreeFingerVertSwipeGesture = 2;
+
+        # 0 = Disabled
+        TrackpadFourFingerVertSwipeGesture = 0;
+
+        # 2 = Application Windows
+        TrackpadThreeFingerHorizSwipeGesture = 2;
+
+        # 0 = Disabled
+        TrackpadFourFingerHorizSwipeGesture = 0;
+        
+        # 0 = Disabled
+        # 3 = Notifications Center
+        TrackpadTwoFingerFromRightEdgeSwipeGesture = 0;
+
+        # "com.apple.AppleMultitouchTrackpad": {
+        #   "TrackpadFourFingerHorizSwipeGesture": 2,
+        #   "TrackpadPinch": 1,
+        #   "TrackpadFourFingerVertSwipeGesture": 2,
+        #   "USBMouseStopsTrackpad": 0,
+        #   "ActuateDetents": 1,
+        #   "TrackpadRotate": 1,
+        #   "SecondClickThreshold": 1,
+        #   "TrackpadHorizScroll": 1,
+        #   "TrackpadTwoFingerDoubleTapGesture": 1,
+        #   "UserPreferences": true,
+        #   "TrackpadThreeFingerTapGesture": 0,
+        #   "TrackpadThreeFingerHorizSwipeGesture": 2,
+        #   "Clicking": true,
+        #   "FirstClickThreshold": 1,
+        #   "TrackpadFourFingerPinchGesture": 2,
+        #   "TrackpadMomentumScroll": true,
+        #   "DragLock": 0,
+        #   "TrackpadFiveFingerPinchGesture": 2,
+        #   "ForceSuppressed": false,
+        #   "TrackpadThreeFingerVertSwipeGesture": 2,
+        #   "TrackpadTwoFingerFromRightEdgeSwipeGesture": 3,
+        #   "TrackpadScroll": true,
+        #   "version": 12,
+        #   "Dragging": 0,
+        #   "TrackpadCornerSecondaryClick": 0,
+        #   "TrackpadRightClick": true,
+        #   "TrackpadHandResting": true,
+        #   "TrackpadThreeFingerDrag": true
+        # },
       };
     };
   };
