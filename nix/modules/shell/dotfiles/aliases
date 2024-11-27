@@ -110,3 +110,5 @@ alias cz="cursor ~/.zshrc"
 alias hetzner-ef="ssh root@37.27.46.129"
 # Connect to the coolify v4 instance
 alias hetzner-2="ssh root@49.13.91.131"
+
+alias ma=myalias

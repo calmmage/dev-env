@@ -59,9 +59,9 @@ let name = userConfig.full_name;
     initExtra = ''
       # Any custom zsh code goes here
       source ~/.p10k.zsh
-      source ~/.aliases
       source ~/.zshrc.local
       source ~/.zsh-custom-functions
+      source ~/.aliases
 
       # Initialize zoxide
       eval "$(zoxide init zsh)"
