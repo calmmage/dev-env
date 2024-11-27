@@ -167,11 +167,25 @@ def add_source_package_to_pyproject_toml(path: Path, package_name: str):
         # add a new section with regexp
         new_text = dedent(
             f"""
-            [tool.poetry.packages]
-            include = "{package_name}"
+            packages=[
+                {{ include = "{package_name}", from = "." }},
+            ]
             """
         )
-        pyproject_path.write_text(pyproject_content.rstrip() + "\n" + new_text)
+        # find the [tool.poetry] section
+        pos = pyproject_content.find("[tool.poetry]") + len("[tool.poetry]")
+        # find the next section header
+        next_header = re.search(r"\n\[(.*)\]", pyproject_content[pos:])
+        if next_header:
+            next_header = next_header.group(1)
+        else:
+            next_header = ""
+        pos = pyproject_content.find(next_header) - 1
+        pyproject_content = (
+            pyproject_content[:pos].strip() + new_text + "\n\n" + pyproject_content[pos:]
+        )
+
+        pyproject_path.write_text(pyproject_content.rstrip())
     # if not any(p.get("include") == package_name for p in current_packages):
     elif not any(p.get("include") == package_name for p in current_packages):
         raise NotImplementedError("Adding packages to existing list is not implemented yet")
@@ -309,23 +323,25 @@ def _add_black(repo_path: Path):
 
 
 def _add_flake8(repo_path: Path):
+    source_dir_name = _get_source_dir_name(repo_path)
     content = dedent(
-        """
-          - repo: https://github.com/pycqa/flake8
-            rev: '7.0.0'  # Use the latest stable version
-            hooks:
-              - id: flake8
-                additional_dependencies: [
-                'flake8-docstrings',
-                'flake8-bugbear',
-                'flake8-comprehensions',
-                'flake8-simplify',
-                ]
-                args: [
-                "--max-line-length=100",
-                "--exclude=.git,__pycache__,build,dist",
-                "--ignore=E203,W503",  # Ignore some style errors that conflict with other tools
-                ]
+        rf"""
+        - repo: https://github.com/pycqa/flake8
+          rev: '7.0.0'
+          hooks:
+            - id: flake8
+              additional_dependencies: [
+              'flake8-docstrings',
+              'flake8-bugbear',
+              'flake8-comprehensions',
+              'flake8-simplify',
+              ]
+              args: [
+              "--max-line-length=100",
+              "--exclude=.venv,.git,__pycache__,build,dist",
+              "--ignore=E203,W503",  # Ignore some style errors that conflict with other tools
+              ]
+              files: ^{source_dir_name}/.*\.py$
         """
     )
     _add_precommit_tool_if_missing(repo_path, "flake8", content)
@@ -333,12 +349,13 @@ def _add_flake8(repo_path: Path):
 
 def _add_isort(repo_path: Path):
     content = dedent(
-        """
+        r"""
         - repo: https://github.com/PyCQA/isort
           rev: 5.13.2
           hooks:
             - id: isort
               name: isort (python)
+              files: ^.*\.py$
         """
     )
     _add_precommit_tool_if_missing(repo_path, "isort", content)
@@ -515,7 +532,23 @@ def _discover_project(project: str) -> Path:
                 return project_path
 
 
+def _add_nbstripout(repo_path: Path):
+    """Add nbstripout configuration to strip output from Jupyter notebooks."""
+    content = dedent(
+        r"""
+        - repo: https://github.com/kynan/nbstripout
+          rev: 0.5.0
+          hooks:
+            - id: nbstripout
+              files: \.ipynb$
+              stages: [pre-commit]
+        """
+    )
+    _add_precommit_tool_if_missing(repo_path, "nbstripout", content)
+
+
 def _add_precommit(repo_path: Path):
+    _add_nbstripout(repo_path)
     _add_black(repo_path)
     _add_vulture(repo_path)
     _add_flake8(repo_path)
