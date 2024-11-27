@@ -1,4 +1,5 @@
 repos:
+
   - repo: https://github.com/kynan/nbstripout
     rev: 0.5.0
     hooks:
@@ -46,7 +47,7 @@ repos:
         "--exclude=.venv,.git,__pycache__,build,dist",
         "--ignore=E203,W503",  # Ignore some style errors that conflict with other tools
         ]
-        files: ^dev_env/.*\.py$
+        files: ^dev_env/.*\.py$ # project_name - path to scan
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
@@ -64,7 +65,7 @@ repos:
         pass_filenames: false
         always_run: true
         args: [
-        "--cov=dev_env",
+        "--cov=dev_env", # project_name - path to scan
         "--cov-report=xml",
         "--cov-fail-under=50",
         ]

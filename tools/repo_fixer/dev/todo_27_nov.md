@@ -32,6 +32,11 @@
   "--exclude=.venv,.git,__pycache__,build,dist",
   ```
 
+- [x] Add poetry install functionality for test tools:
+  - [x] Add _install_all_test_dependencies function to install all packages in a single command
+  - [x] Remove individual package installations from tool functions
+  - [x] Update _add_precommit to use the new function
+
 Cool Features to Add:
 - [ ] Add pre-commit autoupdate functionality:
   ```python

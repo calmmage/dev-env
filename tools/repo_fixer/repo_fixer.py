@@ -83,7 +83,7 @@ def _add_pyproject_section_if_missing(repo_path: Path, section: str, content: st
     pyproject_toml_path = repo_path / "pyproject.toml"
     if not pyproject_toml_path.exists():
         logger.warning(f"No pyproject.toml found at {pyproject_toml_path}. Skipping.")
-        return
+        raise ValueError("No pyproject.toml found")
     pyproject_toml_content = pyproject_toml_path.read_text()
 
     if section in pyproject_toml_content:
@@ -278,9 +278,8 @@ def _add_vulture(repo_path: Path):
 
     - find .pre-commit-config.yaml
     - check if vulture is already in it
-    - if not, add it
+    - if not, add it.
     """
-
     source_dir_name = _get_source_dir_name(repo_path)
 
     content = dedent(
@@ -301,6 +300,7 @@ def _add_vulture(repo_path: Path):
 
 
 def _add_black(repo_path: Path):
+    """Add black configuration to the repository."""
     content = dedent(
         """
           - repo: https://github.com/psf/black
@@ -318,11 +318,11 @@ def _add_black(repo_path: Path):
                 additional_dependencies: [".[jupyter]"]
         """
     )
-
     _add_precommit_tool_if_missing(repo_path, "black", content)
 
 
 def _add_flake8(repo_path: Path):
+    """Add flake8 configuration to the repository."""
     source_dir_name = _get_source_dir_name(repo_path)
     content = dedent(
         rf"""
@@ -341,13 +341,14 @@ def _add_flake8(repo_path: Path):
               "--exclude=.venv,.git,__pycache__,build,dist",
               "--ignore=E203,W503",  # Ignore some style errors that conflict with other tools
               ]
-              files: ^{source_dir_name}/.*\.py$
+              files: ^{source_dir_name}/.*\.py$ # project_name - path to scan
         """
     )
     _add_precommit_tool_if_missing(repo_path, "flake8", content)
 
 
 def _add_isort(repo_path: Path):
+    """Add isort configuration to the repository."""
     content = dedent(
         r"""
         - repo: https://github.com/PyCQA/isort
@@ -438,7 +439,7 @@ def _add_codecov(repo_path: Path):
                 pass_filenames: false
                 always_run: true
                 args: [
-                "--cov={source_dir_name}",
+                "--cov={source_dir_name}", # project_name - path to scan
                 "--cov-report=xml",
                 "--cov-fail-under={settings.codecov_fail_under}",
                 ]
@@ -449,9 +450,6 @@ def _add_codecov(repo_path: Path):
     #     - id: codecov
     _add_precommit_tool_if_missing(repo_path, "pytest-check", content)
 
-    # step 2: add to pyproject.toml
-    subprocess.run(["poetry", "add", "--group", "test", "pytest-cov"], cwd=repo_path)
-
 
 def _update_pyproject_toml(repo_path: Path):
     """
@@ -460,8 +458,8 @@ def _update_pyproject_toml(repo_path: Path):
     """
     pyproject_toml_path = repo_path / "pyproject.toml"
     if not pyproject_toml_path.exists():
-        logger.warning(f"No pyproject.toml found at {pyproject_toml_path}. Skipping.")
-        return
+        # logger.warning(f"No pyproject.toml found at {pyproject_toml_path}. Skipping.")
+        raise ValueError(f"No pyproject.toml found at {pyproject_toml_path}")
 
     pyproject_toml_content = pyproject_toml_path.read_text()
 
@@ -547,13 +545,38 @@ def _add_nbstripout(repo_path: Path):
     _add_precommit_tool_if_missing(repo_path, "nbstripout", content)
 
 
+def _install_all_test_dependencies(repo_path: Path):
+    """Install all test dependencies in a single command."""
+    packages = [
+        "black[jupyter]",
+        "flake8",
+        "flake8-docstrings",
+        "flake8-bugbear",
+        "flake8-comprehensions",
+        "flake8-simplify",
+        "isort",
+        "vulture",
+        "pytest-cov",
+        "pyupgrade",
+    ]
+    try:
+        cmd = ["poetry", "add", "--group", "test"] + packages
+        subprocess.run(cmd, cwd=repo_path, check=True)
+        logger.info("Successfully installed all test dependencies")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to install test dependencies: {e}")
+
+
 def _add_precommit(repo_path: Path):
+    # First install all test dependencies
+    _install_all_test_dependencies(repo_path)
+
+    # Then add configurations
     _add_nbstripout(repo_path)
     _add_black(repo_path)
     _add_vulture(repo_path)
     _add_flake8(repo_path)
     _add_isort(repo_path)
-    # _add_ruff(repo_path)
     _add_codecov(repo_path)
     _add_pyupgrade(repo_path)
     _install_precommit(repo_path)
