@@ -185,7 +185,7 @@ in
         TrackpadThreeFingerHorizSwipeGesture = 2;
 
         # 0 = Disabled
-        TrackpadFourFingerHorizSwipeGesture = 0;
+#        TrackpadFourFingerHorizSwipeGesture = 0;
         
         # 0 = Disabled
         # 3 = Notifications Center
