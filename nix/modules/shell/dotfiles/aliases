@@ -114,3 +114,5 @@ alias hetzner-ef="ssh root@37.27.46.129"
 alias hetzner-2="ssh root@49.13.91.131"
 
 alias ma=myalias
+# sort projects based on config.yaml groups
+alias sort_projects="typer $DEV_ENV_PATH/dev_env/tools/project_arranger/cli.py run sort"
