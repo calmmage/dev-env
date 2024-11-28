@@ -176,20 +176,20 @@ in
         # TrackpadThreeFingerDrag = false;
 
         # 2 = Mission Control
-        TrackpadThreeFingerVertSwipeGesture = 2;
+        # TrackpadThreeFingerVertSwipeGesture = 2;
 
         # 0 = Disabled
-        TrackpadFourFingerVertSwipeGesture = 0;
+        # TrackpadFourFingerVertSwipeGesture = 0;
 
         # 2 = Application Windows
-        TrackpadThreeFingerHorizSwipeGesture = 2;
+        # TrackpadThreeFingerHorizSwipeGesture = 2;
 
         # 0 = Disabled
-#        TrackpadFourFingerHorizSwipeGesture = 0;
+        # TrackpadFourFingerHorizSwipeGesture = 0;
         
         # 0 = Disabled
         # 3 = Notifications Center
-        TrackpadTwoFingerFromRightEdgeSwipeGesture = 0;
+        # TrackpadTwoFingerFromRightEdgeSwipeGesture = 0;
 
         # "com.apple.AppleMultitouchTrackpad": {
         #   "TrackpadFourFingerHorizSwipeGesture": 2,
