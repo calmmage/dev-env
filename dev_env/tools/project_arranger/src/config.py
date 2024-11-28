@@ -4,7 +4,7 @@ from typing import List, Set
 import yaml
 from pydantic_settings import BaseSettings
 
-from dev.draft.project_management_v2.project_organization.old.utils import DateFormatSettings
+from dev_env.tools.project_arranger.src.utils import DateFormatSettings
 
 
 class ProjectArrangerSettings(BaseSettings):

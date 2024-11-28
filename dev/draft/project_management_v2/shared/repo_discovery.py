@@ -8,7 +8,7 @@ from loguru import logger
 from pydantic_settings import BaseSettings
 from tqdm.auto import tqdm
 
-from dev.draft.project_management_v2.project_organization.old.utils import is_git_repo
+from dev_env.tools.project_arranger.src.utils import is_git_repo
 
 
 class Settings(BaseSettings):

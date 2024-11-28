@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from loguru import logger
 
-from dev.draft.project_management_v2.project_organization.old.main import ProjectArranger
+from dev_env.tools.project_arranger.src.main import ProjectArranger
 
 ENABLED = False
 

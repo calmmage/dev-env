@@ -13,8 +13,9 @@
 - [ ] add mini-project concept
 - [ ] add alias or something? Regular job?
 # boost
-- [ ] if no changes - all skip - don't ask confirmation
+- [x] if no changes - all skip - don't ask confirmation
 - [ ] idea: simple local cache with rocksdb? to make things faster
+- [ ] move run.py to cli.py
 
 # Old
 Main things I'm trying to do:

@@ -9,8 +9,8 @@ from typing import Dict, List, Optional
 from github.Repository import Repository
 from loguru import logger
 
-from dev.draft.project_management_v2.project_organization.old.config import ProjectArrangerSettings
-from dev.draft.project_management_v2.project_organization.old.utils import (
+from dev_env.tools.project_arranger.src.config import ProjectArrangerSettings
+from dev_env.tools.project_arranger.src.utils import (
     DateFormatSettings,
     format_date,
     get_commit_count,

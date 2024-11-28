@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import git
 import typer
@@ -10,11 +10,7 @@ from loguru import logger
 from rich.console import Console
 from rich.table import Table
 
-from dev.draft.project_management_v2.project_organization.old.main import (
-    Group,
-    Project,
-    ProjectArranger,
-)
+from dev_env.tools.project_arranger.src.main import Group, Project, ProjectArranger
 
 # from .old.main import ProjectArranger
 
@@ -201,6 +197,13 @@ def sort(
         console.print(
             "\n[yellow]This is a dry run. Use --execute to actually perform the changes.[/yellow]"
         )
+        return
+
+    # Check if there are any actions to execute
+    has_actions = any(details["action"] != Action.SKIP for details in actions.values())
+
+    if not has_actions:
+        console.print("[green]No actions to execute![/green]")
         return
 
     if _confirm_actions():
