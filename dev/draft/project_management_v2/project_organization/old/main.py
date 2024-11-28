@@ -435,7 +435,11 @@ class ProjectArranger:
             main_group, reason = self._sort_projects_into_main_groups(project)
             secondary_groups = self._sort_projects_into_secondary_groups(project)
 
-            if secondary_groups and (main_group in [Group.unsorted, Group.ignore]):
+            if (
+                secondary_groups
+                and (main_group in [Group.unsorted, Group.ignore])
+                and (reason != "manual")
+            ):
                 reason = "has secondary groups"
                 main_group = Group.archive
             groups["main"][main_group].append(project)

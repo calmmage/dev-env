@@ -2,13 +2,19 @@
 # New
 
 - [x] improve main auto sorting
-- [ ] apply groups. sort
+- [x] apply groups. sort
   - if same group - skip
   - if not cloned - clone
   - if ignore - move to 'to_remove'
   - all the rest - move
   - first - make a list of actions - and verify
+# important
+- [ ] add periodic jobs
 - [ ] add mini-project concept
+- [ ] add alias or something? Regular job?
+# boost
+- [ ] if no changes - all skip - don't ask confirmation
+- [ ] idea: simple local cache with rocksdb? to make things faster
 
 # Old
 Main things I'm trying to do:

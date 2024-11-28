@@ -1,13 +1,20 @@
+from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Dict, List, Optional
 
+import git
 import typer
+from calmlib.utils import fix_path
 from dotenv import load_dotenv
 from loguru import logger
 from rich.console import Console
 from rich.table import Table
 
-from dev.draft.project_management_v2.project_organization.old.main import ProjectArranger
+from dev.draft.project_management_v2.project_organization.old.main import (
+    Group,
+    Project,
+    ProjectArranger,
+)
 
 # from .old.main import ProjectArranger
 
@@ -16,6 +23,52 @@ console = Console()
 
 DEFAULT_CONFIG = Path("config.yaml")
 MISSING_THRESHOLD = 5  # Warn if more than this many projects are missing
+
+
+class Action(str, Enum):
+    SKIP = "skip"  # Same group, no action needed
+    CLONE = "clone"  # Not present locally, needs cloning
+    REMOVE = "remove"  # Should be moved to to_remove folder
+    MOVE = "move"  # Should be moved to a different group
+
+
+class Destination:
+    base = fix_path(Path("~/work"))
+
+    def __init__(self, name, path=None):
+        self.name = name
+        if path is None:
+            self.path = self.base / name
+        else:
+            self.path = Path(path)
+
+    def get_location(self, name):
+        target = self.path / name
+        if target.exists():
+            raise FileExistsError(f"Destination {self.name} already has a project named {name}")
+        else:
+            return target
+
+    def move(self, project: Project):
+        if not self.path.exists():
+            self.path.mkdir(parents=True)
+        try:
+            location = self.get_location(project.name)
+            project.path.rename(location)
+        except Exception as e:
+            logger.error(f"Failed to move {project.name} to {self.name}: {e}")
+
+
+def get_destinations(config=None):
+    destinations = {}
+    # step 1 - add default destinations
+    for group in Group.__members__.values():
+        destinations[group.value] = Destination(group.value)
+    # step 2 - add "to_remove" destination
+    destinations["to_remove"] = Destination("to_remove")
+
+    # todo: use config
+    return destinations
 
 
 @app.command()
@@ -118,6 +171,172 @@ def compare(
 
     if not missing_locally and not missing_on_github:
         console.print("\n[green]All projects are in sync![/green]")
+
+
+@app.command()
+def sort(
+    config: Path = typer.Option(DEFAULT_CONFIG, "--config", "-c", help="Path to config file"),
+    dry_run: bool = typer.Option(True, "--execute", help="Actually execute the changes"),
+    show_all: bool = typer.Option(False, "--all", "-a", help="Show all projects, not just changes"),
+):
+    load_dotenv()
+    """Sort projects into appropriate groups"""
+    arranger = ProjectArranger(config)
+
+    # Get all projects
+    projects = arranger.build_projects_list()
+
+    # Get current and target groups
+    current_groups = arranger.get_current_groups(projects)
+    target_groups = arranger.sort_projects(projects)
+
+    # Determine required actions for each project
+    actions = _determine_actions(projects, current_groups, target_groups)
+
+    # Print planned actions
+    _print_actions(actions, show_all)
+
+    # Execute if not dry run
+    if not dry_run:
+        console.print(
+            "\n[yellow]This is a dry run. Use --execute to actually perform the changes.[/yellow]"
+        )
+        return
+
+    if _confirm_actions():
+        _execute_actions(actions)
+
+
+def _determine_actions(
+    projects: List[Project], current_groups: Dict, target_groups: Dict
+) -> Dict[str, Dict]:
+    """Determine required actions for each project"""
+    actions = {}
+
+    for project in projects:
+        current_main = project.current_group
+        target_main = next(
+            (group for group, projects in target_groups["main"].items() if project in projects),
+            None,
+        )
+
+        if not target_main:
+            logger.warning(f"No target group found for {project.name}")
+            continue
+
+        # Determine action
+        if target_main == current_main:
+            action = Action.SKIP
+        elif target_main == Group.ignore:
+            action = Action.REMOVE
+        elif not project.path:
+            action = Action.CLONE
+        else:
+            action = Action.MOVE
+
+        actions[project.name] = {
+            "project": project,
+            "action": action,
+            "current_group": current_main,
+            "target_group": target_main,
+            "reason": target_groups["main_reason"].get(project.name, "unknown"),
+        }
+
+    return actions
+
+
+def _print_actions(actions: Dict[str, Dict], show_all: bool = False):
+    """Print planned actions in a table format"""
+    table = Table(show_header=True)
+    table.add_column("Action")
+    table.add_column("From")
+    table.add_column("To")
+    table.add_column("Project")
+    table.add_column("Reason")
+
+    for name, details in sorted(
+        actions.items(), key=lambda x: (x[1]["action"], x[1]["target_group"])
+    ):
+        if not show_all and details["action"] == Action.SKIP:
+            continue
+
+        color = {
+            Action.SKIP: "white",
+            Action.CLONE: "green",
+            Action.REMOVE: "red",
+            Action.MOVE: "yellow",
+        }[details["action"]]
+
+        table.add_row(
+            name,
+            f"[{color}]{details['action']}[/{color}]",
+            str(details["current_group"]),
+            str(details["target_group"]),
+            details["reason"],
+        )
+
+    console.print("\nPlanned actions:")
+    console.print(table)
+
+    # Print summary
+    action_counts = {}
+    for details in actions.values():
+        action_counts[details["action"]] = action_counts.get(details["action"], 0) + 1
+
+    console.print("\nSummary:")
+    for action, count in action_counts.items():
+        color = {
+            Action.SKIP: "white",
+            Action.CLONE: "green",
+            Action.REMOVE: "red",
+            Action.MOVE: "yellow",
+        }[action]
+        console.print(f"[{color}]{action}:[/{color}] {count}")
+
+
+def _confirm_actions() -> bool:
+    """Ask user to confirm actions"""
+    return typer.confirm("\nDo you want to proceed with these changes?")
+
+
+def _execute_actions(actions: Dict[str, Dict]):
+    """Execute the planned actions"""
+    destinations = get_destinations()
+    with console.status("[bold green]Executing actions...") as status:
+        for name, details in actions.items():
+            project = details["project"]
+            action = details["action"]
+            target_group = details["target_group"]
+
+            if action == Action.SKIP:
+                continue
+
+            try:
+                if action == Action.CLONE:
+                    status.update(f"[bold green]Cloning {name}...")
+                    destination = destinations[target_group]
+                    location = destination.get_location(name)
+                    # Use Repository.clone_url directly since project.github_repo is a Repository instance
+                    clone_url = project.github_repo.clone_url
+                    git.Repo.clone_from(clone_url, location)
+                    logger.info(f"Cloned {name} to {target_group}")
+
+                elif action == Action.REMOVE:
+                    status.update(f"[bold red]Moving {name} to to_remove...")
+                    destination = destinations["to_remove"]
+                    destination.move(project)
+                    logger.info(f"Would move {name} to to_remove")
+
+                elif action == Action.MOVE:
+                    status.update(f"[bold yellow]Moving {name} to {target_group}...")
+                    destination = destinations[target_group]
+                    destination.move(project)
+                    logger.info(f"Would move {name} to {target_group}")
+
+            except Exception as e:
+                logger.error(f"Failed to process {name}: {e}")
+
+    console.print("[bold green]Done![/bold green]")
 
 
 if __name__ == "__main__":
