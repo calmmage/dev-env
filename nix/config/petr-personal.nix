@@ -1,6 +1,5 @@
-{ pkgs }:
 let
-  shared = import ./shared.nix { inherit pkgs; };
+  shared = import ./shared.nix;
 in
 {
   username = "petrlavrov";
@@ -9,6 +8,8 @@ in
   computer_name = "Petr's MacBook Pro 2";
   host_name = "petrs-macbook-pro-2";
   secrets_repo_url = "git+ssh://git@github.com/calmmage/nix-secrets.git";
+  
+  enable_sudo_touch_id = true;
 
   use_direnv = true;
   use_devenv = false;
@@ -59,7 +60,7 @@ in
     };
   };
 
-  packages = shared.packages ++ (with pkgs; [
-    # Add personal-specific packages here
-  ]);
+  package_names = shared.package_names ++ [
+    # Add personal-specific packages here as strings
+  ];
 }

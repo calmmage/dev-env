@@ -56,10 +56,9 @@ in
     users.${user} = { pkgs, config, lib, ... }: {
       home = {
         enableNixpkgsReleaseCheck = false;
-        packages = userConfig.packages ++ (with pkgs; 
-          # Add devenv conditionally
-          (lib.optional userConfig.use_devenv devenv)
-        );
+        packages = pkgs.userPackages ++ 
+          # Still add devenv conditionally since it's a special case
+          (lib.optional userConfig.use_devenv pkgs.devenv);
         # todo: for now, files.nix is disabled because it's empty.
         #  file = lib.mkMerge [
         #      files

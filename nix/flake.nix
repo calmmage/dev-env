@@ -64,6 +64,9 @@
     lib = nixpkgs.lib;
     system = "aarch64-darwin";
     
+    # Load user configs
+    userConfigs = (import ./config/default.nix {}).userconfigs;
+
     # Define pythonOverlay here so it's available during initial pkgs setup
     pythonOverlay = final: prev: {
       ghostscript = prev.ghostscript.overrideAttrs (old: {
@@ -86,14 +89,32 @@
       };
     };
 
-    # Initialize pkgs with both overlays
-    pkgs = import nixpkgs {
+    # Function to convert package strings to actual packages
+    mkPackageSet = pkgs: packageNames: 
+      map (name: 
+        if builtins.isString name
+        then 
+          if name == "aspellDicts_en" then pkgs.aspellDicts.en
+          else if name == "nodePackages_npm" then pkgs.nodePackages.npm
+          else if name == "nodePackages_prettier" then pkgs.nodePackages.prettier
+          else if name == "nodePackages_pnpm" then pkgs.nodePackages.pnpm
+          else pkgs.${name}
+        else name
+      ) packageNames;
+
+    # Initialize pkgs with overlays
+    mkPkgs = userConfig: import nixpkgs {
       inherit system;
       overlays = [
         pythonOverlay
-      ] ++ (lib.optional userConfig.use_poetry2nix poetry2nix.overlays.default) ++ [
+        # Conditionally include poetry2nix overlay
+        (final: prev: 
+          if userConfig.use_poetry2nix 
+          then poetry2nix.overlays.default final prev
+          else {})
         (final: prev: {
-          # Add any additional overlays here
+          # Convert string package names to actual packages
+          userPackages = mkPackageSet prev userConfig.package_names;
         })
       ];
       config = {
@@ -101,9 +122,6 @@
         allowBroken = true;
       };
     };
-
-    # Then load user configs with the properly initialized pkgs
-    userConfigs = (import ./config/default.nix { inherit pkgs; }).userconfigs;
 
     # Define devShell for a single system
     devShell = let pkgs = nixpkgs.legacyPackages.${system}; in {
@@ -138,38 +156,47 @@
     };
   in
   {
-    darwinConfigurations = lib.mapAttrs (user: userConfig: darwin.lib.darwinSystem {
-      inherit system;
-      specialArgs = inputs // {
-        inherit userConfig pkgs;
-      };
-      modules = [
-        {
-          nixpkgs.config = {
-            allowUnfree = true;
-            allowBroken = true;
-            allowInsecure = false;
-            allowUnsupportedSystem = false;
+    darwinConfigurations = lib.mapAttrs (user: userConfig:
+      let
+        pkgs = mkPkgs userConfig;
+      in
+      darwin.lib.darwinSystem {
+        inherit system;
+        specialArgs = inputs // {
+          inherit userConfig;
+          pkgs = pkgs // {
+            # Add the resolved packages
+            userPackages = pkgs.userPackages;
           };
-        }
-        home-manager.darwinModules.home-manager
-        nix-homebrew.darwinModules.nix-homebrew
-        {
-          nix-homebrew = {
-            inherit user;
-            enable = userConfig.use_nix_homebrew;
-            taps = {
-              "homebrew/homebrew-core" = homebrew-core;
-              "homebrew/homebrew-cask" = homebrew-cask;
-              "homebrew/homebrew-bundle" = homebrew-bundle;
+        };
+        modules = [
+          {
+            nixpkgs.config = {
+              allowUnfree = true;
+              allowBroken = true;
+              allowInsecure = false;
+              allowUnsupportedSystem = false;
             };
-            mutableTaps = false;
-            autoMigrate = true;
-          };
-        }
-        ./hosts/darwin
-      ];
-    }) userConfigs;
+          }
+          home-manager.darwinModules.home-manager
+          nix-homebrew.darwinModules.nix-homebrew
+          {
+            nix-homebrew = {
+              inherit user;
+              enable = userConfig.use_nix_homebrew;
+              taps = {
+                "homebrew/homebrew-core" = homebrew-core;
+                "homebrew/homebrew-cask" = homebrew-cask;
+                "homebrew/homebrew-bundle" = homebrew-bundle;
+              };
+              mutableTaps = false;
+              autoMigrate = true;
+            };
+          }
+          ./hosts/darwin
+        ];
+      }
+    ) userConfigs;
 
     devShells.default = devShell;
     apps.default = darwinApps;
