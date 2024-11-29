@@ -54,7 +54,8 @@ alias cpa="copy_absolute_path"
 
 # alias lnsafe="runp $CALMMAGE_DEV_ENV_PATH/dev_env/tools/lnsafe.py"
 alias lnsafe="python $DEV_ENV_PATH/tools/lnsafe.py"
-# alias typer=$DEV_ENV_PATH/.venv/bin/typer
+# todo: can I make it so this is unnecessary?
+alias typer=$DEV_ENV_PATH/.venv/bin/typer
 # todo: need a script that runs and checks in the start of bashrc if $CALMMAGE_DEV_ENV_PATH is set and warn if not
 # typer_path = "$CALMMAGE_DEV_ENV_PATH/.venv/bin/typer"
 # new_project_tool_path = "$CALMMAGE_DEV_ENV_PATH/dev/draft/mvp/project_manager.py"
