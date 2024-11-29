@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dev-env"
-version = "0.2.4"
+version = "0.2.4a"
 description = ""
 authors = ["Petr Lavrov <calmmage@gmail.com>"]
 readme = "README.md"

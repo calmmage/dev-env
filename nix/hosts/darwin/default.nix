@@ -56,8 +56,9 @@ in
     systemPackages = with pkgs; [
       agenix.packages."${pkgs.system}".default
       coreutils
-      defaultbrowser
-      (pkgs.poetry2nix.mkPoetryEnv {
+      defaultbrowser] ++ 
+      (lib.optional userConfig.use_devenv devenv) ++
+      [(pkgs.poetry2nix.mkPoetryEnv {
         projectDir = ../../..;
         preferWheels = true;
         python = python311;

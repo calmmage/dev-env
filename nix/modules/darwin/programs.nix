@@ -13,10 +13,6 @@ let name = userConfig.full_name;
     enable = userConfig.use_direnv;
   };
 
-  devenv = {
-    enable = userConfig.use_devenv;
-  };
-
   zoxide = {
     enable = true;
     enableZshIntegration = true;
