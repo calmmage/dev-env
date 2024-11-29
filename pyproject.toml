@@ -1,9 +1,13 @@
 [tool.poetry]
 name = "dev-env"
-version = "0.1.28"
+version = "0.2.2"
 description = ""
 authors = ["Petr Lavrov <calmmage@gmail.com>"]
 readme = "README.md"
+packages=[
+    { include = "dev_env", from = "." },
+]
+
 
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0"
@@ -89,12 +93,21 @@ pytest-cov = "^6.0.0"
 #[tool.poetry.group.docs.dependencies]
 ##mkdocs = ">=1.6"
 #
+black = {extras = ["jupyter"], version = "^24.10.0"}
+vulture = "^2.13"
+flake8 = "^7.1.1"
+flake8-docstrings = "^1.7.0"
+flake8-bugbear = "^24.10.31"
+flake8-comprehensions = "^3.16.0"
+flake8-simplify = "^0.21.0"
+isort = "^5.13.2"
+pyupgrade = "^3.19.0"
 [tool.poetry.group.dev.dependencies]
 ## dev / research utils
-#jupyter = ">=1.0.0"          # Interactive notebooks
+jupyter = ">=1.0.0"          # Interactive notebooks
 ##jupyter-nbextensions-configurator = "*"
 ##jupyter_contrib_nbextensions = "*"
-#black = ">=24.0.0"           # Code formatter
+black = ">=24.0.0"           # Code formatter
 pre-commit = ">=3.8.0"       # Pre-commit hooks
 tqdm = "*"                   # Progress bars
 poetry-bumpversion = "*"

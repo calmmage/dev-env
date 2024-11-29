@@ -1,7 +1,8 @@
 
 # tools 
 # Alias for repo fixer tool
-alias fix_repo="$DEV_ENV_PATH/.venv/bin/typer $DEV_ENV_PATH/tools/repo_fixer/repo_fixer.py run"
+# alias fix_repo="$DEV_ENV_PATH/.venv/bin/typer $DEV_ENV_PATH/tools/repo_fixer/repo_fixer.py run"
+alias fix_repo="typer $DEV_ENV_PATH/tools/repo_fixer/repo_fixer.py run"
 
 # Add an alias to update dev-env
 alias update-dev-env='python3 $DEV_ENV_PATH/tools/dev_env_updater.py'
@@ -43,6 +44,7 @@ alias cdz='z'
 
 # add alias to ~/.alias - aa name "command mommand" "Description and examples"
 alias aa='add_alias'
+alias at='add_tool'
 
 # copy absolute path of the current dir
 alias cpa="copy_absolute_path"
@@ -112,3 +114,5 @@ alias hetzner-ef="ssh root@37.27.46.129"
 alias hetzner-2="ssh root@49.13.91.131"
 
 alias ma=myalias
+# sort projects based on config.yaml groups
+alias sort_projects="typer $DEV_ENV_PATH/dev_env/tools/project_arranger/cli.py run sort"

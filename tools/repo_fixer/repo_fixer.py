@@ -1,3 +1,4 @@
+import re
 import subprocess
 from enum import Enum
 from functools import lru_cache
@@ -6,8 +7,10 @@ from textwrap import dedent, indent
 from typing import List
 
 import pyperclip
+import toml
 import typer
 import yaml
+from calmlib.utils import fix_path
 from loguru import logger
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -35,9 +38,7 @@ class Settings(BaseSettings):
             config_data = yaml.safe_load(file)
 
         # Expand user directory for each path in root_paths
-        config_data["root_paths"] = [
-            Path(p).expanduser() for p in config_data["root_paths"]
-        ]
+        config_data["root_paths"] = [Path(p).expanduser() for p in config_data["root_paths"]]
 
         return cls(**config_data)
 
@@ -48,6 +49,13 @@ settings = Settings.from_yaml(config_path)
 
 
 def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str):
+    """Add a pre-commit tool configuration if it's not already present.
+
+    Args:
+        repo_path: Path to the repository
+        tool_name: Name of the tool to add
+        content: Tool configuration content
+    """
     logger.debug(f"Adding pre-commit tool if missing: {tool_name}")
     pre_commit_config_path = repo_path / ".pre-commit-config.yaml"
 
@@ -55,17 +63,22 @@ def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str
 
     if not pre_commit_config_path.exists():
         logger.warning(
-            f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Creating. Don't forget to install"
+            f"No .pre-commit-config.yaml found at {pre_commit_config_path}. Creating new file."
         )
+        # Create new file with repos: header
+        pre_commit_config_path.write_text("repos:\n" + content)
+        return
+
+    # Read existing content
+    existing_content = pre_commit_config_path.read_text().strip()
+
+    # If file is empty or doesn't have repos: header
+    if not existing_content.strip() or "repos:" not in existing_content:
+        existing_content = "repos:\n" + content
     else:
-        # check if tools is already in it
-        # find the line
-        # see if it's not commented out
-        existing_content = pre_commit_config_path.read_text()
+        # Check if tool is already in it
         if tool_name in existing_content:
-            tool_line = [
-                line for line in existing_content.splitlines() if tool_name in line
-            ][-1]
+            tool_line = [line for line in existing_content.splitlines() if tool_name in line][-1]
             if tool_line.strip().startswith("#"):
                 logger.info(
                     f"Found {tool_name} in .pre-commit-config.yaml, but it's commented out. Will add {tool_name} anew."
@@ -75,16 +88,16 @@ def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str
                     f"Seems like {tool_name} is already in .pre-commit-config.yaml. Skipping."
                 )
                 return
-        content = existing_content.rstrip() + "\n" + content
+        existing_content = existing_content.rstrip() + "\n" + content
 
-    pre_commit_config_path.write_text(content)
+    pre_commit_config_path.write_text(existing_content)
 
 
 def _add_pyproject_section_if_missing(repo_path: Path, section: str, content: str):
     pyproject_toml_path = repo_path / "pyproject.toml"
     if not pyproject_toml_path.exists():
         logger.warning(f"No pyproject.toml found at {pyproject_toml_path}. Skipping.")
-        return
+        raise ValueError("No pyproject.toml found")
     pyproject_toml_content = pyproject_toml_path.read_text()
 
     if section in pyproject_toml_content:
@@ -95,22 +108,182 @@ def _add_pyproject_section_if_missing(repo_path: Path, section: str, content: st
     pyproject_toml_path.write_text(pyproject_toml_content)
 
 
+def check_and_fix_poetry_project_name(path: Path, candidate: str) -> None:
+    """Check and fix project name in pyproject.toml if needed.
+
+    Args:
+        path: Path to the repository root
+        candidate: Candidate project name to use
+    """
+    # step 1: find pyproject toml path, check if exists
+    pyproject_path = path / "pyproject.toml"
+    if not pyproject_path.exists():
+        logger.warning(f"No pyproject.toml found at {pyproject_path}. Skipping.")
+        return
+
+    # step 2: load pyproject toml
+    pyproject_content = pyproject_path.read_text()
+    pyproject_data = toml.loads(pyproject_content)
+
+    if "tool" not in pyproject_data or "poetry" not in pyproject_data["tool"]:
+        logger.warning("No [tool.poetry] section found in pyproject.toml. Skipping.")
+        return
+
+    # step 3: check what is the name
+    current_name = pyproject_data["tool"]["poetry"].get("name")
+
+    # - if name is 'project_name'
+    # replace with candidate
+    if current_name == "project-name":
+        logger.info(f"Replacing placeholder project name with {candidate}")
+        content = pyproject_path.read_text()
+        content = re.sub(r'name\s*=\s*"project-name"', f'name = "{candidate}"', content)
+        pyproject_path.write_text(content)
+    # if name is present:
+    #  compare with candidate
+    #  raise warning if different, return
+    elif current_name and current_name != candidate:
+        logger.warning(
+            f"Project name mismatch: {current_name} in pyproject.toml vs {candidate} provided. "
+            "Not changing existing name."
+        )
+        return current_name
+
+
+def add_source_package_to_pyproject_toml(path: Path, package_name: str):
+    """Add a package to the pyproject.toml file.
+
+    Args:
+        path: Path to the repository root
+        candidate: Candidate project name to use
+    """
+
+    # step 1: find pyproject toml path, check if exists
+    pyproject_path = path / "pyproject.toml"
+    if not pyproject_path.exists():
+        logger.warning(f"No pyproject.toml found at {pyproject_path}. Skipping.")
+        return
+
+    # step 2: load pyproject toml
+    pyproject_content = pyproject_path.read_text()
+    pyproject_data = toml.loads(pyproject_content)
+
+    if "tool" not in pyproject_data or "poetry" not in pyproject_data["tool"]:
+        logger.warning("No [tool.poetry] section found in pyproject.toml. Skipping.")
+        return
+
+    current_packages = pyproject_data["tool"]["poetry"].get("packages", [])
+    # packages=[
+    #   { include = "src", from = "." },
+    #   { include = "swe_bench", from = "." }
+    # ]
+    if not current_packages:
+        # add a new section with regexp
+        new_text = dedent(
+            f"""
+            packages=[
+                {{ include = "{package_name}", from = "." }},
+            ]
+            """
+        )
+        # find the [tool.poetry] section
+        pos = pyproject_content.find("[tool.poetry]") + len("[tool.poetry]")
+        # find the next section header
+        next_header = re.search(r"\n\[(.*)\]", pyproject_content[pos:])
+        if next_header:
+            next_header = next_header.group(1)
+        else:
+            next_header = ""
+        pos = pyproject_content.find(next_header) - 1
+        pyproject_content = (
+            pyproject_content[:pos].strip() + new_text + "\n\n" + pyproject_content[pos:]
+        )
+
+        pyproject_path.write_text(pyproject_content.rstrip())
+    # if not any(p.get("include") == package_name for p in current_packages):
+    elif not any(p.get("include") == package_name for p in current_packages):
+        raise NotImplementedError("Adding packages to existing list is not implemented yet")
+        # current_packages.append({"include": package_name, "from": "."})
+        # pyproject_data["tool"]["poetry"]["packages"] = current_packages
+        # pyproject_path.write_text(toml.dumps(pyproject_data))
+        # 1) a - if ppackages= is present -
+        # 2) b - asd
+
+
 @lru_cache()
 def _get_source_dir_name(repo_path: Path) -> str:
-    source_dir_name = repo_path.name
-    if not (repo_path / source_dir_name).exists():
-        source_dir_name = source_dir_name.replace("-", "_")
-    if not (repo_path / source_dir_name).exists():
+    """
+
+    :param repo_path:
+    :return:
+    """
+    # step 1: fix path to work with abs_path
+    repo_path = fix_path(repo_path)
+    candidates = []
+
+    source_dir_name = None
+    candidates.append(repo_path.name)
+
+    # step 2: check and fix project name in pyproject.toml
+    res = check_and_fix_poetry_project_name(repo_path, candidate=repo_path.name)
+    if res is not None:
+        # logger.warning(
+        #     f"Name conflict in pyproject.toml: folder name - {repo_path.name}, project name - {res}. "
+        #     # f"Using {res}"
+        # )
+        # source_dir_name = res
+        candidates.append(res)
+
+    candidates.append("src")
+
+    for candidate in candidates:
+        if (repo_path / candidate).exists():
+            logger.info(f"Found source directory: {candidate}. Using it for pre-commit setup.")
+            source_dir_name = candidate
+            break
+        if (repo_path / candidate.replace("-", "_")).exists():
+            logger.info(f"Found source directory: {candidate}. Using it for pre-commit setup.")
+            source_dir_name = candidate.replace("-", "_")
+            break
+
+    # if none of the candadtes exist, ask user for a name
+    if source_dir_name is None:
         # ask user for project name
-        source_dir_name = typer.prompt(
-            f"Please provide a source directory name for {repo_path}: "
-        )
-        # option 1: user provided full path
-        if Path(source_dir_name).exists():
-            return Path(source_dir_name).name
-        # option 2: user provided name
-        if not (repo_path / source_dir_name).exists():
-            return None
+        default = repo_path.name.replace("-", "_")
+        try:
+            source_dir_name = typer.prompt(
+                f"Please provide a source directory name for {repo_path}, will be used to run pre-commit checks (default: {default}): ",
+                default=default,
+            )
+        except:
+            source_dir_name = default
+
+    if not source_dir_name:
+        # something went wrong
+        raise ValueError("No source directory name identified")
+    # option 1: user provided full path
+    if Path(source_dir_name).exists():
+        source_dir_name = Path(source_dir_name).name
+    # option 2: user provided name
+    # if not (repo_path / source_dir_name).exists():
+    #     return None
+
+    x = repo_path / source_dir_name
+    if not x.exists():
+        y = repo_path / "project_name"
+        if y.exists():
+            y.rename(repo_path / source_dir_name)
+            logger.debug(f"Renamed project_name to {source_dir_name}")
+        else:
+            x.mkdir()
+            logger.debug(f"Created source directory: {source_dir_name}")
+
+    # add it as package to pyproject.toml
+    try:
+        add_source_package_to_pyproject_toml(repo_path, source_dir_name)
+    except NotImplementedError:
+        logger.warning("Adding packages to existing list is not implemented yet - skipping")
+
     return source_dir_name
 
 
@@ -119,9 +292,8 @@ def _add_vulture(repo_path: Path):
 
     - find .pre-commit-config.yaml
     - check if vulture is already in it
-    - if not, add it
+    - if not, add it.
     """
-
     source_dir_name = _get_source_dir_name(repo_path)
 
     content = dedent(
@@ -131,9 +303,8 @@ def _add_vulture(repo_path: Path):
           hooks:
             - id: vulture
               args: [
-              "--min-confidence", "80",
-              "--exclude", "**/migrations/*,**/__pycache__/*",
-              "{source_dir_name}"  # project_name
+                "--min-confidence", "80",
+                "{source_dir_name}"  # project_name - path to scan
               ]
               files: ^.*\.py$
               exclude: ^(.git|.venv|venv|build|dist)/.*$
@@ -143,60 +314,63 @@ def _add_vulture(repo_path: Path):
 
 
 def _add_black(repo_path: Path):
+    """Add black configuration to the repository."""
     content = dedent(
         """
-        - repo: https://github.com/psf/black
-          rev: 24.2.0
-          hooks:
-            # - id: black
-            #   args: [ --line-length=100 ]
-            - id: black-jupyter
-              name: black-jupyter
-              description:
-                "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
-              entry: black
-              language: python
-              minimum_pre_commit_version: 2.9.2
-              require_serial: true
-              types_or: [python, pyi, jupyter]
-              additional_dependencies: [".[jupyter]"]
+          - repo: https://github.com/psf/black
+            rev: 24.2.0
+            hooks:
+              - id: black
+                args: [ --line-length=100 ]
+                name: black
+                description: "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
+                entry: black
+                language: python
+                minimum_pre_commit_version: 2.9.2
+                require_serial: true
+                types_or: [python, pyi, jupyter]
+                additional_dependencies: [".[jupyter]"]
         """
     )
-
     _add_precommit_tool_if_missing(repo_path, "black", content)
 
 
 def _add_flake8(repo_path: Path):
+    """Add flake8 configuration to the repository."""
+    source_dir_name = _get_source_dir_name(repo_path)
     content = dedent(
-        """
-          - repo: https://github.com/pycqa/flake8
-            rev: '7.0.0'  # Use the latest stable version
-            hooks:
-              - id: flake8
-                additional_dependencies: [
+        rf"""
+        - repo: https://github.com/pycqa/flake8
+          rev: '7.0.0'
+          hooks:
+            - id: flake8
+              additional_dependencies: [
                 'flake8-docstrings',
                 'flake8-bugbear',
                 'flake8-comprehensions',
                 'flake8-simplify',
-                ]
-                args: [
+              ]
+              args: [
                 "--max-line-length=100",
-                "--exclude=.git,__pycache__,build,dist",
+                "--exclude=.venv,.git,__pycache__,build,dist",
                 "--ignore=E203,W503",  # Ignore some style errors that conflict with other tools
-                ]
+              ]
+              files: ^{source_dir_name}/.*\.py$ # project_name - path to scan
         """
     )
     _add_precommit_tool_if_missing(repo_path, "flake8", content)
 
 
 def _add_isort(repo_path: Path):
+    """Add isort configuration to the repository."""
     content = dedent(
-        """
+        r"""
         - repo: https://github.com/PyCQA/isort
           rev: 5.13.2
           hooks:
             - id: isort
               name: isort (python)
+              files: ^.*\.py$
         """
     )
     _add_precommit_tool_if_missing(repo_path, "isort", content)
@@ -279,9 +453,9 @@ def _add_codecov(repo_path: Path):
                 pass_filenames: false
                 always_run: true
                 args: [
-                "--cov={source_dir_name}",
-                "--cov-report=xml",
-                "--cov-fail-under={settings.codecov_fail_under}",
+                  "--cov={source_dir_name}",  # project_name - path to scan
+                  "--cov-report=xml",
+                  "--cov-fail-under={settings.codecov_fail_under}",
                 ]
         """
     )
@@ -289,9 +463,6 @@ def _add_codecov(repo_path: Path):
     #   hooks:
     #     - id: codecov
     _add_precommit_tool_if_missing(repo_path, "pytest-check", content)
-
-    # step 2: add to pyproject.toml
-    subprocess.run(["poetry", "add", "--group", "test", "pytest-cov"], cwd=repo_path)
 
 
 def _update_pyproject_toml(repo_path: Path):
@@ -301,8 +472,8 @@ def _update_pyproject_toml(repo_path: Path):
     """
     pyproject_toml_path = repo_path / "pyproject.toml"
     if not pyproject_toml_path.exists():
-        logger.warning(f"No pyproject.toml found at {pyproject_toml_path}. Skipping.")
-        return
+        # logger.warning(f"No pyproject.toml found at {pyproject_toml_path}. Skipping.")
+        raise ValueError(f"No pyproject.toml found at {pyproject_toml_path}")
 
     pyproject_toml_content = pyproject_toml_path.read_text()
 
@@ -373,12 +544,53 @@ def _discover_project(project: str) -> Path:
                 return project_path
 
 
+def _add_nbstripout(repo_path: Path):
+    """Add nbstripout configuration to strip output from Jupyter notebooks."""
+    content = dedent(
+        r"""
+        - repo: https://github.com/kynan/nbstripout
+          rev: 0.5.0
+          hooks:
+            - id: nbstripout
+              files: \.ipynb$
+              stages: [pre-commit]
+        """
+    )
+    _add_precommit_tool_if_missing(repo_path, "nbstripout", content)
+
+
+def _install_all_test_dependencies(repo_path: Path):
+    """Install all test dependencies in a single command."""
+    packages = [
+        "black[jupyter]",
+        "flake8",
+        "flake8-docstrings",
+        "flake8-bugbear",
+        "flake8-comprehensions",
+        "flake8-simplify",
+        "isort",
+        "vulture",
+        "pytest-cov",
+        "pyupgrade",
+    ]
+    try:
+        cmd = ["poetry", "add", "--group", "test"] + packages
+        subprocess.run(cmd, cwd=repo_path, check=True)
+        logger.info("Successfully installed all test dependencies")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to install test dependencies: {e}")
+
+
 def _add_precommit(repo_path: Path):
+    # First install all test dependencies
+    _install_all_test_dependencies(repo_path)
+
+    # Then add configurations
+    _add_nbstripout(repo_path)
     _add_black(repo_path)
     _add_vulture(repo_path)
     _add_flake8(repo_path)
     _add_isort(repo_path)
-    # _add_ruff(repo_path)
     _add_codecov(repo_path)
     _add_pyupgrade(repo_path)
     _install_precommit(repo_path)
@@ -392,9 +604,7 @@ def fix_repo(
     """Fix repository according to modern standards"""
     repo_path = _discover_project(project)
     if repo_path is None:
-        logger.error(
-            f"Project {project} not found in any of the root paths: {settings.root_paths}"
-        )
+        logger.error(f"Project {project} not found in any of the root paths: {settings.root_paths}")
         raise typer.Exit(1)
 
     logger.info(f"Fixing repo at {repo_path} with operation {operation}")

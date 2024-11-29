@@ -4,6 +4,8 @@ from typing import List, Set
 import yaml
 from pydantic_settings import BaseSettings
 
+from dev_env.tools.project_arranger.src.utils import DateFormatSettings
+
 
 class ProjectArrangerSettings(BaseSettings):
     # group 1: general
@@ -21,8 +23,10 @@ class ProjectArrangerSettings(BaseSettings):
 
     ## secondary groups
     templates: Set[str] = set()
-    libs: Set[str] = set()
-    cool: Set[str] = set()
+    libs: Set[str] = set()  # shared libraries and collections for reusing
+    cool: Set[str] = set()  # ideas worth revisiting
+    unfinished: Set[str] = set()  # have some work done, but not completed
+    memorable: Set[str] = set()  # cool artifacts that were finished
 
     # group 3: auto sorting
     ## main groups
@@ -63,6 +67,15 @@ class ProjectArrangerSettings(BaseSettings):
         ".sql",
         ".sh",
     }
+
+    # Date formatting format
+    date_format: DateFormatSettings = DateFormatSettings()
+
+    # GitHub settings
+    # will include only these orgs
+    github_orgs: List[str] = []
+    # will include all except these
+    github_skip_orgs: List[str] = []  # List of GitHub organizations to exclude
 
     @classmethod
     def from_yaml(cls, yaml_path: str | Path, **kwargs):
