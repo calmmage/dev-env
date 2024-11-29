@@ -91,7 +91,7 @@
       inherit system;
       overlays = [
         pythonOverlay
-        poetry2nix.overlays.default
+      ] ++ (lib.optional userConfig.use_poetry2nix poetry2nix.overlays.default) ++ [
         (final: prev: {
           # Add any additional overlays here
         })

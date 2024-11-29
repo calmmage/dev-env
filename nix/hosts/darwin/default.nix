@@ -58,7 +58,7 @@ in
       coreutils
       defaultbrowser] ++ 
       (lib.optional userConfig.use_devenv devenv) ++
-      [(pkgs.poetry2nix.mkPoetryEnv {
+      (lib.optionals userConfig.use_poetry2nix [(pkgs.poetry2nix.mkPoetryEnv {
         projectDir = ../../..;
         preferWheels = true;
         python = python311;
@@ -79,8 +79,7 @@ in
           poetry
           poetry-core
         ];
-      })
-    ] ++ userConfig.packages;
+      })]) ++ userConfig.packages;
 
     systemPath = [
       "/opt/homebrew/bin"
