@@ -10,6 +10,14 @@ in
   host_name = "petrs-macbook-pro-2";
   secrets_repo_url = "git+ssh://git@github.com/calmmage/nix-secrets.git";
 
+  use_direnv = true;
+  use_devenv = false;
+  # pick one or the other
+  # use_nix_homebrew = false;
+  use_nix_homebrew = true;
+
+  use_poetry2nix = false;
+  
   homebrew = {
     brews = shared.homebrew.brews ++ [
       # "sonar-scanner" is commented out

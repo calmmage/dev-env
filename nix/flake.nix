@@ -157,7 +157,7 @@
         {
           nix-homebrew = {
             inherit user;
-            enable = true;
+            enable = userConfig.use_nix_homebrew;
             taps = {
               "homebrew/homebrew-core" = homebrew-core;
               "homebrew/homebrew-cask" = homebrew-cask;

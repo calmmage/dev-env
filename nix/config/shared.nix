@@ -234,8 +234,9 @@
 
     # new
     # new - to explore
-    direnv        # Environment switcher for the shell
-    devenv        # Development environment manager
+    # controlled with a flag instead in user config + programs.nix
+    # direnv        # Environment switcher for the shell
+    # devenv        # Development environment manager
     cachix        # Binary cache hosting service for Nix
     postman       # API development environment
 

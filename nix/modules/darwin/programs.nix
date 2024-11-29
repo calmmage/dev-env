@@ -9,7 +9,13 @@ let name = userConfig.full_name;
     config.theme = "TwoDark";
   };
 
-  direnv = { enable = true; };
+  direnv = {
+    enable = userConfig.use_direnv;
+  };
+
+  devenv = {
+    enable = userConfig.use_devenv;
+  };
 
   zoxide = {
     enable = true;
