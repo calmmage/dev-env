@@ -6,7 +6,17 @@
   host_name = "";# "petrs-macbook-pro-2";
   secrets_repo_url = "";# "git+ssh://git@github.com/calmmage/nix-secrets.git";
 
+  system = "aarch64-darwin";  # Apple Silicon Mac
+#  system = "x86_64-darwin";  # Intel Mac
+
   enable_sudo_touch_id = false;
+
+  use_direnv = true;
+  use_devenv = true;
+  # pick one or the other
+   use_nix_homebrew = false;
+#  use_nix_homebrew = true;
+  use_poetry2nix = false;
 
   default_browser = "chrome";
 

@@ -9,6 +9,8 @@ in
   host_name = "petrs-macbook-pro-2";
   secrets_repo_url = "git+ssh://git@github.com/calmmage/nix-secrets.git";
   
+  system = "aarch64-darwin";  # Apple Silicon Mac
+
   enable_sudo_touch_id = true;
 
   use_direnv = true;
