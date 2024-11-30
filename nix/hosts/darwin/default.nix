@@ -56,8 +56,9 @@ in
     systemPackages = with pkgs; [
       agenix.packages."${pkgs.system}".default
       coreutils
-      defaultbrowser
-      (pkgs.poetry2nix.mkPoetryEnv {
+      defaultbrowser] ++ 
+      (lib.optional userConfig.use_devenv devenv) ++
+      (lib.optionals userConfig.use_poetry2nix [(pkgs.poetry2nix.mkPoetryEnv {
         projectDir = ../../..;
         preferWheels = true;
         python = python311;
@@ -78,8 +79,7 @@ in
           poetry
           poetry-core
         ];
-      })
-    ] ++ userConfig.packages;
+      })]) ++ pkgs.userPackages;
 
     systemPath = [
       "/opt/homebrew/bin"
@@ -100,8 +100,8 @@ in
 #    StandardOutPath = "/tmp/emacs.out.log";
 #  };
 
-  # Enable TouchID for sudo if option is enabled
-  security.pam.enableSudoTouchIdAuth = lib.mkDefault true;
+  # Enable TouchID for sudo if configured in user config
+  security.pam.enableSudoTouchIdAuth = userConfig.enable_sudo_touch_id;
 
   system = {
     keyboard.enableKeyMapping = true;

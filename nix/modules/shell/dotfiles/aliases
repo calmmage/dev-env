@@ -49,8 +49,8 @@ alias at='add_tool'
 # copy absolute path of the current dir
 alias cpa="copy_absolute_path"
 
-# run python script with poetry environment
-# alias runp="run_with_poetry"
+# run python script with $DEV_ENV_PATH poetry environment
+alias runp="run_with_poetry"
 
 # alias lnsafe="runp $CALMMAGE_DEV_ENV_PATH/dev_env/tools/lnsafe.py"
 alias lnsafe="python $DEV_ENV_PATH/tools/lnsafe.py"

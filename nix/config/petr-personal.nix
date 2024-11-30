@@ -1,6 +1,5 @@
-{ pkgs }:
 let
-  shared = import ./shared.nix { inherit pkgs; };
+  shared = import ./shared.nix;
 in
 {
   username = "petrlavrov";
@@ -9,7 +8,19 @@ in
   computer_name = "Petr's MacBook Pro 2";
   host_name = "petrs-macbook-pro-2";
   secrets_repo_url = "git+ssh://git@github.com/calmmage/nix-secrets.git";
+  
+  system = "aarch64-darwin";  # Apple Silicon Mac
 
+  enable_sudo_touch_id = true;
+
+  use_direnv = true;
+  use_devenv = false;
+  # pick one or the other
+  # use_nix_homebrew = false;
+  use_nix_homebrew = true;
+
+  use_poetry2nix = false;
+  
   homebrew = {
     brews = shared.homebrew.brews ++ [
       # "sonar-scanner" is commented out
@@ -51,7 +62,7 @@ in
     };
   };
 
-  packages = shared.packages ++ (with pkgs; [
-    # Add personal-specific packages here
-  ]);
+  package_names = shared.package_names ++ [
+    # Add personal-specific packages here as strings
+  ];
 }

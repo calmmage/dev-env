@@ -62,8 +62,12 @@
   outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, nixpkgs-unstable, disko, poetry2nix, agenix, ... } @inputs: # , secrets # todo: add secrets back
   let
     lib = nixpkgs.lib;
-    system = "aarch64-darwin";
+    # Remove the hardcoded system
+    # system = "aarch64-darwin";
     
+    # Load user configs
+    userConfigs = (import ./config/default.nix {}).userconfigs;
+
     # Define pythonOverlay here so it's available during initial pkgs setup
     pythonOverlay = final: prev: {
       ghostscript = prev.ghostscript.overrideAttrs (old: {
@@ -86,14 +90,32 @@
       };
     };
 
-    # Initialize pkgs with both overlays
-    pkgs = import nixpkgs {
-      inherit system;
+    # Function to convert package strings to actual packages
+    mkPackageSet = pkgs: packageNames: 
+      map (name: 
+        if builtins.isString name
+        then 
+          if name == "aspellDicts_en" then pkgs.aspellDicts.en
+          else if name == "nodePackages_npm" then pkgs.nodePackages.npm
+          else if name == "nodePackages_prettier" then pkgs.nodePackages.prettier
+          else if name == "nodePackages_pnpm" then pkgs.nodePackages.pnpm
+          else pkgs.${name}
+        else name
+      ) packageNames;
+
+    # Initialize pkgs with overlays
+    mkPkgs = userConfig: import nixpkgs {
+      system = userConfig.system;  # Use system from config instead of system_arch
       overlays = [
         pythonOverlay
-        poetry2nix.overlays.default
+        # Conditionally include poetry2nix overlay
+        (final: prev: 
+          if userConfig.use_poetry2nix 
+          then poetry2nix.overlays.default final prev
+          else {})
         (final: prev: {
-          # Add any additional overlays here
+          # Convert string package names to actual packages
+          userPackages = mkPackageSet prev userConfig.package_names;
         })
       ];
       config = {
@@ -102,11 +124,8 @@
       };
     };
 
-    # Then load user configs with the properly initialized pkgs
-    userConfigs = (import ./config/default.nix { inherit pkgs; }).userconfigs;
-
-    # Define devShell for a single system
-    devShell = let pkgs = nixpkgs.legacyPackages.${system}; in {
+    # Update devShell to use system from config
+    mkDevShell = system: let pkgs = nixpkgs.legacyPackages.${system}; in {
       default = with pkgs; mkShell {
         nativeBuildInputs = [ bashInteractive git age age-plugin-yubikey ];
         shellHook = ''
@@ -115,8 +134,8 @@
       };
     };
 
-    # Define a single app wrapper
-    mkApp = scriptName: {
+    # Update mkApp to use system from config
+    mkApp = system: scriptName: {
       type = "app";
       program = "${(nixpkgs.legacyPackages.${system}.writeScriptBin scriptName ''
         #!/usr/bin/env bash
@@ -125,53 +144,75 @@
         exec ${self}/apps/aarch64-darwin/${scriptName}
       '')}/bin/${scriptName}";
     };
-
-    # Define specific apps directly
-    darwinApps = {
-      "apply" = mkApp "apply";
-      "build" = mkApp "build";
-      "build-switch" = mkApp "build-switch";
-      "copy-keys" = mkApp "copy-keys";
-      "create-keys" = mkApp "create-keys";
-      "check-keys" = mkApp "check-keys";
-      "rollback" = mkApp "rollback";
-    };
   in
   {
-    darwinConfigurations = lib.mapAttrs (user: userConfig: darwin.lib.darwinSystem {
-      inherit system;
-      specialArgs = inputs // {
-        inherit userConfig pkgs;
-      };
-      modules = [
-        {
-          nixpkgs.config = {
-            allowUnfree = true;
-            allowBroken = true;
-            allowInsecure = false;
-            allowUnsupportedSystem = false;
+    darwinConfigurations = lib.mapAttrs (user: userConfig:
+      let
+        pkgs = mkPkgs userConfig;
+      in
+      darwin.lib.darwinSystem {
+        system = userConfig.system;  # Use system from config instead of system_arch
+        specialArgs = inputs // {
+          inherit userConfig;
+          pkgs = pkgs // {
+            userPackages = pkgs.userPackages;
           };
-        }
-        home-manager.darwinModules.home-manager
-        nix-homebrew.darwinModules.nix-homebrew
-        {
-          nix-homebrew = {
-            inherit user;
-            enable = true;
-            taps = {
-              "homebrew/homebrew-core" = homebrew-core;
-              "homebrew/homebrew-cask" = homebrew-cask;
-              "homebrew/homebrew-bundle" = homebrew-bundle;
+        };
+        modules = [
+          {
+            nixpkgs.config = {
+              allowUnfree = true;
+              allowBroken = true;
+              allowInsecure = false;
+              allowUnsupportedSystem = false;
             };
-            mutableTaps = false;
-            autoMigrate = true;
-          };
-        }
-        ./hosts/darwin
-      ];
-    }) userConfigs;
+          }
+          home-manager.darwinModules.home-manager
+          nix-homebrew.darwinModules.nix-homebrew
+          {
+            nix-homebrew = {
+              inherit user;
+              enable = userConfig.use_nix_homebrew;
+              taps = {
+                "homebrew/homebrew-core" = homebrew-core;
+                "homebrew/homebrew-cask" = homebrew-cask;
+                "homebrew/homebrew-bundle" = homebrew-bundle;
+              };
+              mutableTaps = false;
+              autoMigrate = true;
+            };
+          }
+          ./hosts/darwin
+        ];
+      }
+    ) userConfigs;
 
-    devShells.default = devShell;
-    apps.default = darwinApps;
+    # Create devShells for both architectures
+    devShells = {
+      "aarch64-darwin" = mkDevShell "aarch64-darwin";
+      "x86_64-darwin" = mkDevShell "x86_64-darwin";
+    };
+
+    # Create apps for both architectures
+    apps = {
+      "aarch64-darwin" = {
+        "apply" = mkApp "aarch64-darwin" "apply";
+        "build" = mkApp "aarch64-darwin" "build";
+        "build-switch" = mkApp "aarch64-darwin" "build-switch";
+        "copy-keys" = mkApp "aarch64-darwin" "copy-keys";
+        "create-keys" = mkApp "aarch64-darwin" "create-keys";
+        "check-keys" = mkApp "aarch64-darwin" "check-keys";
+        "rollback" = mkApp "aarch64-darwin" "rollback";
+      };
+      "x86_64-darwin" = {
+        "apply" = mkApp "x86_64-darwin" "apply";
+        "build" = mkApp "x86_64-darwin" "build";
+        "build-switch" = mkApp "x86_64-darwin" "build-switch";
+        "copy-keys" = mkApp "x86_64-darwin" "copy-keys";
+        "create-keys" = mkApp "x86_64-darwin" "create-keys";
+        "check-keys" = mkApp "x86_64-darwin" "check-keys";
+        "rollback" = mkApp "x86_64-darwin" "rollback";
+      };
+    };
   };
 }
