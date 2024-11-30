@@ -1,11 +1,10 @@
 from pathlib import Path
 
+import dev_env.core.git_utils
 import git
 from dotenv import load_dotenv
 from loguru import logger
 from tqdm.auto import tqdm
-
-import dev_env.core.git_utils
 
 load_dotenv()
 
