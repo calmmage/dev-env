@@ -1,4 +1,5 @@
-from typing import Optional
+from pathlib import Path
+from typing import Annotated, Optional
 
 import pyperclip
 import typer
@@ -37,7 +38,7 @@ def parse_template_name(template_name: str, candidates=None):
 )
 def new_project(
     name: str,
-    template: typer.Annotated[
+    template: Annotated[
         Optional[str],
         typer.Option(
             "--template",
@@ -46,7 +47,13 @@ def new_project(
             autocompletion=pm.complete_template_name,
         ),
     ] = None,
-    dry_run: bool = False,
+    dry_run: Annotated[
+        bool,
+        typer.Option(
+            "--dry-run",
+            help="Print what would be done without actually doing it",
+        ),
+    ] = False,
 ):
     """Create a new project in github and clone to experiments destination"""
     if template:
@@ -66,7 +73,7 @@ def new_project(
 @app.command(name="new-mini-project", help="Create a new mini-project in seasonal folder structure")
 def new_mini_project(
     name: str,
-    description: typer.Annotated[
+    description: Annotated[
         Optional[str],
         typer.Option(
             "--description",

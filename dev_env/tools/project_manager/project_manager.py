@@ -14,8 +14,13 @@ from dev_env.tools.project_manager.pm_config import ProjectManagerConfig
 
 
 class ProjectManager:
-    def __init__(self, config_path: Path, destinations_config_path: Optional[Path] = None):
+    def __init__(
+        self, config_path: Optional[Path] = None, destinations_config_path: Optional[Path] = None
+    ):
         """Initialize Project Manager with configuration"""
+        if config_path is None:
+            config_path = Path(__file__).parent / "pm_config.yaml"
+
         self.config = ProjectManagerConfig.from_yaml(config_path)
         self.discovery = ProjectDiscovery()
         self.destinations = DestinationsRegistry(destinations_config_path)

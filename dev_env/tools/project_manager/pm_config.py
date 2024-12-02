@@ -26,7 +26,6 @@ class ProjectManagerConfig(BaseSettings):
     always_use_hyphens: bool = True  # Auto convert underscores to hyphens in project names
 
     # Seasonal folder settings
-    seasonal_folder_template: str = "{year}_{month:02d}_{season}"  #
     seasonal_folder_threshold: int = 7  # Max projects before rolling to new folder
 
     @classmethod

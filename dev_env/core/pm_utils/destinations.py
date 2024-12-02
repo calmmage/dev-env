@@ -3,7 +3,7 @@ from typing import Dict, Optional
 
 import yaml
 
-from dev_env.core.pm_utils.project_utils import Destination, DestinationType
+from dev_env.core.pm_utils.project_utils import Destination
 
 
 class DestinationsRegistry:
@@ -36,7 +36,7 @@ class DestinationsRegistry:
                 name: Destination(
                     name=dest["name"],
                     path=projects_root / dest["path"],
-                    type=DestinationType[dest["type"].upper()],
+                    type=dest["type"].lower(),
                     description=dest["description"],
                     features=dest.get("features", []),
                 )
