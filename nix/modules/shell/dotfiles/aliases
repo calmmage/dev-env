@@ -68,7 +68,9 @@ alias np="typer $DEV_ENV_PATH/dev_env/tools/project_manager/pm_cli.py run new-pr
 alias nmp="typer $DEV_ENV_PATH/dev_env/tools/project_manager/pm_cli.py run new-mini-project"
 alias fp="typer $DEV_ENV_PATH/dev_env/tools/project_discoverer/pd_cli.py run"
 alias pm="typer $DEV_ENV_PATH/dev_env/tools/project_manager/pm_cli.py run"
+
 alias nt="typer $DEV_ENV_PATH/dev_env/tools/project_manager/pm_cli.py run new-todo"
+alias nf="typer $DEV_ENV_PATH/dev_env/tools/project_manager/pm_cli.py run new-feature"
 
 # Connect to the Hetzner instance
 alias hetzner="ssh root@5.75.226.237"
@@ -121,3 +123,4 @@ alias hetzner-2="ssh root@49.13.91.131"
 alias ma=myalias
 # sort projects based on config.yaml groups
 alias sort_projects="typer $DEV_ENV_PATH/dev_env/tools/project_arranger/cli.py run sort"
+

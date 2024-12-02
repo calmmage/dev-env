@@ -267,6 +267,73 @@ def new_todo(
         console.print(f"✨ [green]Todo file opened:[/] {todo_path}")
 
 
+@app.command(name="new-feature", help="Create a new feature directory in the project")
+def new_feature(
+    feature_name: Annotated[
+        str,
+        typer.Argument(
+            help="Name of the feature directory to create",
+        ),
+    ],
+    project_name: Annotated[
+        Optional[str],
+        typer.Argument(
+            help="Project name to search for (defaults to current directory)",
+        ),
+    ] = None,
+    mini_projects: Annotated[
+        bool,
+        typer.Option(
+            "-m",
+            "--mini-projects",
+            help="Look for mini-project directory instead of main project",
+        ),
+    ] = False,
+):
+    """Create a new feature directory in the project's dev/draft folder"""
+    # Get project directory
+    if project_name:
+        # Search for project by name
+        results = pd.quick_search(project_name)
+        if not results:
+            console.print("[red]No projects found[/]")
+            raise typer.Exit(1)
+        elif len(results) == 1:
+            project_dir = results[0]
+        else:
+            result = show_result_menu(results)
+            if result is None:
+                raise typer.Exit()
+            project_dir = Path(result)
+    else:
+        # Try current directory
+        project_dir = get_project_dir(Path.cwd(), mini_projects=mini_projects)
+        if not project_dir:
+            # Ask user for project name and search
+            project_name = typer.prompt("Project not found. Enter project name to search")
+            results = pd.quick_search(project_name)
+            if not results:
+                console.print("[red]No projects found[/]")
+                raise typer.Exit(1)
+            elif len(results) == 1:
+                project_dir = results[0]
+            else:
+                result = show_result_menu(results)
+                if result is None:
+                    raise typer.Exit()
+                project_dir = Path(result)
+
+    # Create feature directory
+    feature_dir = project_dir / pm.config.features_subfolder / feature_name
+    feature_dir.mkdir(exist_ok=True, parents=True)
+
+    # Copy path to clipboard
+    pyperclip.copy(str(feature_dir.absolute()))
+    console.print(
+        f"✨ [green]Feature directory created:[/] {feature_dir}. Path copied to clipboard."
+    )
+
+
 # endregion WIP
 
 if __name__ == "__main__":
