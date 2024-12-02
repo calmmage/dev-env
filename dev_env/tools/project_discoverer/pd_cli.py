@@ -11,7 +11,7 @@ app = typer.Typer()
 pd = ProjectDiscoverer()
 
 
-def _show_result_menu(results: List[Path]):
+def show_result_menu(results: List[Path]):
     options = [f"{i}. {path}" for i, path in enumerate(results, 1)]
     options.append("0. Exit. Search more (not implemented yet)")
     # show user menu with typer
@@ -46,7 +46,7 @@ def find_project(
         logger.info("Try using 'fp_' or 'find' aliases to search with ripgrep")
         return
     else:
-        result = _show_result_menu(results)
+        result = show_result_menu(results)
         if result is None:
             return
 

@@ -670,3 +670,10 @@ class ProjectManager:
         path.rename(target)
         logger.debug(f"Moved {path} to examples/unsorted at {target}")
         return target
+
+    def open_in_editor(self, path: Path):
+        """Open a file in the default editor"""
+        cmd = self.config.default_editor
+        cmd += f" {path}"
+        logger.debug(f"Opening {path} in {cmd}")
+        os.system(cmd)

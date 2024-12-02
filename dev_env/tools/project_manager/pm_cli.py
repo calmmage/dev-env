@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Optional
 
@@ -5,6 +6,7 @@ import pyperclip
 import typer
 from rich.console import Console
 
+from dev_env.tools.project_discoverer.pd_cli import show_result_menu
 from dev_env.tools.project_discoverer.project_discoverer import ProjectDiscoverer
 from dev_env.tools.project_manager.project_manager import ProjectManager
 
@@ -181,6 +183,88 @@ def get_project(
         console.print(f"✨ [green]Project directory found:[/] {project_dir}")
     else:
         console.print("[yellow]No project directory found[/]")
+
+
+@app.command(name="new-todo", help="Create a new todo file in the project")
+def new_todo(
+    project_name: Annotated[
+        Optional[str],
+        typer.Argument(
+            help="Project name to search for (defaults to current directory)",
+        ),
+    ] = None,
+    text: Annotated[
+        Optional[str],
+        typer.Option(
+            "--text",
+            "-t",
+            help="Todo text to append (if not provided, will open editor)",
+        ),
+    ] = None,
+    mini_projects: Annotated[
+        bool,
+        typer.Option(
+            "-m",
+            "--mini-projects",
+            help="Look for mini-project directory instead of main project",
+        ),
+    ] = False,
+):
+    """Create a new todo file in the project directory"""
+    # Get project directory
+    if project_name:
+        # Search for project by name
+        results = pd.quick_search(project_name)
+        if not results:
+            console.print("[red]No projects found[/]")
+            raise typer.Exit(1)
+        elif len(results) == 1:
+            project_dir = results[0]
+        else:
+            # Use existing menu function
+            result = show_result_menu(results)
+            if result is None:
+                raise typer.Exit()
+            project_dir = Path(result)
+    else:
+        # Try current directory
+        project_dir = get_project_dir(Path.cwd(), mini_projects=mini_projects)
+        if not project_dir:
+            # Ask user for project name and search
+            project_name = typer.prompt("Project not found. Enter project name to search")
+            results = pd.quick_search(project_name)
+            if not results:
+                console.print("[red]No projects found[/]")
+                raise typer.Exit(1)
+            elif len(results) == 1:
+                project_dir = results[0]
+            else:
+                result = show_result_menu(results)
+                if result is None:
+                    raise typer.Exit()
+                project_dir = Path(result)
+
+    # Rest of the function remains the same
+    todo_dir = project_dir / pm.config.todo_subfolder
+    todo_dir.mkdir(exist_ok=True, parents=True)
+
+    todo_filename = datetime.now().strftime(pm.config.todo_filename_template)
+    todo_path = todo_dir / todo_filename
+
+    if text:
+        # Append text to file
+        with open(todo_path, "a") as f:
+            if todo_path.exists() and todo_path.stat().st_size > 0:
+                f.write("\n")
+            f.write(f"- {text}\n")
+        console.print(f"✨ [green]Added todo to:[/] {todo_path}")
+    else:
+        # Create file if doesn't exist
+        if not todo_path.exists():
+            todo_path.touch()
+        # Open in default editor
+        pm.open_in_editor(todo_path)
+        console.print(f"✨ [green]Todo file opened:[/] {todo_path}")
 
 
 # endregion WIP
