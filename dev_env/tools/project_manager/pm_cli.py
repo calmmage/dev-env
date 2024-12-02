@@ -37,7 +37,13 @@ def parse_template_name(template_name: str, candidates=None):
     name="new-project", help="Create a new project in github and clone to experiments destination"
 )
 def new_project(
-    name: str,
+    name: Annotated[
+        str,
+        typer.Argument(
+            ...,
+            help="Name of the project",
+        ),
+    ],
     template: Annotated[
         Optional[str],
         typer.Option(
@@ -75,7 +81,13 @@ def new_project(
 
 @app.command(name="new-mini-project", help="Create a new mini-project in seasonal folder structure")
 def new_mini_project(
-    name: str,
+    name: Annotated[
+        str,
+        typer.Argument(
+            ...,
+            help="Name of the mini-project",
+        ),
+    ],
     description: Annotated[
         Optional[str],
         typer.Option(
@@ -117,7 +129,15 @@ def new_mini_project(
 
 
 @app.command(name="move-to-examples", help="Move a file or directory to examples destination")
-def move_to_examples(path: Path):
+def move_to_examples(
+    path: Annotated[
+        Path,
+        typer.Argument(
+            ...,
+            help="Path to the file or directory to move to examples",
+        ),
+    ],
+):
     """Move a file or directory to examples destination"""
     result = pm.move_to_examples(path)
     console.print(f"✨ [green]Moved to examples:[/] {result}")
