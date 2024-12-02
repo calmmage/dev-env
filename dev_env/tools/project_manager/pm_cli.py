@@ -59,8 +59,11 @@ def new_project(
     if template:
         template = parse_template_name(template)
     project_dir = pm.create_project(name, template=template, dry_run=dry_run)
-    console.print(f"✨ [green]Project created at:[/] {project_dir}. Path copied to clipboard.")
-    pyperclip.copy(str(project_dir.absolute()))
+    if not dry_run:
+        console.print(f"✨ [green]Project created at:[/] {project_dir}. Path copied to clipboard.")
+        pyperclip.copy(str(project_dir.absolute()))
+    else:
+        console.print(f"✨ [yellow]Dry run:[/] Would create project at {project_dir}")
 
 
 # endregion New Project
@@ -82,6 +85,13 @@ def new_mini_project(
         ),
     ] = None,
     private: Optional[bool] = None,
+    dry_run: Annotated[
+        bool,
+        typer.Option(
+            "--dry-run",
+            help="Print what would be done without actually doing it",
+        ),
+    ] = False,
 ):
     """Create a new mini-project in seasonal folder structure"""
 
@@ -89,9 +99,14 @@ def new_mini_project(
     if private is None:
         private = typer.confirm("Create in private repository?", default=False)
 
-    project_dir = pm.create_mini_project(name, description, private)
-    console.print(f"✨ [green]Mini-project created at:[/] {project_dir}. Path copied to clipboard.")
-    pyperclip.copy(str(project_dir.absolute()))
+    project_dir = pm.create_mini_project(name, description, private, dry_run=dry_run)
+    if not dry_run:
+        console.print(
+            f"✨ [green]Mini-project created at:[/] {project_dir}. Path copied to clipboard."
+        )
+        pyperclip.copy(str(project_dir.absolute()))
+    else:
+        console.print(f"✨ [yellow]Dry run:[/] Would create mini-project at {project_dir}")
 
 
 # endregion Mini Project

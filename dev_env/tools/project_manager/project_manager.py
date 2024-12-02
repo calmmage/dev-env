@@ -427,7 +427,7 @@ class ProjectManager:
     def _time_to_roll_season(self, season: Path) -> bool:
         """Check if it's time to roll over to a new season"""
         # if already enough projects within season
-        if len(season.glob("*/*")) >= self.config.seasonal_folder_threshold:
+        if len(list(season.glob("*/*"))) >= self.config.seasonal_folder_threshold:
             return True
 
         # or season date range grows too large / awkward
@@ -478,8 +478,12 @@ class ProjectManager:
                 # month
                 # or month range
                 if season in self.months:
-                    start = datetime(year, self.months.index(season) + 1, 1)
-                    end = datetime(year, self.months.index(season) + 2, 1) - timedelta(days=1)
+
+                    m = self.months.index(season) + 1
+                    me = (m + 1) % 12
+                    ye = year + (m + 1) // 12
+                    start = datetime(ye, m, 1)
+                    end = datetime(ye, me, 1) - timedelta(days=1)
                 else:
                     if "-" in season:
                         start_month, end_month = season.split("-")
@@ -510,7 +514,7 @@ class ProjectManager:
         """Get season metadata"""
         metadata_file = self._get_season_metadata_file(season)
         if metadata_file.exists():
-            return json.load(metadata_file.read_text())
+            return json.loads(metadata_file.read_text())
         else:
             return self._init_season_metadata(season)
 
@@ -521,9 +525,9 @@ class ProjectManager:
         metadata = self._get_season_metadata(season)
         _, num, period, year = season.name.split("_")
         if start is None:
-            start = metadata["start"]
+            start = datetime.fromisoformat(metadata["start"])
         if end is None:
-            end = metadata["end"]
+            end = datetime.fromisoformat(metadata["end"])
         period = self._get_period_from_date_range(start, end)
 
         # update metadata
@@ -554,7 +558,7 @@ class ProjectManager:
 
     #     return project_dir
     def create_mini_project(
-        self, name: str, idea: Optional[str] = None, private: bool = False
+        self, name: str, idea: Optional[str] = None, private: bool = False, dry_run: bool = False
     ) -> Path:
         """Create a new mini-project in seasonal folder structure"""
         # - locate seasonal dir
@@ -574,11 +578,17 @@ class ProjectManager:
                 )
             else:
                 logger.warning(f"Directory already exists but is empty: {project_dir}")
-        project_dir.mkdir(exist_ok=True)
 
-        # - put idea there
-        idea_file_path = project_dir / "idea.md"
-        idea_file_path.write_text(f"# {name}\n\n{idea}\n")
+        if not dry_run:
+            project_dir.mkdir(exist_ok=True)
+
+            # - put idea there
+            idea_file_path = project_dir / "idea.md"
+            idea_file_path.write_text(f"# {name}\n\n{idea}\n")
+        else:
+            logger.info(f"Dry run: Would create directory at {project_dir}")
+            if idea:
+                logger.info(f"Dry run: Would create idea.md with content:\n# {name}\n\n{idea}\n")
 
         # - print & copy path / open it.
         return project_dir
