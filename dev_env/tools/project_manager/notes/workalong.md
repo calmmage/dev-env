@@ -8,6 +8,8 @@
 
 - [ ] Code Migration from Project Arranger
   - [x] Move Destination concept to shared utils
+  - [x] Create central destinations registry
+  - [x] Create shared destinations config
   - [ ] Port GitHub integration utils
   - [ ] Port project discovery logic
   - [ ] Adapt project sorting algorithms
@@ -15,24 +17,26 @@
 
 ## Core Scenarios
 - [ ] New Project
-  - [ ] Config Integration
-    - [ ] Create shared ProjectManagerConfig class
-    - [ ] Add Destinations config subclass
-    - [ ] Add shared utils config subclass
-    - [ ] Load from yaml
+  - [x] Config Integration
+    - [x] Create shared destinations config
+    - [x] Create destinations registry
+    - [x] Create project manager config
+  - [ ] Project Creation
   - [ ] Name Processing
-    - [ ] Prompt if no name provided
-    - [ ] Validate with AI (query_gpt)
-    - [ ] Generate concise name if needed
-    - [ ] Check GitHub conflicts
+    - [ ] Prompt if no name provided implement prompt_project_name()
+    - [ ]  Validate with AI (query_gpt) implement validate_name_with_ai()
+    - [ ] Check GitHub conflicts implement check_github_conflicts()
+    - [ ] Generate concise name if needed implement generate_name_from_description()
   - [ ] Template Selection
     - [ ] Fuzzy-match template name
     - [ ] Use default if none provided
-  - [ ] Project Creation
+
+  - [ ] GitHub Integration
     - [ ] Create GitHub repo from template
-    - [ ] Clone to Experiments destination
-    - [ ] Copy path to clipboard
+    - [ ] Clone to experiments destination
+    - [ ] Copy path to clipboard implement copy_path_to_clipboard()
     - [ ] Print confirmation
+
 - [ ] New Mini Project
   - [ ] init: list all points from the user scenario file
 - [ ] New Todo

@@ -1,44 +1,19 @@
 # Project Manager Configuration
 
-# todo: should I define destinations relative path, not absolute?
-#  .e.g. projects/calmmage-private etc.
-#  and then use $PROJECTS_ROOT or a config variable?
-
-# Part 1: Destinations
-destinations:
-  experiments:
-    name: "experiments"
-    path: "~/work/experiments"
-    description: "New projects and experiments"
-  
-  # should this be named by destination, not function? e.g. calmmage-private?
-  calmmage_private:
-    name: "calmmage-private"
-    path: "~/work/projects/calmmage-private"
-    description: "Private mini-projects and quick experiments"
+targets:
+  new_project:
+    destination: "experiments"
     
-  # should this be named by destination, not function? e.g. calmmage?
-  calmmage:
-    name: "calmmage" 
-    path: "~/work/projects/calmmage"
-    description: "Public mini-projects and examples"
+  new_mini_project:
+    private_destination: "calmmage-private"
+    public_destination: "calmmage"
     
-  examples:
-    name: "examples"
-    path: "~/work/projects/examples"
-    description: "Finished tech demos and examples"
+  new_feature:
+    subfolder: "dev/draft"  # relative to project root
     
-  calmlib:
-    name: "calmlib"
-    path: "~/work/projects/calmlib"
-    description: "Shared utilities and libraries"
-    
-  botspot:
-    name: "botspot"
-    path: "~/work/projects/botspot"
-    description: "Telegram bot utilities and components"
+  new_todo:
+    subfolder: "dev"        # relative to project root
+    filename_template: "todo_%d_%b.md"  # e.g. todo_17_Nov.md
 
 settings:
-  default_editor: "cursor"  # or vim, nano etc
-  draft_folder: "dev/draft"
-  todo_path_template: "dev/todo_%d_%b.md"  # e.g. dev/todo_17_Nov.md
+  default_editor: "cursor"
