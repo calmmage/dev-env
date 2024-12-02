@@ -67,6 +67,7 @@ alias typer=$DEV_ENV_PATH/.venv/bin/typer
 alias np="typer $DEV_ENV_PATH/dev_env/tools/project_manager/pm_cli.py run new-project"
 alias nmp="typer $DEV_ENV_PATH/dev_env/tools/project_manager/pm_cli.py run new-mini-project"
 alias fp="typer $DEV_ENV_PATH/dev_env/tools/project_discoverer/pd_cli.py run"
+alias pm="typer $DEV_ENV_PATH/dev_env/tools/project_manager/pm_cli.py run"
 
 # Connect to the Hetzner instance
 alias hetzner="ssh root@5.75.226.237"

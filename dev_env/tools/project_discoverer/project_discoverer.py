@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import List, Optional
 
+from loguru import logger
+
 from dev_env.core.pm_utils.destinations import DestinationsRegistry
 from dev_env.tools.project_discoverer.pd_config import ProjectDiscovererConfig
 
@@ -38,3 +40,26 @@ class ProjectDiscoverer:
                 )
 
         return sorted(results)
+
+    def get_outer_project_dirs(self, path):
+        """
+        Find all project directories that are parent of the given path
+        """
+        res = []
+        for p in [path] + list(path.parents):
+            try:
+                # mini-projects
+                if p.parent.name in ["draft", "wip", "unsorted", "paused"]:
+                    logger.debug(f"Found mini-project: {p}")
+                    res.append(p)
+
+                # main destinations
+                # todo: use destinations registry instead!
+                if p.parent.name in ["experiments", "archive", "projects"]:
+                    logger.debug(f"Found main project: {p}")
+                    res.append(p)
+
+                # todo: think if any other heuristics are needed here
+            except:
+                pass
+        return list(sorted(str(p) for p in res))

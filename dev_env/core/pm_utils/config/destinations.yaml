@@ -21,6 +21,14 @@ destinations:
     features:
       - "Production-ready code"
       - "Actively maintained repositories"
+      
+  archive:
+    name: "archive"
+    path: "archive"
+    type: "main"
+    description: "Archived projects"
+    features:
+      - "Projects that have been stale for a bit"
 
   calmmage-private:
     name: "calmmage-private"
