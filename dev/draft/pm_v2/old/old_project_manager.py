@@ -144,9 +144,7 @@ def move_project_to_github(
     template = parse_template_name(template, github_templates)
     if project_name is None:
         project_name = project_path.name
-    dev_env.move_project_to_github(
-        project_path, template_name=template, project_name=project_name
-    )
+    dev_env.move_project_to_github(project_path, template_name=template, project_name=project_name)
     typer.echo(f"Project {project_name} moved to GitHub using template {template}.")
     backup_path = dev_env.get_latest_backup_path(project_path)
     typer.echo(f"Project backup is available at {backup_path}")
@@ -183,9 +181,7 @@ def move_project_to_experiments(
     """
     if project_name is None:
         project_name = project_path.name
-    new_path = dev_env.move_project_to_experiments(
-        project_path, project_name=project_name
-    )
+    new_path = dev_env.move_project_to_experiments(project_path, project_name=project_name)
     typer.echo(f"Project {project_name} moved to {new_path}")
     pyperclip.copy(str(new_path))
 

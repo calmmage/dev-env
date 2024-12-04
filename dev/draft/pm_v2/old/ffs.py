@@ -1,11 +1,6 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from git import Repo
-from loguru import logger
-from pytz import timezone
-from tenacity import retry, stop_after_attempt, wait_exponential
-
 from dev_env.core.constants import (
     all_projects_dirs,
     archive_dir,
@@ -23,13 +18,18 @@ from dev_env.core.git_utils import (
 )
 from dev_env.core.settings import settings
 from dev_env.setup.setup_shell_profiles_and_env import git_pull_with_fetch
+from git import Repo
+from loguru import logger
+from pytz import timezone
+from tenacity import retry, stop_after_attempt, wait_exponential
+
 
 # plan:
 # idea 1: create all projects dirs
 # idea 2: clone all projects - if exists, pull
 # idea 3: script to set up seasonal folder
 # idea 4 - set up ~/.calmmage dir
-# idea 5 - build zshrc file
+# [x] nix - idea 5 - build zshrc file
 # idea 6 - set up ~/code dir - softlinks to key locations
 # idea 7, essential - daily job
 
@@ -77,10 +77,7 @@ def clone_single_repo(repo, target_dir):
     try:
         local_repo_path = check_repo_cloned(repo)
         if local_repo_path:
-            if (
-                repo.name in settings.main_projects
-                and local_repo_path.parent != projects_dir
-            ):
+            if repo.name in settings.main_projects and local_repo_path.parent != projects_dir:
                 logger.warning(f"Main repo {local_repo_path} is not in {projects_dir}")
                 logger.info(f"Moving {local_repo_path} to {projects_dir}")
                 local_repo_path.rename(projects_dir / local_repo_path.name)
@@ -135,13 +132,9 @@ def clone_projects():
             continue
 
         try:
-            clone_single_repo(
-                repo, None
-            )  # We'll determine the target_dir inside the function
+            clone_single_repo(repo, None)  # We'll determine the target_dir inside the function
         except Exception as e:
-            logger.error(
-                f"Failed to process repo {repo.name} after multiple attempts: {e}"
-            )
+            logger.error(f"Failed to process repo {repo.name} after multiple attempts: {e}")
 
 
 # endregion idea 2 - clone projects

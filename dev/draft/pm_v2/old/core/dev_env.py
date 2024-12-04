@@ -1,15 +1,14 @@
 import os
 import shutil
-import time
 from datetime import datetime
 from pathlib import Path
 
 import git
-from calmlib.utils import copy_tree, get_logger
-from deprecated import deprecated
+import time
+from dev_env.core.presets import latest_preset
 from dotenv import load_dotenv
 
-from dev_env.core.presets import latest_preset
+from calmlib.utils import copy_tree, get_logger
 
 logger = get_logger(__name__)
 
@@ -147,9 +146,7 @@ class CalmmageDevEnv:
         monthly_project_dir = root / folder_name
         if monthly_project_dir.exists():
             # already exists - nothing to do
-            self.logger.warning(
-                f"Monthly project dir already exists: {monthly_project_dir}"
-            )
+            self.logger.warning(f"Monthly project dir already exists: {monthly_project_dir}")
             return monthly_project_dir
         monthly_project_dir.mkdir(parents=True, exist_ok=True)
         paths = ["experiments", "past_refs"]
@@ -214,9 +211,7 @@ class CalmmageDevEnv:
     GITHUB_RETRY_DELAY = 5
     GITHUB_NUM_RETRIES = 3
 
-    def _create_github_project_from_template(
-        self, name, template_name=None, local_name=None
-    ):
+    def _create_github_project_from_template(self, name, template_name=None, local_name=None):
         # create project dir
         if local_name is None:
             local_name = name
@@ -278,11 +273,7 @@ class CalmmageDevEnv:
     def list_templates(self, local=True):
         if local:
             templates_dir = Path(__file__).parent / "resources" / "project_templates"
-            return [
-                template.name
-                for template in templates_dir.iterdir()
-                if template.is_dir()
-            ]
+            return [template.name for template in templates_dir.iterdir() if template.is_dir()]
         else:
             # github
             return self.get_github_template_names()
@@ -307,9 +298,7 @@ class CalmmageDevEnv:
         return template.description
 
     def _create_repo_from_template(self, name, template_name):
-        logger.debug(
-            f"Creating a new repository {name} from the template: {template_name}"
-        )
+        logger.debug(f"Creating a new repository {name} from the template: {template_name}")
         # create a new repo from template
         github_client = self.github_client
 
@@ -325,9 +314,7 @@ class CalmmageDevEnv:
             )
         # check if the repo already exists
         if name in [repo.name for repo in github_client.get_user().get_repos()]:
-            raise ValueError(
-                f"Repository already exists: https://github.com/{username}/{name}"
-            )
+            raise ValueError(f"Repository already exists: https://github.com/{username}/{name}")
 
         github_client._Github__requester.requestJsonAndCheck(
             "POST",
@@ -348,9 +335,7 @@ class CalmmageDevEnv:
         if self._local_templates is None:
             templates_dir = Path(__file__).parent / "resources" / "project_templates"
             self._local_templates = {
-                template.name: template
-                for template in templates_dir.iterdir()
-                if template.is_dir()
+                template.name: template for template in templates_dir.iterdir() if template.is_dir()
             }
         return self._local_templates
 
@@ -526,9 +511,7 @@ class CalmmageDevEnv:
         # improved help string
         pass
 
-    def move_project_to_github(
-        self, project_path, template_name=None, project_name=None
-    ):
+    def move_project_to_github(self, project_path, template_name=None, project_name=None):
         # check if the project is already a git repo
         if (project_path / ".git").exists():
             raise ValueError(f"Project {project_path} is already a git repository.")
@@ -548,9 +531,7 @@ class CalmmageDevEnv:
         self._copy_project_files_to_github_clone(project_path, temp_project_path)
 
         # Move the cloned directory to replace the original project directory
-        self._replace_original_project_with_github_clone(
-            project_path, temp_project_path
-        )
+        self._replace_original_project_with_github_clone(project_path, temp_project_path)
 
         # Push changes to the GitHub repository
         # self._push_local_changes_to_github(temp_project_path)
@@ -561,9 +542,7 @@ class CalmmageDevEnv:
 
     @staticmethod
     def get_backup_path(original_project_path, suffix="_backup"):
-        backup_path = original_project_path.parent / (
-            original_project_path.name + "_backup"
-        )
+        backup_path = original_project_path.parent / (original_project_path.name + "_backup")
         counter = 1
         while os.path.exists(backup_path):
             backup_path = original_project_path.parent / (
@@ -574,9 +553,7 @@ class CalmmageDevEnv:
 
     @staticmethod
     def get_latest_backup_path(original_project_path, suffix="_backup"):
-        backup_path = original_project_path.parent / (
-            original_project_path.name + suffix
-        )
+        backup_path = original_project_path.parent / (original_project_path.name + suffix)
         counter = 1
         while True:
             next_path = original_project_path.parent / (
@@ -634,8 +611,7 @@ class CalmmageDevEnv:
         if project_name is None:
             project_name = project_path.name
         target_dir = (
-            self.root_dir
-            / "code/structured/dev/calmmage-dev/calmmage/experiments/seasonal"
+            self.root_dir / "code/structured/dev/calmmage-dev/calmmage/experiments/seasonal"
         )
         # discover latest seasonal dir
         candidates = [p for p in target_dir.iterdir() if p.name.startswith("20")]

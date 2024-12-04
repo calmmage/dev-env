@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
 import git
 from loguru import logger
@@ -137,11 +137,7 @@ def filter_repos_by_author(
     repos: List[Path], authors_map: Dict[str, List[str]], author_patterns: List[str]
 ) -> List[Path]:
     """Filter repositories by author patterns"""
-    return [
-        repo
-        for repo in repos
-        if is_author_match(authors_map[str(repo)], author_patterns)
-    ]
+    return [repo for repo in repos if is_author_match(authors_map[str(repo)], author_patterns)]
 
 
 if __name__ == "__main__":

@@ -1,9 +1,8 @@
 from collections import Counter
 from pathlib import Path
 
-from loguru import logger
-
 from dev.draft.project_management_v2.shared.repo_discovery import discover_local_projects
+from loguru import logger
 
 # from dev_env.core.lib import discover_local_projects
 

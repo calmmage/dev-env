@@ -17,9 +17,10 @@ new_mini [name] [--idea "project idea"]
    - Use seasonal folder management
    - Create in current season's folder
    - Auto-roll/rename folders if needed
-     ```bash
-     ~/work/projects/seasonal/2024_01_winter/my_mini_project
-     ```
+     - 1) if folder time span doesn't match it name anymore -> auto-rename
+     - 2) if count > threshold (7) or time threshold reached 
+       - -> create new seasonal folder
+       - -> update 'latest' symlink
 
 3. Project Creation
    - Create mini-project directory

@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Optional, Set
 
 from dotenv import load_dotenv
 from github import Github

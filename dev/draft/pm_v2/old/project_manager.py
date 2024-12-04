@@ -3,13 +3,13 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from calmlib.utils.main import is_subsequence
+from dev_env.core.constants import experiments_dir
+from dev_env.core.ffs import get_seasonal_dev_dir
+from dev_env.core.git_utils import clone_repo, create_repo_from_template
+from dev_env.core.settings import settings
 from loguru import logger
 
-from dev_env.core.constants import experiments_dir, projects_dir, seasonal_dir
-from dev_env.core.ffs import get_seasonal_dev_dir
-from dev_env.core.git_utils import clone_repo, create_repo_from_template, get_repo
-from dev_env.core.settings import settings
+from calmlib.utils.main import is_subsequence
 
 app = typer.Typer()
 
@@ -28,9 +28,7 @@ def fuzzy_match_template(template: str, templates: list[str]) -> Optional[str]:
     if len(prefix_matches) == 1:
         return prefix_matches[0]
 
-    subsequence_matches = [
-        t for t in templates if is_subsequence(template.lower(), t.lower())
-    ]
+    subsequence_matches = [t for t in templates if is_subsequence(template.lower(), t.lower())]
     if len(subsequence_matches) == 1:
         return subsequence_matches[0]
 
@@ -50,12 +48,8 @@ def get_template(template: str) -> str:
 @app.command()
 def start_new_project(
     name: str = typer.Argument(..., help="Name of the new project"),
-    project_type: ProjectType = typer.Option(
-        ProjectType.MINI, help="Type of project to create"
-    ),
-    template: Optional[str] = typer.Option(
-        None, help="Template to use for full projects"
-    ),
+    project_type: ProjectType = typer.Option(ProjectType.MINI, help="Type of project to create"),
+    template: Optional[str] = typer.Option(None, help="Template to use for full projects"),
 ):
     """
     Start a new project based on the specified type and template (for full projects).
@@ -86,9 +80,7 @@ def create_mini_project(name: str) -> Path:
     return project_dir
 
 
-def create_full_project(
-    name: str, template: str = settings.default_github_template
-) -> Path:
+def create_full_project(name: str, template: str = settings.default_github_template) -> Path:
     new_repo = create_repo_from_template(name, template)
     project_dir = experiments_dir / name
     cloned_repo = clone_repo(new_repo, project_dir)
@@ -114,12 +106,8 @@ def list_templates():
 
 @app.command()
 def move_to_experiments(
-    project_path: Path = typer.Argument(
-        ..., help="Path to the project to move to experiments"
-    ),
-    project_name: Optional[str] = typer.Option(
-        None, help="Name for the experiments project"
-    ),
+    project_path: Path = typer.Argument(..., help="Path to the project to move to experiments"),
+    project_name: Optional[str] = typer.Option(None, help="Name for the experiments project"),
 ):
     """
     Move a project to the calmmage/experiments directory.
