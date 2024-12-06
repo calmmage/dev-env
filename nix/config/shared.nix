@@ -170,6 +170,7 @@
     masApps = {
       "flow" = 1423210932;
       "dropover" = 1355679052;
+      "endel" = 1346247457;
       #  "1password" = 1333542190;
       #  "wireguard" = 1451685025;
     };
