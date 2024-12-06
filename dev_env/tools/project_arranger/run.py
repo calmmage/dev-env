@@ -45,7 +45,7 @@ if __name__ == "__main__":
     load_dotenv()
 
     parser = argparse.ArgumentParser(description="Project arrangement tool")
-    default_config_path = Path(__file__).parent / "config.yaml"
+    default_config_path = Path(__file__).parent / "pa_config.yaml"
     parser.add_argument("--config", default=default_config_path, help="Path to config file")
     parser.add_argument(
         "--dry-run",

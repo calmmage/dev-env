@@ -17,7 +17,7 @@ from dev_env.tools.project_arranger.src.main import Group, Project, ProjectArran
 app = typer.Typer()
 console = Console()
 
-DEFAULT_CONFIG = Path("config.yaml")
+DEFAULT_CONFIG = Path("pa_config.yaml")
 MISSING_THRESHOLD = 5  # Warn if more than this many projects are missing
 
 
