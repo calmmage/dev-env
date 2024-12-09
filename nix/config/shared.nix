@@ -207,8 +207,8 @@
     "dejavu_fonts"
     "font-awesome"
     "hack-font"
-    "noto-fonts"
-    "noto-fonts-emoji"
+#    "noto-fonts"
+#    "noto-fonts-emoji"
     "meslo-lgs-nf"
 
     # Node.js development tools
