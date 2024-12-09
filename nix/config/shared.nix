@@ -47,10 +47,13 @@
     brews = [
 
       # Development essentials
-      # "poetry"
+      "poetry"
       # "ripgrep"
-      #  "python@3.11"
-      #  "python@3.12"
+      "python"
+      "python@3.9"
+      "python@3.11"
+      "python@3.12"
+      "python@3.13"
       "node"
       "git-lfs"
       "gcc"
@@ -222,8 +225,8 @@
     "unzip"
 
     # Python packages
-    "python3"
-    "virtualenv"
+    # "python3"
+    # "virtualenv"
 
     # mac-specific
     "dockutil"
@@ -267,7 +270,7 @@
 
     # via brew
     # "slack" 
-    "poetry"
+    # "poetry"
     "ripgrep" # Fast grep alternative written in Rust
 
     # Suggestions from Claude

@@ -290,7 +290,6 @@ globurl='noglob urlglobber '
 grep=rg
 hidefiles='defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder'
 history=omz_history
-ipython='python3 -c "import IPython, sys; sys.exit(IPython.start_ipython())"'
 k=kubectl
 kaf='kubectl apply -f'
 kca='_kca(){ kubectl "$@" --all-namespaces;  unset -f _kca; }; _kca'
