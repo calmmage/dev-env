@@ -244,6 +244,11 @@ def new_todo(
                     raise typer.Exit()
                 project_dir = Path(result)
 
+    # Roll up old todos before creating new one
+    rolled_up_path = pm.rollup_todos(project_dir)
+    if rolled_up_path:
+        console.print(f"📝 [blue]Rolled up old todos to:[/] {rolled_up_path}")
+
     # Rest of the function remains the same
     todo_dir = project_dir / pm.config.todo_subfolder
     todo_dir.mkdir(exist_ok=True, parents=True)

@@ -677,3 +677,62 @@ class ProjectManager:
         cmd += f" {path}"
         logger.debug(f"Opening {path} in {cmd}")
         os.system(cmd)
+
+    def rollup_todos(self, project_dir: Optional[Path] = None) -> Optional[Path]:
+        """Roll up old todo_{date}.md files into a single todo.md file.
+        Excludes today's todo file from the rollup.
+
+        Args:
+            project_dir: Project directory to check. If None, uses current project.
+
+        Returns:
+            Path to the rolled-up todo.md file if any todos were found, None otherwise.
+        """
+        if project_dir is None:
+            project_dir = self.discovery.get_current_project()
+
+        # Get todo directory
+        todo_dir = project_dir / self.config.todo_subfolder
+        if not todo_dir.exists():
+            logger.debug(f"No todo directory found at {todo_dir}")
+            return None
+
+        # Get today's todo filename to exclude it
+        today_filename = datetime.now().strftime(self.config.todo_filename_template)
+
+        # Find all todo files except today's
+        todo_files = [f for f in todo_dir.glob("todo_*.md") if f.name != today_filename]
+
+        if not todo_files:
+            logger.debug("No old todo files found to roll up")
+            return None
+
+        # Sort files by date (newest first)
+        todo_files.sort(reverse=True)
+
+        # Create rolled up content
+        rolled_content = []
+        for todo_file in todo_files:
+            # Extract date from filename (assuming format todo_17_Nov.md)
+            date_str = todo_file.stem.replace("todo_", "")
+            try:
+                date = datetime.strptime(date_str, "%d_%b")
+                header = f"# Todos from {date.strftime('%d %b')}\n\n"
+            except ValueError:
+                # If filename doesn't match expected format, use filename as header
+                header = f"# {todo_file.stem}\n\n"
+
+            content = todo_file.read_text().strip()
+            rolled_content.append(f"{header}{content}\n\n")
+        # Write rolled up content
+        rolled_up_path = todo_dir / "todo.md"
+        if rolled_up_path.exists():
+            existing_content = rolled_up_path.read_text()
+            rolled_content.append(existing_content)
+        rolled_up_path.write_text("".join(rolled_content))
+        # Delete old files
+        for todo_file in todo_files:
+            todo_file.unlink()
+        logger.info(f"Rolled up {len(todo_files)} todo files into {rolled_up_path}")
+
+        return rolled_up_path
