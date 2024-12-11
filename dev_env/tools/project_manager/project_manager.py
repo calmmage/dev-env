@@ -70,14 +70,19 @@ class ProjectManager:
         return self._templates
 
     @staticmethod
-    def _fuzzy_match_template_name(incomplete: str, candidates):
+    def _fuzzy_match_template_name(
+        incomplete: str, candidates: list[Tuple[str, str]]
+    ) -> list[Tuple[str, str]]:
+        """Fuzzy match the template name from candidates."""
         matches = []
+        # step 1 - match by exact prefix
         for template, help_text in candidates:
             if template.startswith(incomplete):
                 matches.append((template, help_text))
         if len(matches) == 1:
             return matches
 
+        # step 2 - match by any subsequence
         for template, help_text in candidates:
             if is_subsequence(incomplete, template):
                 matches.append((template, help_text))
@@ -89,9 +94,11 @@ class ProjectManager:
         matches.append((incomplete, ""))
         return matches
 
-    def complete_template_name(self, incomplete: str) -> str:
-        """Complete template name with fuzzy matching"""
-        candidates = self.get_templates()
+    def complete_template_name(self, incomplete: str) -> list[Tuple[str, str]]:
+        """Complete template name with fuzzy matching."""
+        templates_dict = self.get_templates()  # This returns a dict: {template_name: repo_object}
+        # Transform the dict into a list of tuples (template_name, help_text)
+        candidates = [(name, repo.description or "") for name, repo in templates_dict.items()]
         matches = self._fuzzy_match_template_name(incomplete, candidates)
         return matches
 
@@ -197,9 +204,11 @@ class ProjectManager:
         if template is None:
             template = "python-project-template"
         else:
-            # TODO: fuzzy match template name
-            template = self.complete_template_name(template)
-            pass
+            matches = self.complete_template_name(template)
+            if len(matches) == 1:
+                template = matches[0][0]
+            else:
+                raise ValueError(f"Ambiguous template name: {template}. Matches: {matches}")
 
         if self.config.always_use_hyphens and ("_" in name):
             name = name.replace("_", "-")

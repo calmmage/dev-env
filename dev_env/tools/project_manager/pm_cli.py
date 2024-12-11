@@ -21,11 +21,11 @@ console = Console()
 # ------------------------------------------------------------
 
 
-def parse_template_name(template_name: str, candidates=None):
+def parse_template_name(template_name: str):
     """
     Parse the template name and return the correct one.
     """
-    matches = list(pm.complete_template_name(template_name, candidates))
+    matches = pm.complete_template_name(template_name)
     if len(matches) == 1:
         name, _help = matches[0]
         return name
