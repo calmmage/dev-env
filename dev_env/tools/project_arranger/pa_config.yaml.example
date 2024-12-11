@@ -36,6 +36,7 @@ actual:
   - calmmage-private
   - examples
   - codechat
+  - calmmage
 
 archive:
   - siri-ask-gpt

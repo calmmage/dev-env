@@ -4,12 +4,12 @@ from typing import Dict, List
 
 import git
 import typer
-from calmlib.utils import fix_path
 from dotenv import load_dotenv
 from loguru import logger
 from rich.console import Console
 from rich.table import Table
 
+from calmlib.utils import fix_path
 from dev_env.tools.project_arranger.src.main import Group, Project, ProjectArranger
 
 # from .old.main import ProjectArranger
@@ -17,7 +17,7 @@ from dev_env.tools.project_arranger.src.main import Group, Project, ProjectArran
 app = typer.Typer()
 console = Console()
 
-DEFAULT_CONFIG = Path("pa_config.yaml")
+DEFAULT_CONFIG = Path(__file__).parent / "pa_config.yaml"
 MISSING_THRESHOLD = 5  # Warn if more than this many projects are missing
 
 
@@ -251,10 +251,10 @@ def _determine_actions(
 def _print_actions(actions: Dict[str, Dict], show_all: bool = False):
     """Print planned actions in a table format"""
     table = Table(show_header=True)
+    table.add_column("Project")
     table.add_column("Action")
     table.add_column("From")
     table.add_column("To")
-    table.add_column("Project")
     table.add_column("Reason")
 
     for name, details in sorted(
@@ -328,13 +328,13 @@ def _execute_actions(actions: Dict[str, Dict]):
                     status.update(f"[bold red]Moving {name} to to_remove...")
                     destination = destinations["to_remove"]
                     destination.move(project)
-                    logger.info(f"Would move {name} to to_remove")
+                    logger.info(f"Moved {name} to to_remove")
 
                 elif action == Action.MOVE:
                     status.update(f"[bold yellow]Moving {name} to {target_group}...")
                     destination = destinations[target_group]
                     destination.move(project)
-                    logger.info(f"Would move {name} to {target_group}")
+                    logger.info(f"Moved {name} to {target_group}")
 
             except Exception as e:
                 logger.error(f"Failed to process {name}: {e}")

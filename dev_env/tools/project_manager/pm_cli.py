@@ -21,11 +21,11 @@ console = Console()
 # ------------------------------------------------------------
 
 
-def parse_template_name(template_name: str, candidates=None):
+def parse_template_name(template_name: str):
     """
     Parse the template name and return the correct one.
     """
-    matches = list(pm.complete_template_name(template_name, candidates))
+    matches = pm.complete_template_name(template_name)
     if len(matches) == 1:
         name, _help = matches[0]
         return name
@@ -243,6 +243,11 @@ def new_todo(
                 if result is None:
                     raise typer.Exit()
                 project_dir = Path(result)
+
+    # Roll up old todos before creating new one
+    rolled_up_path = pm.rollup_todos(project_dir)
+    if rolled_up_path:
+        console.print(f"📝 [blue]Rolled up old todos to:[/] {rolled_up_path}")
 
     # Rest of the function remains the same
     todo_dir = project_dir / pm.config.todo_subfolder
