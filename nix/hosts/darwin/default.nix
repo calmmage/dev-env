@@ -160,8 +160,8 @@ in
       };
 
       finder = {
-        AppleShowAllExtensions = true;
-        _FXShowPosixPathInTitle = true;
+        AppleShowAllExtensions = false;
+        _FXShowPosixPathInTitle = false;
         FXPreferredViewStyle = "Nlsv";
   #     defaults write com.apple.finder ShowPathbar -bool true
   #     defaults write com.apple.finder ShowStatusBar -bool true
@@ -172,6 +172,9 @@ in
       trackpad = {
         Clicking = true;
 
+        # --------------------------------------
+        # region Broken - these setting are not supported by nix-darwin yet :(
+        # --------------------------------------
         # https://support.apple.com/en-us/102341
         # TrackpadThreeFingerDrag = false;
 
@@ -190,6 +193,10 @@ in
         # 0 = Disabled
         # 3 = Notifications Center
         # TrackpadTwoFingerFromRightEdgeSwipeGesture = 0;
+
+        # --------------------------------------
+        # endregion Broken - these setting are not supported by nix-darwin yet :(
+        # --------------------------------------
 
         # "com.apple.AppleMultitouchTrackpad": {
         #   "TrackpadFourFingerHorizSwipeGesture": 2,
