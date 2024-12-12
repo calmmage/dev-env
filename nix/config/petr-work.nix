@@ -28,6 +28,7 @@ in
     casks = shared.homebrew.casks ++ [
       # Communication
 #      "microsoft-teams"
+      "ollama"
       "zed"
       "windsurf"
     ];
@@ -50,7 +51,6 @@ in
 
   package_names = shared.package_names ++ [
     # Add work-specific packages here
-    "ollama"
 
     "teams"           # Microsoft Teams client
   ];
