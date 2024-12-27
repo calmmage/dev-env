@@ -39,6 +39,20 @@ choice_map = {
 }
 
 
+def prompt_editor_choice(editor: Optional[EditorChoice] = None) -> Optional[EditorChoice]:
+    """Prompt user to choose an editor if not provided."""
+    if editor is None:
+        prompt = "Open project in editor?\n"
+        prompt += "1 - copy\n2 - cursor\n3 - pycharm\n4 - vscode"
+        editor = typer.prompt(
+            prompt,
+            type=EditorChoice,
+            default=EditorChoice.COPY,
+            show_choices=True,
+        )
+    return editor
+
+
 def generate_project_name(name: Optional[str] = None) -> str:
     """Generate a project name from a description."""
     if name is None:

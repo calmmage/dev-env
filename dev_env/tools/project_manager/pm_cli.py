@@ -7,7 +7,12 @@ import typer
 from calmlib.utils import load_global_env
 from rich.console import Console
 
-from dev_env.core.pm_utils.name_generator import EditorChoice, generate_project_name, open_in_editor
+from dev_env.core.pm_utils.name_generator import (
+    EditorChoice,
+    generate_project_name,
+    open_in_editor,
+    prompt_editor_choice,
+)
 from dev_env.tools.project_discoverer.pd_cli import show_result_menu
 from dev_env.tools.project_discoverer.project_discoverer import ProjectDiscoverer
 from dev_env.tools.project_manager.project_manager import ProjectManager
@@ -85,17 +90,7 @@ def new_project(
 
     if not dry_run:
         console.print(f"✨ [green]Project created at:[/] {project_dir}")
-
-        if editor is None:
-            prompt = "Open project in editor?\n"
-            prompt += "1 - copy\n2 - cursor\n3 - pycharm\n4 - vscode"
-            editor = typer.prompt(
-                prompt,
-                type=EditorChoice,
-                default=EditorChoice.COPY,
-                show_choices=True,
-            )
-
+        editor = prompt_editor_choice(editor)
         if editor:
             open_in_editor(project_dir, editor)
     else:
@@ -155,17 +150,7 @@ def new_mini_project(
 
     if not dry_run:
         console.print(f"✨ [green]Mini-project created at:[/] {project_dir}")
-
-        if editor is None:
-            prompt = "Open project in editor?\n"
-            prompt += "1 - copy\n2 - cursor\n3 - pycharm\n4 - vscode"
-            editor = typer.prompt(
-                prompt,
-                type=EditorChoice,
-                default=EditorChoice.COPY,
-                show_choices=True,
-            )
-
+        editor = prompt_editor_choice(editor)
         if editor:
             open_in_editor(project_dir, editor)
     else:
