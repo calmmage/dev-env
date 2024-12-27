@@ -4,12 +4,15 @@ from typing import Annotated, Optional
 
 import pyperclip
 import typer
+from calmlib.utils import load_global_env
 from rich.console import Console
 
 from dev_env.core.pm_utils.name_generator import EditorChoice, generate_project_name, open_in_editor
 from dev_env.tools.project_discoverer.pd_cli import show_result_menu
 from dev_env.tools.project_discoverer.project_discoverer import ProjectDiscoverer
 from dev_env.tools.project_manager.project_manager import ProjectManager
+
+load_global_env()
 
 pm = ProjectManager()
 app = typer.Typer()
@@ -43,7 +46,6 @@ def new_project(
         Optional[str],
         typer.Argument(
             help="Name of the project",
-            default=None,
         ),
     ] = None,
     template: Annotated[
@@ -85,8 +87,10 @@ def new_project(
         console.print(f"✨ [green]Project created at:[/] {project_dir}")
 
         if editor is None:
+            prompt = "Open project in editor?\n"
+            prompt += "1 - copy\n2 - cursor\n3 - pycharm\n4 - vscode"
             editor = typer.prompt(
-                "Open project in editor?",
+                prompt,
                 type=EditorChoice,
                 default=EditorChoice.COPY,
                 show_choices=True,
@@ -111,7 +115,6 @@ def new_mini_project(
         Optional[str],
         typer.Argument(
             help="Name of the mini-project",
-            default=None,
         ),
     ] = None,
     description: Annotated[
@@ -154,8 +157,10 @@ def new_mini_project(
         console.print(f"✨ [green]Mini-project created at:[/] {project_dir}")
 
         if editor is None:
+            prompt = "Open project in editor?\n"
+            prompt += "1 - copy\n2 - cursor\n3 - pycharm\n4 - vscode"
             editor = typer.prompt(
-                "Open project in editor?",
+                prompt,
                 type=EditorChoice,
                 default=EditorChoice.COPY,
                 show_choices=True,

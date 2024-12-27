@@ -533,7 +533,7 @@ redis = ["redis (>=2.10.5)"]
 
 [[package]]
 name = "calmlib"
-version = "1.0.8"
+version = "1.0.9"
 description = "Calmlib"
 optional = false
 python-versions = ">=3.11,<4.0"
@@ -549,7 +549,7 @@ toml = ">=0.10"
 type = "git"
 url = "https://github.com/calmmage/calmlib.git"
 reference = "main"
-resolved_reference = "1d8321ffadb018de800f44055bd2e2a534b6f8a8"
+resolved_reference = "711e1d6be1e2aa3e3e9095ff901675e2fc5abe2c"
 
 [[package]]
 name = "certifi"

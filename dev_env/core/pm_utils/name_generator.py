@@ -22,9 +22,21 @@ class ProjectName(BaseModel):
 
 class EditorChoice(str, Enum):
     COPY = "copy"
+    COPY_1 = "1"
     CURSOR = "cursor"
+    CURSOR_2 = "2"
     PYCHARM = "pycharm"
+    PYCHARM_3 = "3"
     VSCODE = "vscode"
+    VSCODE_4 = "4"
+
+
+choice_map = {
+    EditorChoice.COPY_1: EditorChoice.COPY,
+    EditorChoice.CURSOR_2: EditorChoice.CURSOR,
+    EditorChoice.PYCHARM_3: EditorChoice.PYCHARM,
+    EditorChoice.VSCODE_4: EditorChoice.VSCODE,
+}
 
 
 def generate_project_name(name: Optional[str] = None) -> str:
@@ -68,8 +80,8 @@ example: "download all telegram messages" -> "load-telegram-messages"
 def open_in_editor(path: Path, editor: EditorChoice):
     """Open the project in the selected editor."""
     path_str = str(path.absolute())
-
-    if editor == EditorChoice.COPY:
+    editor = choice_map.get(editor, editor)
+    if editor == EditorChoice.COPY or editor == EditorChoice.COPY_1:
         import pyperclip
 
         pyperclip.copy(path_str)
