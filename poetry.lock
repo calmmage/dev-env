@@ -488,6 +488,29 @@ webencodings = "*"
 css = ["tinycss2 (>=1.1.0,<1.5)"]
 
 [[package]]
+name = "botspot"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = ">=3.11,<4.0"
+files = []
+develop = false
+
+[package.dependencies]
+aiogram = "^3.13.1"
+calmlib = {git = "https://github.com/calmmage/calmlib.git", branch = "main"}
+loguru = ">=0.7"
+pydantic-settings = "^2.6.0"
+python-dotenv = "*"
+toml = ">=0.10"
+
+[package.source]
+type = "git"
+url = "https://github.com/calmmage/botspot.git"
+reference = "main"
+resolved_reference = "9304345eac9aa0c420524e925557fa9573755763"
+
+[[package]]
 name = "build"
 version = "1.2.2.post1"
 description = "A simple, correct Python build frontend"
@@ -5901,4 +5924,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "57ba8b7b55b103df7ac09526ecdfa476161afbaf0db5b8b5e3b451bd94e4360b"
+content-hash = "9724e729bbd198e49af2e254b1625b0a9197114fb4f2459bb56592861ecbc7e8"
