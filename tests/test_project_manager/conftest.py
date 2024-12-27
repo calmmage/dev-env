@@ -29,9 +29,32 @@ def sample_project_dir(tmp_path):
 
 
 @pytest.fixture
-def pm_config():
+def mock_pm_config_file(tmp_path):
+    """Create a mock project manager config file"""
+    config_content = """
+# Project Manager Configuration
+# experiments_destination: "experiments"
+# mini_projects_destination: "calmmage-private"
+# public_mini_projects_destination: "calmmage"
+# features_subfolder: "dev/draft"
+# todo_subfolder: "dev"
+# todo_filename_template: "todo_%d_%b.md"
+# default_editor: "subl"
+# # Project Manager Configuration
+
+# # Editor settings
+default_editor: "subl"
+
+"""
+    config_file = tmp_path / "pm_config.yaml"
+    config_file.write_text(config_content)
+    return config_file
+
+
+@pytest.fixture
+def pm_config(mock_pm_config_file):
     """Get ProjectManager config for testing"""
-    pm = ProjectManager()
+    pm = ProjectManager(config_path=mock_pm_config_file)
     return pm.config
 
 
@@ -71,22 +94,22 @@ def pm_with_custom_editor(monkeypatch):
     return ProjectManager()
 
 
-@pytest.fixture
-def mock_pd_config(tmp_path, monkeypatch):
-    """Create a mock project discoverer config file"""
-    config_content = """
-# Project Discoverer Configuration
-root_dirs:
-  - path/to/projects
-  - another/path
-"""
-    config_file = tmp_path / "pd_config.yaml"
-    config_file.write_text(config_content)
-
-    # Mock the entire config class
-    monkeypatch.setattr(
-        "dev_env.tools.project_discoverer.pd_config.ProjectDiscovererConfig",
-        MockProjectDiscovererConfig,
-    )
-
-    return config_file
+# @pytest.fixture
+# def mock_pd_config(tmp_path, monkeypatch):
+#     """Create a mock project discoverer config file"""
+#     config_content = """
+# # Project Discoverer Configuration
+# root_dirs:
+#   - path/to/projects
+#   - another/path
+# """
+#     config_file = tmp_path / "pd_config.yaml"
+#     config_file.write_text(config_content)
+#
+#     # Mock the entire config class
+#     monkeypatch.setattr(
+#         "dev_env.tools.project_discoverer.pd_config.ProjectDiscovererConfig",
+#         MockProjectDiscovererConfig,
+#     )
+#
+#     return config_file
