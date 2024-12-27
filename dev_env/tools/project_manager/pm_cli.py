@@ -4,11 +4,15 @@ from typing import Annotated, Optional
 
 import pyperclip
 import typer
+from calmlib.utils import load_global_env
 from rich.console import Console
 
+from dev_env.core.pm_utils.name_generator import EditorChoice, generate_project_name, open_in_editor
 from dev_env.tools.project_discoverer.pd_cli import show_result_menu
 from dev_env.tools.project_discoverer.project_discoverer import ProjectDiscoverer
 from dev_env.tools.project_manager.project_manager import ProjectManager
+
+load_global_env()
 
 pm = ProjectManager()
 app = typer.Typer()
@@ -22,9 +26,7 @@ console = Console()
 
 
 def parse_template_name(template_name: str):
-    """
-    Parse the template name and return the correct one.
-    """
+    """Parse the template name and return the correct one."""
     matches = pm.complete_template_name(template_name)
     if len(matches) == 1:
         name, _help = matches[0]
@@ -32,7 +34,7 @@ def parse_template_name(template_name: str):
     else:
         raise typer.BadParameter(
             f"Invalid template name: {template_name}. {matches=}",
-            param_hint=f"template",
+            param_hint="template",
         )
 
 
@@ -41,12 +43,11 @@ def parse_template_name(template_name: str):
 )
 def new_project(
     name: Annotated[
-        str,
+        Optional[str],
         typer.Argument(
-            ...,
             help="Name of the project",
         ),
-    ],
+    ] = None,
     template: Annotated[
         Optional[str],
         typer.Option(
@@ -63,14 +64,40 @@ def new_project(
             help="Print what would be done without actually doing it",
         ),
     ] = False,
+    editor: Annotated[
+        Optional[EditorChoice],
+        typer.Option(
+            "--editor",
+            "-e",
+            help="Open project in editor after creation",
+        ),
+    ] = None,
 ):
     """Create a new project in github and clone to experiments destination"""
+    # Generate name if not provided
+    if name is None:
+        name = generate_project_name()
+
     if template:
         template = parse_template_name(template)
+
     project_dir = pm.create_project(name, template=template, dry_run=dry_run)
+
     if not dry_run:
-        console.print(f"✨ [green]Project created at:[/] {project_dir}. Path copied to clipboard.")
-        pyperclip.copy(str(project_dir.absolute()))
+        console.print(f"✨ [green]Project created at:[/] {project_dir}")
+
+        if editor is None:
+            prompt = "Open project in editor?\n"
+            prompt += "1 - copy\n2 - cursor\n3 - pycharm\n4 - vscode"
+            editor = typer.prompt(
+                prompt,
+                type=EditorChoice,
+                default=EditorChoice.COPY,
+                show_choices=True,
+            )
+
+        if editor:
+            open_in_editor(project_dir, editor)
     else:
         console.print(f"✨ [yellow]Dry run:[/] Would create project at {project_dir}")
 
@@ -85,12 +112,11 @@ def new_project(
 @app.command(name="new-mini-project", help="Create a new mini-project in seasonal folder structure")
 def new_mini_project(
     name: Annotated[
-        str,
+        Optional[str],
         typer.Argument(
-            ...,
             help="Name of the mini-project",
         ),
-    ],
+    ] = None,
     description: Annotated[
         Optional[str],
         typer.Option(
@@ -107,19 +133,41 @@ def new_mini_project(
             help="Print what would be done without actually doing it",
         ),
     ] = False,
+    editor: Annotated[
+        Optional[EditorChoice],
+        typer.Option(
+            "--editor",
+            "-e",
+            help="Open project in editor after creation",
+        ),
+    ] = None,
 ):
     """Create a new mini-project in seasonal folder structure"""
+    # Generate name if not provided
+    if name is None:
+        name = generate_project_name()
 
     # if user didn't specify private, ask
     if private is None:
         private = typer.confirm("Create in private repository?", default=False)
 
     project_dir = pm.create_mini_project(name, description, private, dry_run=dry_run)
+
     if not dry_run:
-        console.print(
-            f"✨ [green]Mini-project created at:[/] {project_dir}. Path copied to clipboard."
-        )
-        pyperclip.copy(str(project_dir.absolute()))
+        console.print(f"✨ [green]Mini-project created at:[/] {project_dir}")
+
+        if editor is None:
+            prompt = "Open project in editor?\n"
+            prompt += "1 - copy\n2 - cursor\n3 - pycharm\n4 - vscode"
+            editor = typer.prompt(
+                prompt,
+                type=EditorChoice,
+                default=EditorChoice.COPY,
+                show_choices=True,
+            )
+
+        if editor:
+            open_in_editor(project_dir, editor)
     else:
         console.print(f"✨ [yellow]Dry run:[/] Would create mini-project at {project_dir}")
 
@@ -149,6 +197,7 @@ def move_to_examples(
 def get_project_dir(path: Path, mini_projects: bool = False) -> Optional[Path]:
     """
     Get the top-level project directory for the given path.
+
     Returns None if no project directory is found.
     """
     project_dirs = pd.get_outer_project_dirs(path)
