@@ -81,7 +81,7 @@ def sample_todos(sample_project_dir, pm_config):
 
 
 @pytest.fixture
-def pm_with_custom_editor(monkeypatch):
+def pm_with_custom_editor(monkeypatch, mock_pm_config_file):
     """Create ProjectManager instance with a mock editor command"""
 
     def mock_editor(self, path):
@@ -91,7 +91,7 @@ def pm_with_custom_editor(monkeypatch):
     # Patch the open_in_editor method to prevent actual editor opening
     monkeypatch.setattr(ProjectManager, "open_in_editor", mock_editor)
 
-    return ProjectManager()
+    return ProjectManager(config_path=mock_pm_config_file)
 
 
 # @pytest.fixture
