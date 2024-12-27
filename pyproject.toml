@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dev-env"
-version = "0.2.23"
+version = "0.2.24"
 description = ""
 authors = ["Petr Lavrov <calmmage@gmail.com>"]
 readme = "README.md"
@@ -70,10 +70,10 @@ deepl = ">=1.18"             # DeepL API client
 ## LLM, GPT, AI
 ##tiktoken = ">=0.7"            # Tokenization for OpenAI models
 openai = ">=1.45"             # OpenAI API client
-#langchain = ">=0.3"            # Language model framework
-#langchain-openai = ">=0.2"     # OpenAI integration for LangChain
-#langchain-community = "*"      # Community extensions for LangChain
-#langchain-anthropic = ">=0.2"  # Anthropic integration for LangChain
+langchain = ">=0.3"            # Language model framework
+langchain-openai = ">=0.2"     # OpenAI integration for LangChain
+langchain-community = "*"      # Community extensions for LangChain
+langchain-anthropic = ">=0.2"  # Anthropic integration for LangChain
 #langfuse = "*"                 # Language model analytics
 ##assemblyai = "*"              # Speech-to-text API
 ##whisperx = { git = "https://github.com/m-bain/whisperX.git", branch = "main" }  # Advanced Whisper model
