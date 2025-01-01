@@ -155,13 +155,24 @@ class ProjectManager:
 
                 # Verify clone success
                 if not (project_dir / ".git").exists():
-                    raise ValueError("Git directory not found")
+                    raise ValueError(
+                        "Repository cloned but .git directory not found where expected"
+                    )
 
                 logger.debug(f"Repository cloned successfully to {project_dir}")
                 return project_dir
 
             except Exception as e:
                 logger.warning(f"Clone attempt {i+1} failed: {e}")
+                if project_dir.exists():
+                    try:
+                        import shutil
+
+                        shutil.rmtree(project_dir)
+                        logger.debug(f"Cleaned up failed clone attempt at {project_dir}")
+                    except Exception as cleanup_error:
+                        logger.warning(f"Failed to clean up directory: {cleanup_error}")
+
                 if i < retries - 1:
                     import time
 
@@ -218,15 +229,19 @@ class ProjectManager:
         if self._check_github_conflicts(name):
             raise ValueError(f"Project name '{name}' conflicts with existing GitHub repository")
 
-        # 2. Project Creation
         try:
             # Create repo from template
             self._create_repo_from_template(name, template, dry_run)
 
+            # Add a small delay to ensure GitHub has initialized the repository
+            import time
+
+            time.sleep(2)  # Wait 2 seconds before attempting to clone
+
             # Get destination from config
             destination = self._get_experiments_destination()
             project_dir = destination / name
-            # todo: check if exists? and not empty?
+
             if project_dir.exists():
                 if list(project_dir.iterdir()):
                     raise ValueError(
@@ -235,10 +250,7 @@ class ProjectManager:
                 else:
                     # remove empty dir
                     project_dir.rmdir()
-                    logger.warning(
-                        f"Removed pre-existing empty project directory from experiments:"
-                        f" {project_dir}"
-                    )
+                    logger.warning(f"Removed pre-existing empty project directory: {project_dir}")
 
             if not dry_run:
                 self._clone_github_repository(name, project_dir)
