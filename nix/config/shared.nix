@@ -95,7 +95,7 @@
       "obsidian"
       "notion"
       "chatgpt"
-      # - shottr # Alternative: CleanShot X - installed through setapp
+      "shottr" # Alternative: CleanShot X - installed through setapp
 
       # App marketplace
       "setapp"
