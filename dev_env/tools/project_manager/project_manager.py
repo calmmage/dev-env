@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 import git
+from calmlib.utils.main import is_subsequence
 from loguru import logger
 
-from calmlib.utils.main import is_subsequence
 from dev_env.core.pm_utils.destinations import Destination, DestinationsRegistry
 from dev_env.core.pm_utils.project_utils import ProjectDiscovery
 from dev_env.tools.project_manager.pm_config import ProjectManagerConfig
@@ -530,7 +530,7 @@ class ProjectManager:
     def _update_season_dates(
         self, season: Path, start: Optional[datetime] = None, end: Optional[datetime] = None
     ) -> Path:
-        """Update season name to the latest date range"""
+        """Update season name and folder to the latest date range"""
         metadata = self._get_season_metadata(season)
         _, num, period, year = season.name.split("_")
         if start is None:
@@ -539,12 +539,44 @@ class ProjectManager:
             end = datetime.fromisoformat(metadata["end"])
         period = self._get_period_from_date_range(start, end)
 
-        # update metadata
-        metadata = {"start": start.isoformat(), "end": end.isoformat()}
-        metadata_file = self._get_season_metadata_file(season)
-        metadata_file.write_text(json.dumps(metadata))
+        # Calculate new name and path
+        new_name = f"season_{num}_{period}_{year}"
+        new_path = season.with_name(new_name)
 
-        return season.with_name(f"season_{num}_{period}_{year}")
+        # Only proceed with rename if needed
+        if new_name != season.name:
+            logger.debug(f"Renaming season folder from {season.name} to {new_name}")
+
+            # Update latest symlink first if it points to this season
+            latest_link = season.parent / "latest"
+            if latest_link.exists() and latest_link.is_symlink():
+                try:
+                    if latest_link.resolve() == season.resolve():
+                        latest_link.unlink()
+                        season.rename(new_path)
+                        latest_link.symlink_to(new_path)
+                        # Update metadata in new location
+                        metadata = {"start": start.isoformat(), "end": end.isoformat()}
+                        new_metadata_file = self._get_season_metadata_file(new_path)
+                        new_metadata_file.write_text(json.dumps(metadata))
+                        return new_path
+                except OSError as e:
+                    logger.warning(f"Error handling symlink: {e}")
+
+            # If no symlink or it points elsewhere, just rename
+            season.rename(new_path)
+
+            # Update metadata in new location
+            metadata = {"start": start.isoformat(), "end": end.isoformat()}
+            new_metadata_file = self._get_season_metadata_file(new_path)
+            new_metadata_file.write_text(json.dumps(metadata))
+        else:
+            # Just update metadata if no rename needed
+            metadata = {"start": start.isoformat(), "end": end.isoformat()}
+            metadata_file = self._get_season_metadata_file(season)
+            metadata_file.write_text(json.dumps(metadata))
+
+        return new_path
 
     def get_seasonal_folder(self, private: bool = False) -> Path:
         """Get or create appropriate seasonal folder based on count and time thresholds"""
@@ -557,7 +589,7 @@ class ProjectManager:
         elif self._time_to_roll_season(latest_season):
             # roll over
             latest_season = self._create_new_seasonal_folder(
-                destination, latest_season.name.split("_")[1]
+                destination, int(latest_season.name.split("_")[1])
             )
 
         # - sanity check name
@@ -579,7 +611,9 @@ class ProjectManager:
                 logger.info(f"Auto converted underscores to hyphens in project name: {name}")
 
         # - create dir
-        project_dir = seasonal_folder / "draft" / name
+        draft_dir = seasonal_folder / "draft"
+        project_dir = draft_dir / name
+
         if project_dir.exists():
             if list(project_dir.iterdir()):
                 raise ValueError(
@@ -589,6 +623,8 @@ class ProjectManager:
                 logger.warning(f"Directory already exists but is empty: {project_dir}")
 
         if not dry_run:
+            # Ensure draft directory exists
+            draft_dir.mkdir(exist_ok=True, parents=True)
             project_dir.mkdir(exist_ok=True)
 
             # - put idea there
