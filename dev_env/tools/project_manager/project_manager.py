@@ -500,18 +500,23 @@ class ProjectManager:
                 # or month range
                 if season in self.months:
 
-                    m = self.months.index(season) + 1
-                    me = (m + 1) % 12
-                    ye = year + (m + 1) // 12
-                    start = datetime(ye, m, 1)
-                    end = datetime(ye, me, 1) - timedelta(days=1)
+                    start_month_index = self.months.index(season) + 1
+                    end_month_index = (start_month_index + 1) % 12
+                    year_end = year + (start_month_index + 1) // 12
+                    start = datetime(year, start_month_index, 1)
+                    end = datetime(year_end, end_month_index, 1) - timedelta(days=1)
                 else:
                     if "-" in season:
                         start_month, end_month = season.split("-")
-                        start = datetime(year, self.months.index(start_month) + 1, 1)
-                        end = datetime(year, self.months.index(end_month) + 2, 1) - timedelta(
-                            days=1
-                        )
+                        start_month_index = self.months.index(start_month) + 1
+                        end_month_index = self.months.index(end_month) + 1
+                        start = datetime(year, start_month_index, 1)
+
+                        # If end month is earlier in the year than start month, it means we crossed year boundary
+                        if end_month_index <= start_month_index:
+                            end = datetime(year + 1, end_month_index + 1, 1) - timedelta(days=1)
+                        else:
+                            end = datetime(year, end_month_index + 1, 1) - timedelta(days=1)
                     else:
                         raise ValueError(f"Invalid season name: {name}")
 

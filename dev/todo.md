@@ -1,3 +1,8 @@
+# Todos from 28 Dec
+
+- [x] fix the issue in new project - something's wrong with
+  cloning.. [note.md](../dev_env/tools/project_manager/issues/note.md)
+
 # Todos from 11 Dec
 
 - [ ] make sure our project picker for todo sees the mini-projects.. (now it goes to repo root)

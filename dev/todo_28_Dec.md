@@ -1,1 +1,0 @@
-- [ ] fix the issue in new project - something's wrong with cloning.. [note.md](../dev_env/tools/project_manager/issues/note.md)
