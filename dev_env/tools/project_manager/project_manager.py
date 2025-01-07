@@ -372,6 +372,10 @@ class ProjectManager:
 
         # option 1: check all seasonal folders
         existing_seasons = [p for p in seasonal_base.glob("season_*") if p.is_dir()]
+        logger.debug(
+            f"Found {len(existing_seasons)} seasonal folders: {[s.name for s in existing_seasons]}"
+        )
+
         latest_season = None
         latest_season_num = -1
         for season in existing_seasons:
@@ -380,17 +384,17 @@ class ProjectManager:
                 latest_season_num = season_num
                 latest_season = season
 
+        logger.debug(f"Latest season by number: {latest_season}")
+
         # option 2: check latest symlink
         latest_link = seasonal_base / "latest"
         if latest_link.exists() and latest_link.is_symlink():
             res = Path(os.readlink(latest_link))
             if res != latest_season:
                 logger.warning(f"Latest symlink exists but points to {res}, not {latest_season}")
+            logger.debug(f"Latest season by symlink: {res}")
 
-        if latest_season:
-            return latest_season
-        else:
-            return None
+        return latest_season
 
     def _create_new_seasonal_folder(
         self, destination: Destination, season_num: Optional[int] = None
@@ -398,22 +402,30 @@ class ProjectManager:
         """Create a new seasonal folder"""
         if season_num is None:
             season_num = 1
+        logger.debug(f"Creating new seasonal folder with number {season_num}")
 
         date = datetime.now()
+        logger.debug(f"Current date: {date}")
         period = self._get_period_from_date_range(date, date)
+        logger.debug(f"Generated period: {period}")
+
         new_folder = destination.path / "seasonal" / f"season_{season_num}_{period}_{date.year}"
+        logger.debug(f"New folder path: {new_folder}")
         new_folder.mkdir(parents=True, exist_ok=True)
 
         # update latest symlink
         latest_link = destination.path / "seasonal" / "latest"
         if latest_link.exists():
+            logger.debug(f"Removing existing symlink: {latest_link}")
             latest_link.unlink()
+        logger.debug(f"Creating new symlink: {latest_link} -> {new_folder}")
         latest_link.symlink_to(new_folder)
 
         # create folder structure
         children = ["draft", "wip", "unsorted", "paused"]
         for child in children:
             (new_folder / child).mkdir(exist_ok=True)
+        logger.debug(f"Created folder structure: {children}")
 
         return new_folder
 
@@ -424,31 +436,46 @@ class ProjectManager:
 
         within a month -> this month (1-20 jan - 'jan')
         covering two months -> both
-        covering a quarter -> quarter name
-        """
+        covering a quarter -> quarter name"""
+        logger.debug(f"Getting period for date range: {start} - {end}")
+
         if start.month == end.month:
-            return self.months[start.month - 1]
+            period = self.months[start.month - 1]
+            logger.debug(f"Same month period: {period}")
+            return period
         elif (start.month + 1) % 12 == end.month:
             # if just 2 months
-            return f"{self.months[start.month-1]}-{self.months[end.month-1]}"
+            period = f"{self.months[start.month - 1]}-{self.months[end.month - 1]}"
+            logger.debug(f"Two month period: {period} (months {start.month}-{end.month})")
+            return period
 
         # warn if time span is too long
         if (end - start).days > 90:
             logger.warning(f"Season spans multiple quarters: {start} - {end}")
+
         # winter, spring, summer or fall - based on the end month
         if end.month in [12, 1, 2]:
+            logger.debug(f"Winter period (end month: {end.month})")
             return "winter"
         elif end.month in [3, 4, 5]:
+            logger.debug(f"Spring period (end month: {end.month})")
             return "spring"
         elif end.month in [6, 7, 8]:
+            logger.debug(f"Summer period (end month: {end.month})")
             return "summer"
         else:
+            logger.debug(f"Fall period (end month: {end.month})")
             return "fall"
 
     def _time_to_roll_season(self, season: Path) -> bool:
         """Check if it's time to roll over to a new season"""
         # if already enough projects within season
-        if len(list(season.glob("*/*"))) >= self.config.seasonal_folder_threshold:
+        num_projects = len(list(season.glob("*/*")))
+        threshold = self.config.seasonal_folder_threshold
+        if num_projects >= threshold:
+            logger.debug(
+                f"Enough projects in season: {num_projects=} >= {threshold=}. Rolling over."
+            )
             return True
 
         # or season date range grows too large / awkward
@@ -457,16 +484,21 @@ class ProjectManager:
         start = datetime.fromisoformat(metadata["start"])
         end = datetime.now()
         if (end - start).days > 90:
+            logger.debug(f"Season date range too large: {end - start} days. Rolling over.")
             return True
         if (end - start).days > 60:
             # check if we're spanning multiple different quarters
             if start.month in [12, 1, 2] and end.month in [3, 4, 5]:
+                logger.debug("Season spans multiple quarters: winter -> spring. Rolling over.")
                 return True
             elif start.month in [3, 4, 5] and end.month in [6, 7, 8]:
+                logger.debug("Season spans multiple quarters: spring -> summer. Rolling over.")
                 return True
             elif start.month in [6, 7, 8] and end.month in [9, 10, 11]:
+                logger.debug("Season spans multiple quarters: summer -> fall. Rolling over.")
                 return True
             elif start.month in [9, 10, 11] and end.month in [12, 1, 2]:
+                logger.debug("Season spans multiple quarters: fall -> winter. Rolling over.")
                 return True
         return False
 
@@ -475,54 +507,60 @@ class ProjectManager:
 
     def _parse_name_into_date_range(self, name: str) -> Tuple[datetime, datetime]:
         """Parse season name into start and end date"""
+        logger.debug(f"Parsing season name: {name}")
         if name.startswith("season_"):
             name = name.split("_", 2)[2]
-        # check winter/spring/summer/fall
         parts = name.split("_")
         if len(parts) == 2:
-            # year_winter
             year = int(parts[1])
             season = parts[0]
+            logger.debug(f"Parsed year: {year}, season: {season}")
+
             if season == "winter":
                 start = datetime(year, 12, 1)
                 end = datetime(year + 1, 2, 28)
+                logger.debug(f"Winter season: {start} - {end}")
             elif season == "spring":
                 start = datetime(year, 3, 1)
                 end = datetime(year, 5, 31)
+                logger.debug(f"Spring season: {start} - {end}")
             elif season == "summer":
                 start = datetime(year, 6, 1)
                 end = datetime(year, 8, 31)
+                logger.debug(f"Summer season: {start} - {end}")
             elif season == "fall":
                 start = datetime(year, 9, 1)
                 end = datetime(year, 11, 30)
+                logger.debug(f"Fall season: {start} - {end}")
             else:
-                # month
-                # or month range
                 if season in self.months:
-
+                    logger.debug(f"Single month: {season}")
                     start_month_index = self.months.index(season) + 1
                     end_month_index = (start_month_index + 1) % 12
                     year_end = year + (start_month_index + 1) // 12
                     start = datetime(year, start_month_index, 1)
                     end = datetime(year_end, end_month_index, 1) - timedelta(days=1)
-                else:
-                    if "-" in season:
-                        start_month, end_month = season.split("-")
-                        start_month_index = self.months.index(start_month) + 1
-                        end_month_index = self.months.index(end_month) + 1
-                        start = datetime(year, start_month_index, 1)
+                    logger.debug(f"Single month dates: {start} - {end}")
+                elif "-" in season:
+                    start_month, end_month = season.split("-")
+                    logger.debug(f"Month range: {start_month}-{end_month}")
+                    start_month_index = self.months.index(start_month) + 1
+                    end_month_index = self.months.index(end_month) + 1
+                    start = datetime(year, start_month_index, 1)
 
-                        # If end month is earlier in the year than start month, it means we crossed year boundary
-                        if end_month_index <= start_month_index:
-                            end = datetime(year + 1, end_month_index + 1, 1) - timedelta(days=1)
-                        else:
-                            end = datetime(year, end_month_index + 1, 1) - timedelta(days=1)
+                    if end_month_index <= start_month_index:
+                        end = datetime(year + 1, end_month_index + 1, 1) - timedelta(days=1)
+                        logger.debug(f"Year boundary crossed: {start} - {end}")
                     else:
-                        raise ValueError(f"Invalid season name: {name}")
+                        end = datetime(year, end_month_index + 1, 1) - timedelta(days=1)
+                        logger.debug(f"Same year range: {start} - {end}")
+                else:
+                    raise ValueError(f"Invalid season name: {name}")
 
         else:
-            raise ValueError(f"Invalid season name: {name}")
+            raise ValueError(f"Invalid season name format: {name}")
 
+        logger.debug(f"Final date range for {name}: {start} - {end}")
         return start, end
 
     def _init_season_metadata(self, season: Path):
@@ -562,7 +600,7 @@ class ProjectManager:
 
         # Only proceed with rename if needed
         if new_name != season.name:
-            logger.debug(f"Renaming season folder from {season.name} to {new_name}")
+            logger.info(f"Auto-renaming season folder from {season.name} to {new_name}")
 
             # Update latest symlink first if it points to this season
             latest_link = season.parent / "latest"
@@ -600,17 +638,23 @@ class ProjectManager:
         destination = self._get_mini_projects_destination(private=private)
         # - check if time to roll
         latest_season = self._get_latest_seasonal_folder(destination)
+        logger.debug(f"Found latest season: {latest_season}")
+
         if latest_season is None:
             # create new
+            logger.debug("No existing season found, creating new")
             latest_season = self._create_new_seasonal_folder(destination)
         elif self._time_to_roll_season(latest_season):
             # roll over
+            logger.info(f"Time to roll season {latest_season}")
             latest_season = self._create_new_seasonal_folder(
-                destination, int(latest_season.name.split("_")[1])
+                destination, season_num=int(latest_season.name.split("_")[1]) + 1
             )
 
         # - sanity check name
+        logger.debug(f"Updating season dates for {latest_season}")
         latest_season = self._update_season_dates(latest_season, end=datetime.now())
+        logger.debug(f"Final season folder: {latest_season}")
 
         return latest_season
 
@@ -751,7 +795,7 @@ class ProjectManager:
             Path to the rolled-up todo.md file if any todos were found, None otherwise.
         """
         if project_dir is None:
-            project_dir = self.discovery.get_current_project()
+            project_dir = self.discovery.get_current_project().path
 
         # Get todo directory
         todo_dir = project_dir / self.config.todo_subfolder

@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Optional
@@ -5,6 +6,7 @@ from typing import Annotated, Optional
 import pyperclip
 import typer
 from calmlib.utils import load_global_env
+from loguru import logger
 from rich.console import Console
 
 from dev_env.core.pm_utils.name_generator import (
@@ -24,6 +26,17 @@ app = typer.Typer()
 pd = ProjectDiscoverer()
 
 console = Console()
+
+
+def setup_logger(logger, level: str = "INFO"):
+    logger.remove()  # Remove default handler
+    logger.add(
+        sink=sys.stderr,
+        format="<level>{time:HH:mm:ss}</level> | <level>{message}</level>",
+        colorize=True,
+        level=level,
+    )
+
 
 # ------------------------------------------------------------
 # region New Project
@@ -77,8 +90,16 @@ def new_project(
             help="Open project in editor after creation",
         ),
     ] = None,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "--debug",
+            help="Enable debug logging",
+        ),
+    ] = False,
 ):
     """Create a new project in github and clone to experiments destination"""
+    setup_logger(logger, "DEBUG" if debug else "INFO")
     # Generate name if not provided
     if name is None:
         name = generate_project_name()
@@ -128,6 +149,13 @@ def new_mini_project(
             help="Print what would be done without actually doing it",
         ),
     ] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "--debug",
+            help="Enable debug logging",
+        ),
+    ] = False,
     editor: Annotated[
         Optional[EditorChoice],
         typer.Option(
@@ -138,6 +166,7 @@ def new_mini_project(
     ] = None,
 ):
     """Create a new mini-project in seasonal folder structure"""
+    setup_logger(logger, "DEBUG" if debug else "INFO")
     # Generate name if not provided
     if name is None:
         name = generate_project_name()
@@ -243,9 +272,17 @@ def new_todo(
             help="Look for mini-project directory instead of main project",
         ),
     ] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "--debug",
+            help="Enable debug logging",
+        ),
+    ] = False,
 ):
     """Create a new todo file in the project directory"""
     # Get project directory
+    setup_logger(logger, "DEBUG" if debug else "INFO")
     if project_name:
         # Search for project by name
         results = pd.quick_search(project_name)
@@ -328,8 +365,16 @@ def new_feature(
             help="Look for mini-project directory instead of main project",
         ),
     ] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "--debug",
+            help="Enable debug logging",
+        ),
+    ] = False,
 ):
     """Create a new feature directory in the project's dev/draft folder"""
+    setup_logger(logger, "DEBUG" if debug else "INFO")
     # Get project directory
     if project_name:
         # Search for project by name
