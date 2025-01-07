@@ -63,7 +63,7 @@ def new_project(
     name: Annotated[
         Optional[str],
         typer.Argument(
-            help="Name of the project",
+            help="Name of the project (if contains '-bot', will use botspot-template by default)",
         ),
     ] = None,
     template: Annotated[
@@ -71,7 +71,7 @@ def new_project(
         typer.Option(
             "--template",
             "-t",
-            help="Template name for the GitHub project.",
+            help="Template name for the GitHub project. If not provided, uses botspot-template for bot projects, python-project-template otherwise.",
             autocompletion=pm.complete_template_name,
         ),
     ] = None,

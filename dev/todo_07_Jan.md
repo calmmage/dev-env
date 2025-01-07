@@ -1,6 +1,6 @@
 ## Selected
 
-- [ ] make 'new project' feature auto-select botspot template if the 'bot' is in project
+- [x] make 'new project' feature auto-select botspot template if the 'bot' is in project
   name
 
 ## More todos

@@ -190,6 +190,15 @@ class ProjectManager:
             # If repo not found, no conflict
             return False
 
+    def _detect_bot_project(self, name: str) -> bool:
+        """Detect if project name indicates a bot project"""
+        return (
+            "-bot" in name.lower()
+            or "_bot" in name.lower()
+            or "bot-" in name.lower()
+            or "bot_" in name.lower()
+        )
+
     # endregion GitHub
 
     # ------------------------------------------------------------
@@ -204,17 +213,20 @@ class ProjectManager:
     def create_project(
         self,
         name: str,
-        # todo: put description into dev/idea.md or something.
         description: Optional[str] = None,
-        # private: bool = False, # - later - if we want to create private repos
         template: Optional[str] = None,
         dry_run: bool = False,
     ):
         """Create a new project in experiments using GitHub template."""
-        # 1. determine template
+        # Auto-detect bot projects and set template if none provided
         if template is None:
-            template = "python-project-template"
+            if self._detect_bot_project(name):
+                template = "botspot-template"
+                logger.info(f"Auto-detected bot project, using template: {template}")
+            else:
+                template = "python-project-template"
         else:
+            # Validate provided template name
             matches = self.complete_template_name(template)
             if len(matches) == 1:
                 template = matches[0][0]
