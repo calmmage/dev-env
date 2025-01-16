@@ -672,9 +672,27 @@ class ProjectManager:
 
     #     return project_dir
     def create_mini_project(
-        self, name: str, idea: Optional[str] = None, private: bool = False, dry_run: bool = False
+        self,
+        name: str,
+        idea: Optional[str] = None,
+        private: bool = False,
+        dry_run: bool = False,
+        template: Optional[str] = None,
     ) -> Path:
-        """Create a new mini-project in seasonal folder structure"""
+        """Create a new mini-project in seasonal folder structure
+
+        Args:
+            name: Project name
+            idea: Project idea/description
+            private: Whether to create in private repository
+            dry_run: If True, only print what would be done
+            template: Template name to use. If None, auto-detects based on name.
+        """
+        # Auto-detect bot projects and set template if none provided
+        if template is None and self._detect_bot_project(name):
+            template = "mini-botspot-template"
+            logger.info(f"Auto-detected bot project, using template: {template}")
+
         # - locate seasonal dir
         seasonal_folder = self.get_seasonal_folder(private=private)
 
@@ -698,18 +716,67 @@ class ProjectManager:
         if not dry_run:
             # Ensure draft directory exists
             draft_dir.mkdir(exist_ok=True, parents=True)
-            project_dir.mkdir(exist_ok=True)
 
-            # - put idea there
+            if template:
+                # Copy template contents
+                template_path = self._get_template_path(template)
+                if not template_path.exists():
+                    raise ValueError(f"Template not found: {template_path}")
+
+                import shutil
+
+                shutil.copytree(template_path, project_dir, dirs_exist_ok=True)
+
+                # Update project name in files if needed
+                self._update_template_project_name(project_dir, name)
+
+                logger.info(f"Initialized from template: {template}")
+            else:
+                # Create empty directory
+                project_dir.mkdir(exist_ok=True)
+
+            # - put idea there (append to existing idea.md if it exists)
             idea_file_path = project_dir / "idea.md"
-            idea_file_path.write_text(f"# {name}\n\n{idea}\n")
+            if idea:
+                if idea_file_path.exists():
+                    current_content = idea_file_path.read_text()
+                    if not current_content.strip():
+                        # File is empty, write new content
+                        idea_file_path.write_text(f"# {name}\n\n{idea}\n")
+                    else:
+                        # Append to existing content
+                        idea_file_path.write_text(f"{current_content}\n\n{idea}\n")
+                else:
+                    idea_file_path.write_text(f"# {name}\n\n{idea}\n")
         else:
             logger.info(f"Dry run: Would create directory at {project_dir}")
+            if template:
+                logger.info(f"Dry run: Would initialize from template: {template}")
             if idea:
                 logger.info(f"Dry run: Would create idea.md with content:\n# {name}\n\n{idea}\n")
 
-        # - print & copy path / open it.
         return project_dir
+
+    def _update_template_project_name(self, project_dir: Path, name: str):
+        """Update project name in template files"""
+        # Update _app.py if it exists
+        app_file = project_dir / "_app.py"
+        if app_file.exists():
+            content = app_file.read_text()
+            content = content.replace("Mini Botspot Template", name.replace("-", " ").title())
+            app_file.write_text(content)
+            logger.debug(f"Updated project name in {app_file}")
+
+    def _get_template_path(self, template_name: str) -> Path:
+        """Get the path to a template directory"""
+        # First check in the tool's templates directory
+        template_path = Path(__file__).parent / "templates" / template_name
+        if template_path.exists():
+            return template_path
+
+        raise ValueError(
+            f"Template not found: {template_name}. " f"Checked paths:\n" f"- {template_path}\n"
+        )
 
     # endregion Mini Project
 

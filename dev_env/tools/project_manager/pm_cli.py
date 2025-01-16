@@ -125,6 +125,12 @@ def new_project(
 # ------------------------------------------------------------
 
 
+def complete_mini_project_template(incomplete: str):
+    """Autocomplete mini-project template names"""
+    templates = ["mini-botspot-template"]  # Add more as needed
+    return [t for t in templates if t.startswith(incomplete)]
+
+
 @app.command(name="new-mini-project", help="Create a new mini-project in seasonal folder structure")
 def new_mini_project(
     name: Annotated[
@@ -139,6 +145,15 @@ def new_mini_project(
             "--description",
             "-d",
             help="Project description or idea",
+        ),
+    ] = None,
+    template: Annotated[
+        Optional[str],
+        typer.Option(
+            "--template",
+            "-t",
+            help="Template to use. If not provided, auto-detects based on name.",
+            autocompletion=complete_mini_project_template,
         ),
     ] = None,
     private: Optional[bool] = None,
@@ -175,7 +190,13 @@ def new_mini_project(
     if private is None:
         private = typer.confirm("Create in private repository?", default=False)
 
-    project_dir = pm.create_mini_project(name, description, private, dry_run=dry_run)
+    project_dir = pm.create_mini_project(
+        name,
+        description,
+        private,
+        dry_run=dry_run,
+        template=template,
+    )
 
     if not dry_run:
         console.print(f"✨ [green]Mini-project created at:[/] {project_dir}")
