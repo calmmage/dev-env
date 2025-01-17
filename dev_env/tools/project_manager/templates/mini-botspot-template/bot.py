@@ -1,18 +1,17 @@
-from os import getenv
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.filters import CommandStart
-from aiogram.types import Message
 from botspot.core.bot_manager import BotManager
 from calmlib.utils import setup_logger
 from dotenv import load_dotenv
-from router import app, router
+from loguru import logger
 
 # Load environment variables
 load_dotenv(Path(__file__).parent / ".env")
+
+from router import app, router
 
 # Initialize bot and dispatcher
 dp = Dispatcher()
@@ -24,6 +23,7 @@ bot = Bot(
 
 
 def main():
+    setup_logger(logger)
     # Setup bot manager with basic components
     bm = BotManager(bot=bot)
     bm.setup_dispatcher(dp)
