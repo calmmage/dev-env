@@ -102,6 +102,15 @@ class ProjectManager:
         matches = self._fuzzy_match_template_name(incomplete, candidates)
         return matches
 
+    templates_path = Path(__file__).parent / "templates"
+
+    def complete_mini_template_name(self, incomplete: str) -> list[Tuple[str, str]]:
+        """Complete mini-project template name with fuzzy matching."""
+        templates = [p for p in self.templates_path.glob("*") if p.is_dir()]
+        candidates = [(p.name, str(p)) for p in templates]
+        matches = self._fuzzy_match_template_name(incomplete, candidates)
+        return matches
+
     def _create_repo_from_template(
         self, name: str, template_name: str, dry_run: bool = False
     ) -> str:
@@ -136,6 +145,7 @@ class ProjectManager:
             return url
         else:
             logger.info(f"Dry run: would have created repository {params}")
+            return f"https://github.com/{username}/{name}"
 
     def _clone_github_repository(
         self, name: str, project_dir: Path, retries: int = 3, retry_delay: int = 5
@@ -282,93 +292,6 @@ class ProjectManager:
     # region Mini Project
     # ------------------------------------------------------------
 
-    # def _get_seasonal_folder(self) -> Path:
-    #     """Get or create appropriate seasonal folder based on count and time thresholds"""
-    #     now = datetime.now()
-    #     month_name = now.strftime("%b").lower()
-    #     year = now.year
-
-    #     # Get base seasonal directory
-    #     dest_key = (
-    #         self.config.mini_projects_destination
-    #         if self.config.mini_projects_destination
-    #         else "calmmage-private"
-    #     )
-    #     destination = self.destinations.get(dest_key)
-    #     seasonal_base = destination.path / "seasonal"
-
-    #     # Find current season folder
-    #     latest_link = seasonal_base / "latest"
-    #     if latest_link.exists() and latest_link.is_symlink():
-    #         current_folder = Path(os.readlink(latest_link))
-
-    #         # Count projects in current folder
-    #         project_count = sum(1 for p in current_folder.iterdir()
-    #                           if p.is_dir() and not p.is_symlink())
-
-    #         # Check if we need to roll over
-    #         need_new_folder = (
-    #             project_count >= self.config.seasonal_folder_threshold or
-    #             month_name not in current_folder.name  # Month changed
-    #         )
-
-    #         if not need_new_folder:
-    #             return current_folder
-
-    #     # Create new seasonal folder
-    #     existing_seasons = [p for p in seasonal_base.glob("season_*") if p.is_dir()]
-    #     season_num = len(existing_seasons) + 1
-
-    #     new_folder = seasonal_base / f"season_{season_num}_{month_name}_{year}"
-    #     new_folder.mkdir(parents=True, exist_ok=True)
-
-    #     # Update latest symlink
-    #     if latest_link.exists():
-    #         latest_link.unlink()
-    #     latest_link.symlink_to(new_folder)
-
-    #     return new_folder
-
-    # def _process_mini_project_name(self, name: Optional[str]) -> str:
-    #     """Process and validate mini project name"""
-    #     if name is None:
-    #         name = input("What mini-project do you want to create?\n").strip()
-
-    #     # Validate with AI
-    #     is_valid, suggestion = self._validate_name_with_ai(name)
-    #     if not is_valid and suggestion:
-    #         logger.info(f"Using AI suggested name: {suggestion}")
-    #         name = suggestion
-
-    #     return name
-
-    # def create_mini_project(
-    #     self,
-    #     name: Optional[str] = None,
-    #     idea: Optional[str] = None,
-    #     private: bool = True
-    # ) -> Path:
-    #     """Create a new mini-project in seasonal folder structure"""
-
-    #     seasonal_folder = self._get_seasonal_folder()
-    #     project_dir = seasonal_folder / name
-
-    #     # Create project directory
-    #     project_dir.mkdir(exist_ok=False)  # Fail if exists
-
-    #     # 3. Handle project idea
-    #     if idea is None and not private:  # Only prompt for public projects
-    #         idea = input("What's the project idea?\n").strip()
-
-    #     if idea:
-    #         idea_file = project_dir / "idea.md"
-    #         idea_file.write_text(f"# Project Idea\n\n{idea}\n")
-
-    #     # 4. Copy path to clipboard
-    #     abs_path = str(project_dir.absolute())
-    #     pyperclip.copy(abs_path)
-    #     logger.info(f"Created mini-project at: {abs_path} (copied to clipboard)")
-
     def _get_mini_projects_destination(self, private: bool = False) -> Destination:
         """Get mini-projects destination from config"""
         dest_key = (
@@ -378,7 +301,7 @@ class ProjectManager:
         )
         return self.destinations.get(dest_key)
 
-    def _get_latest_seasonal_folder(self, destination: Destination) -> Path:
+    def _get_latest_seasonal_folder(self, destination: Destination) -> Optional[Path]:
         """Get latest seasonal folder"""
         seasonal_base = destination.path / "seasonal"
 
@@ -689,9 +612,17 @@ class ProjectManager:
             template: Template name to use. If None, auto-detects based on name.
         """
         # Auto-detect bot projects and set template if none provided
-        if template is None and self._detect_bot_project(name):
-            template = "mini-botspot-template"
-            logger.info(f"Auto-detected bot project, using template: {template}")
+        if template is None:
+            if self._detect_bot_project(name):
+                template = "mini-botspot-template"
+                logger.info(f"Auto-detected bot project, using template: {template}")
+        else:
+            # Validate provided template name
+            matches = self.complete_mini_template_name(template)
+            if len(matches) == 1:
+                template = matches[0][0]
+            else:
+                raise ValueError(f"Ambiguous template name: {template}. Matches: {matches}")
 
         # - locate seasonal dir
         seasonal_folder = self.get_seasonal_folder(private=private)
