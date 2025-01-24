@@ -11,14 +11,14 @@ class ComponentConfig(BaseSettings):
         env_file_encoding = "utf-8"
 
 
-def init_component(**kwargs):
+def initialize(**kwargs):
     """Create necessary component objects"""
     config = ComponentConfig(**kwargs)
     # Initialize your component here
     pass
 
 
-def setup_component(**kwargs):
-    """Setup component with configuration"""
+def setup_dispatcher(dp):
+    """Setup dispatcher to support your component"""
     # Setup your component here
     pass

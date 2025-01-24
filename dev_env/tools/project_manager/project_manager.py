@@ -41,7 +41,11 @@ class ProjectManager:
             if env_path.exists():
                 from dotenv import load_dotenv
 
+                logger.debug(f"Loading GitHub token from {env_path}")
+
                 load_dotenv(env_path)
+            else:
+                logger.debug(f"No .env file found at {env_path}")
 
             token = os.getenv("GITHUB_API_TOKEN")
             if token is None:
