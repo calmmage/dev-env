@@ -29,6 +29,8 @@ class EditorChoice(str, Enum):
     PYCHARM_3 = "3"
     VSCODE = "vscode"
     VSCODE_4 = "4"
+    CD = "cd"
+    CD_5 = "5"
 
 
 choice_map = {
@@ -36,6 +38,7 @@ choice_map = {
     EditorChoice.CURSOR_2: EditorChoice.CURSOR,
     EditorChoice.PYCHARM_3: EditorChoice.PYCHARM,
     EditorChoice.VSCODE_4: EditorChoice.VSCODE,
+    EditorChoice.CD_5: EditorChoice.CD,
 }
 
 
