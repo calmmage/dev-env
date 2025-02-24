@@ -46,7 +46,8 @@ def prompt_editor_choice(editor: Optional[EditorChoice] = None) -> Optional[Edit
     """Prompt user to choose an editor if not provided."""
     if editor is None:
         prompt = "Open project in editor?\n"
-        prompt += "1 - copy\n2 - cursor\n3 - pycharm\n4 - vscode"
+        for k, v in choice_map.items():
+            prompt += k.value + " - " + v.value + "\n"
         editor = typer.prompt(
             prompt,
             type=EditorChoice,
@@ -96,13 +97,17 @@ example: "download all telegram messages" -> "load-telegram-messages"
 
 def open_in_editor(path: Path, editor: EditorChoice):
     """Open the project in the selected editor."""
+    import pyperclip
+
     path_str = str(path.absolute())
     editor = choice_map.get(editor, editor)
     if editor == EditorChoice.COPY or editor == EditorChoice.COPY_1:
-        import pyperclip
-
         pyperclip.copy(path_str)
         console.print(f"📋 Path copied to clipboard: {path_str}")
+    elif editor == EditorChoice.CD or editor == EditorChoice.CD_5:
+        # Change directory to the project path
+        pyperclip.copy("cd " + path_str)
+        console.print(f"📋 Cd command copied to clipboard: cd {path_str}")
     else:
         try:
             subprocess.run([editor.value, path_str], check=True)
