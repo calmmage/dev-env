@@ -1,2 +1,2 @@
-botspot>=0.2.19
+botspot>=0.4.0
 calmlib>=1.0.11
