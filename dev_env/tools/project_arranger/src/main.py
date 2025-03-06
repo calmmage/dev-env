@@ -547,6 +547,13 @@ class ProjectArranger:
 
             token = os.getenv("GITHUB_API_TOKEN")
             if token is None:
+                logger.info("GITHUB API TOKEN not found in env. Loading ~/.env")
+                from dotenv import load_dotenv
+
+                load_dotenv(Path("~/.env").expanduser())
+                token = os.getenv("GITHUB_API_TOKEN")
+
+            if token is None:
                 # raise ValueError('Missing GitHub API token')
                 logger.warning("Missing GitHub API token")
                 self._github_client = None
