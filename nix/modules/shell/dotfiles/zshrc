@@ -1,6 +1,8 @@
 # ------------------------------------------------------------------------------
 # verified
 
+export PATH=~/.npm-global/bin:$PATH
+
 # make sure the dev-env location is available
 [ -f ~/.dev-env-location ] && source ~/.dev-env-location
 

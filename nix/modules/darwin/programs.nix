@@ -62,6 +62,7 @@ let name = userConfig.full_name;
       # Any custom zsh code goes here
       source ~/.p10k.zsh
       source ~/.zshrc.local
+      source ~/.zshrc.custom
       source ~/.zsh-custom-functions
       source ~/.aliases
 
