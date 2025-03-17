@@ -563,15 +563,15 @@ def _install_all_test_dependencies(repo_path: Path):
     """Install all test dependencies in a single command."""
     packages = [
         "black[jupyter]",
-        "flake8",
-        "flake8-docstrings",
-        "flake8-bugbear",
-        "flake8-comprehensions",
-        "flake8-simplify",
+        # flake8 and extensions removed as requested
         "isort",
         "vulture",
         "pytest-cov",
+        "pytest-asyncio",
+        "pytest-mock",
         "pyupgrade",
+        "pyright",
+        "ruff",
     ]
     try:
         cmd = ["poetry", "add", "--group", "test"] + packages
@@ -579,6 +579,20 @@ def _install_all_test_dependencies(repo_path: Path):
         logger.info("Successfully installed all test dependencies")
     except subprocess.CalledProcessError as e:
         logger.error(f"Failed to install test dependencies: {e}")
+
+
+def _add_pyright(repo_path: Path):
+    """Add pyright configuration to the repository."""
+    content = dedent(
+        """
+        - repo: https://github.com/RobertCraigie/pyright-python
+          rev: v1.1.350
+          hooks:
+            - id: pyright
+              additional_dependencies: ["pyright==1.1.350"]
+        """
+    )
+    _add_precommit_tool_if_missing(repo_path, "pyright", content)
 
 
 def _add_precommit(repo_path: Path):
@@ -589,10 +603,12 @@ def _add_precommit(repo_path: Path):
     _add_nbstripout(repo_path)
     _add_black(repo_path)
     _add_vulture(repo_path)
-    _add_flake8(repo_path)
+    # Flake8 removed as requested
     _add_isort(repo_path)
     _add_codecov(repo_path)
     _add_pyupgrade(repo_path)
+    _add_pyright(repo_path)
+    _add_ruff(repo_path)
     _install_precommit(repo_path)
 
 
