@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from calmlib.utils.gpt_utils import query_gpt
+from calmlib.utils.llm_utils import query_gpt
 from loguru import logger
 from pydantic import BaseModel, Field
 from rich.console import Console
