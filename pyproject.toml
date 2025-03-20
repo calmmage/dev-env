@@ -31,6 +31,7 @@ aiogram = "*"
 
 typer-cli = {version =  "0.13.1", extras = ["all"]}
 pyperclip = "^1.9.0"
+nest-asyncio = "^1.6.0"
 
 [tool.poetry.group.extras.dependencies]
 # dependencies for extra features
