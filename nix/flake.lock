@@ -8,32 +8,29 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1723293904,
-        "narHash": "sha256-b+uqzj+Wa6xgMS9aNbX4I+sXeb5biPDi39VgvSFqFvU=",
-        "owner": "ryantm",
-        "repo": "agenix",
-        "rev": "f6291c5935fdc4e0bef208cfc0dcab7e3f7a1c41",
-        "type": "github"
+        "lastModified": 1736955230,
+        "narHash": "sha256-uenf8fv2eG5bKM8C/UvFaiJMZ4IpUFaQxk9OH5t/1gA=",
+        "type": "tarball",
+        "url": "https://github.com/ryantm/agenix/archive/master.tar.gz"
       },
       "original": {
-        "owner": "ryantm",
-        "repo": "agenix",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/ryantm/agenix/archive/master.tar.gz"
       }
     },
     "brew-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1731323744,
-        "narHash": "sha256-SxUQm4cTHcaoPQHoXe26ZV8cZiMWBGow8MjE4L+MckM=",
+        "lastModified": 1740943974,
+        "narHash": "sha256-2lRLfb6qwoUAsX/XtYmt/ETxtGid6/VaBeFiRsoVMtU=",
         "owner": "Homebrew",
         "repo": "brew",
-        "rev": "254bf3fe9d8fa2e1b2fb55dbcf535b2d870180c4",
+        "rev": "64efed206deeb9c2304d9e5b5910dcbf0a509c15",
         "type": "github"
       },
       "original": {
         "owner": "Homebrew",
-        "ref": "4.4.5",
+        "ref": "4.4.23",
         "repo": "brew",
         "type": "github"
       }
@@ -67,18 +64,14 @@
         ]
       },
       "locked": {
-        "lastModified": 1733570843,
-        "narHash": "sha256-sQJAxY1TYWD1UyibN/FnN97paTFuwBw3Vp3DNCyKsMk=",
-        "owner": "LnL7",
-        "repo": "nix-darwin",
-        "rev": "a35b08d09efda83625bef267eb24347b446c80b8",
-        "type": "github"
+        "lastModified": 1741126078,
+        "narHash": "sha256-ng0a4cIq3c9E3iGKomlwqKzVYs2RLOzQho2U1Mc2sqU=",
+        "type": "tarball",
+        "url": "https://github.com/LnL7/nix-darwin/archive/nix-darwin-24.11.tar.gz"
       },
       "original": {
-        "owner": "LnL7",
-        "ref": "master",
-        "repo": "nix-darwin",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/LnL7/nix-darwin/archive/nix-darwin-24.11.tar.gz"
       }
     },
     "disko": {
@@ -88,40 +81,19 @@
         ]
       },
       "locked": {
-        "lastModified": 1733168902,
-        "narHash": "sha256-8dupm9GfK+BowGdQd7EHK5V61nneLfr9xR6sc5vtDi0=",
-        "owner": "nix-community",
-        "repo": "disko",
-        "rev": "785c1e02c7e465375df971949b8dcbde9ec362e5",
-        "type": "github"
+        "lastModified": 1741786315,
+        "narHash": "sha256-VT65AE2syHVj6v/DGB496bqBnu1PXrrzwlw07/Zpllc=",
+        "type": "tarball",
+        "url": "https://github.com/nix-community/disko/archive/master.tar.gz"
       },
       "original": {
-        "owner": "nix-community",
-        "repo": "disko",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/nix-community/disko/archive/master.tar.gz"
       }
     },
     "flake-utils": {
       "inputs": {
         "systems": "systems_2"
-      },
-      "locked": {
-        "lastModified": 1710146030,
-        "narHash": "sha256-SZ5L6eA7HJ/nmkzGG7/ISclqe6oZdOZTNoesiInkXPQ=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "b1d9ab70662946ef0850d488da1c9019f3a9752a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "flake-utils_2": {
-      "inputs": {
-        "systems": "systems_3"
       },
       "locked": {
         "lastModified": 1726560853,
@@ -165,66 +137,53 @@
         ]
       },
       "locked": {
-        "lastModified": 1726989464,
-        "narHash": "sha256-Vl+WVTJwutXkimwGprnEtXc/s/s8sMuXzqXaspIGlwM=",
-        "owner": "nix-community",
-        "repo": "home-manager",
-        "rev": "2f23fa308a7c067e52dfcc30a0758f47043ec176",
-        "type": "github"
+        "lastModified": 1739757849,
+        "narHash": "sha256-Gs076ot1YuAAsYVcyidLKUMIc4ooOaRGO0PqTY7sBzA=",
+        "type": "tarball",
+        "url": "https://github.com/nix-community/home-manager/archive/release-24.11.tar.gz"
       },
       "original": {
-        "owner": "nix-community",
-        "ref": "release-24.05",
-        "repo": "home-manager",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/nix-community/home-manager/archive/release-24.11.tar.gz"
       }
     },
     "homebrew-bundle": {
       "flake": false,
       "locked": {
-        "lastModified": 1733909155,
-        "narHash": "sha256-9S9OSUGdKY4zcmtEq4QMo+B/D3Y4JfYddHHR1yYsmWU=",
-        "owner": "homebrew",
-        "repo": "homebrew-bundle",
-        "rev": "fbce9c2f3a2b2fa54ce37a597af2d6340ec6fafc",
-        "type": "github"
+        "lastModified": 1741778178,
+        "narHash": "sha256-a9VsX1TEcSuXDTQvZ1Y5s0QMcrOice+jP6YrNuBf7eM=",
+        "type": "tarball",
+        "url": "https://github.com/homebrew/homebrew-bundle/archive/master.tar.gz"
       },
       "original": {
-        "owner": "homebrew",
-        "repo": "homebrew-bundle",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/homebrew/homebrew-bundle/archive/master.tar.gz"
       }
     },
     "homebrew-cask": {
       "flake": false,
       "locked": {
-        "lastModified": 1734001879,
-        "narHash": "sha256-jADMzD4+iL8jnPUmmK1C/8VAGNyhVoeWazKHA2RN0UY=",
-        "owner": "homebrew",
-        "repo": "homebrew-cask",
-        "rev": "8b7c694292abea146c73c739e234288a7097bb4c",
-        "type": "github"
+        "lastModified": 1741791574,
+        "narHash": "sha256-dTzXi/9uQxhjmAvwPQEceOsprTcJ+F83OqYVLK39a70=",
+        "type": "tarball",
+        "url": "https://github.com/homebrew/homebrew-cask/archive/master.tar.gz"
       },
       "original": {
-        "owner": "homebrew",
-        "repo": "homebrew-cask",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/homebrew/homebrew-cask/archive/master.tar.gz"
       }
     },
     "homebrew-core": {
       "flake": false,
       "locked": {
-        "lastModified": 1733997373,
-        "narHash": "sha256-+nQNbPLuS5CmZ865scp5R8ELL3wL0cPBiXunb/s4Zkw=",
-        "owner": "homebrew",
-        "repo": "homebrew-core",
-        "rev": "334d11b99803f986f44a328ab9c08bd3bed67461",
-        "type": "github"
+        "lastModified": 1741791216,
+        "narHash": "sha256-ZOd/c8lMBtEU8AioQCFZvqq5BAjEMNAT62Z/gESpM5s=",
+        "type": "tarball",
+        "url": "https://github.com/homebrew/homebrew-core/archive/master.tar.gz"
       },
       "original": {
-        "owner": "homebrew",
-        "repo": "homebrew-core",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/homebrew/homebrew-core/archive/master.tar.gz"
       }
     },
     "nix-darwin": {
@@ -269,22 +228,18 @@
     "nix-homebrew": {
       "inputs": {
         "brew-src": "brew-src",
-        "flake-utils": "flake-utils",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1732145543,
-        "narHash": "sha256-VRQh/lvCSko9YV7haXyPt7DSp+EkgjjBv/9U4cY9c50=",
-        "owner": "zhaofengli-wip",
-        "repo": "nix-homebrew",
-        "rev": "ac3945ee614f69ab89c6935b3f0567028de5f012",
-        "type": "github"
+        "lastModified": 1741032878,
+        "narHash": "sha256-s9YOBz8vAxPlI4wORma3D7km8wZOEe/7Hg/u3brmwUQ=",
+        "type": "tarball",
+        "url": "https://github.com/zhaofengli-wip/nix-homebrew/archive/master.tar.gz"
       },
       "original": {
-        "owner": "zhaofengli-wip",
-        "repo": "nix-homebrew",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/zhaofengli-wip/nix-homebrew/archive/master.tar.gz"
       }
     },
     "nixpkgs": {
@@ -305,18 +260,14 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1733749988,
-        "narHash": "sha256-+5qdtgXceqhK5ZR1YbP1fAUsweBIrhL38726oIEAtDs=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "bc27f0fde01ce4e1bfec1ab122d72b7380278e68",
-        "type": "github"
+        "lastModified": 1741708242,
+        "narHash": "sha256-cNRqdQD4sZpN7JLqxVOze4+WsWTmv2DGH0wNCOVwrWc=",
+        "type": "tarball",
+        "url": "https://github.com/nixos/nixpkgs/archive/nixpkgs-unstable.tar.gz"
       },
       "original": {
-        "owner": "nixos",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/nixos/nixpkgs/archive/nixpkgs-unstable.tar.gz"
       }
     },
     "nixpkgs_2": {
@@ -350,42 +301,35 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1733730953,
-        "narHash": "sha256-dlK7n82FEyZlHH7BFHQAM5tua+lQO1Iv7aAtglc1O5s=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "7109b680d161993918b0a126f38bc39763e5a709",
-        "type": "github"
+        "lastModified": 1741600792,
+        "narHash": "sha256-yfDy6chHcM7pXpMF4wycuuV+ILSTG486Z/vLx/Bdi6Y=",
+        "type": "tarball",
+        "url": "https://github.com/nixos/nixpkgs/archive/nixos-24.11.tar.gz"
       },
       "original": {
-        "owner": "nixos",
-        "ref": "nixos-24.05",
-        "repo": "nixpkgs",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/nixos/nixpkgs/archive/nixos-24.11.tar.gz"
       }
     },
     "poetry2nix": {
       "inputs": {
-        "flake-utils": "flake-utils_2",
+        "flake-utils": "flake-utils",
         "nix-github-actions": "nix-github-actions",
         "nixpkgs": [
           "nixpkgs"
         ],
-        "systems": "systems_4",
+        "systems": "systems_3",
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1731205797,
-        "narHash": "sha256-F7N1mxH1VrkVNHR3JGNMRvp9+98KYO4b832KS8Gl2xI=",
-        "owner": "nix-community",
-        "repo": "poetry2nix",
-        "rev": "f554d27c1544d9c56e5f1f8e2b8aff399803674e",
-        "type": "github"
+        "lastModified": 1741790785,
+        "narHash": "sha256-nzgO/ZCSBzWjbMkYDxG+yl9Z2eGbCgQu06Oku3ir5D4=",
+        "type": "tarball",
+        "url": "https://github.com/nix-community/poetry2nix/archive/master.tar.gz"
       },
       "original": {
-        "owner": "nix-community",
-        "repo": "poetry2nix",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/nix-community/poetry2nix/archive/master.tar.gz"
       }
     },
     "root": {
@@ -446,20 +390,6 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
-      }
-    },
-    "systems_4": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "id": "systems",
-        "type": "indirect"
       }
     },
     "treefmt-nix": {

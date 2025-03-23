@@ -9,7 +9,8 @@ alias update-dev-env='python3 $DEV_ENV_PATH/tools/dev_env_updater.py'
 
 # alias help="echo \"$HELP\""
 # open code with sublime
-alias subl='open -a Sublime\ Text'
+#alias subl='open -a Sublime\ Text'
+#this is created instead by ln -s "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" /usr/local/bin/subl
 # open dir with vscode
 alias code='open -a Visual\ Studio\ Code'
 
