@@ -78,29 +78,30 @@ in
   };
 
   # Fully declarative dock using the latest from Nix Store
-  local = { 
-    dock = {
-      enable = true;
-      entries = [
-      # todo: update a list of apps
-        { path = "/System/Applications/System Settings.app/"; }
-        { path = "/Applications/Raycast.app/"; }
-        # { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
-#        {
-#          path = toString myEmacsLauncher;
-#          section = "others";
-#        }
-        {
-          path = "${config.users.users.${user}.home}/.local/share/";
-          section = "others";
-          options = "--sort name --view grid --display folder";
-        }
-        {
-          path = "${config.users.users.${user}.home}/Downloads";
-          section = "others";
-          options = "--sort name --view grid --display stack";
-        }
-      ];
-    };
-  };
+  # todo: re-enable later - hope they fix syntax bullshit
+  # local = { 
+  #   dock = {
+  #     enable = true;
+  #     entries = [
+  #     # todo: update a list of apps
+  #       { path = "/System/Applications/System Settings.app/"; }
+  #       { path = "/Applications/Raycast.app/"; }
+  #       # { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
+  #       # {
+  #       #   path = toString myEmacsLauncher;
+  #       #   section = "others";
+  #       # }
+  #       # {
+  #       #   path = "${config.users.users.${user}.home}/.local/share/";
+  #       #   section = "others";
+  #       #   options = "--sort name --view grid --display folder";
+  #       # }
+  #       # {
+  #       #   path = "${config.users.users.${user}.home}/Downloads";
+  #       #   section = "others";
+  #       #   options = "--sort name --view grid --display stack";
+  #       # }
+  #     ];
+  #   };
+  # };
 }

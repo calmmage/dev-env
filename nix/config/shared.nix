@@ -229,7 +229,7 @@
     # "virtualenv"
 
     # mac-specific
-    "dockutil"
+    # "dockutil"
 
     # CLI Tools
     # utils

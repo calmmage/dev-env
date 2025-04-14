@@ -132,32 +132,32 @@ in
         AppleShowAllFiles = true;
         NSNavPanelExpandedStateForSaveMode = true;
       };
+      # todo: re-enable later when issues are fixed
+#       dock = {
+#         autohide = true;
+#         show-recents = true;
+#         launchanim = true;
+#         orientation = "bottom";
+#         tilesize = 36;
+#         largesize = 128;
 
-      dock = {
-        autohide = true;
-        show-recents = true;
-        launchanim = true;
-        orientation = "bottom";
-        tilesize = 36;
-        largesize = 128;
+#         magnification = true;
+#         # expose-group-apps = userConfig.dock.settings.expose_group_by_app;
+#         mru-spaces = false; # disable reordering spaces
+#         minimize-to-application = true;
+#         show-process-indicators = true;
 
-        magnification = true;
-        # expose-group-apps = userConfig.dock.settings.expose_group_by_app;
-        mru-spaces = false; # disable reordering spaces
-        minimize-to-application = true;
-        show-process-indicators = true;
-
-#        autohide = userConfig.dock.settings.autohide;
-#        largesize = userConfig.dock.settings.large_size;
-#        magnification = userConfig.dock.settings.magnification;
-#        tilesize = userConfig.dock.settings.tile_size;
-#        # orientation = userConfig.dock.settings.position;
-#        # expose-group-apps = userConfig.dock.settings.expose_group_by_app;
-#        mru-spaces = userConfig.dock.settings.mru_spaces;
-#        minimize-to-application = userConfig.dock.settings.minimize_to_application;
-#        show-recents = userConfig.dock.settings.show_recent_apps;
-#        show-process-indicators = userConfig.dock.settings.show_process_indicators;
-      };
+# #        autohide = userConfig.dock.settings.autohide;
+# #        largesize = userConfig.dock.settings.large_size;
+# #        magnification = userConfig.dock.settings.magnification;
+# #        tilesize = userConfig.dock.settings.tile_size;
+# #        # orientation = userConfig.dock.settings.position;
+# #        # expose-group-apps = userConfig.dock.settings.expose_group_by_app;
+# #        mru-spaces = userConfig.dock.settings.mru_spaces;
+# #        minimize-to-application = userConfig.dock.settings.minimize_to_application;
+# #        show-recents = userConfig.dock.settings.show_recent_apps;
+# #        show-process-indicators = userConfig.dock.settings.show_process_indicators;
+#       };
 
       finder = {
         AppleShowAllExtensions = false;
