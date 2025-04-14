@@ -562,9 +562,9 @@ def _add_nbstripout(repo_path: Path):
 def _install_all_test_dependencies(repo_path: Path):
     """Install all test dependencies in a single command."""
     packages = [
-        "black[jupyter]",
+        # "black[jupyter]",
         # flake8 and extensions removed as requested
-        "isort",
+        # "isort",
         "vulture",
         "pytest-cov",
         "pytest-asyncio",
@@ -601,10 +601,7 @@ def _add_precommit(repo_path: Path):
 
     # Then add configurations
     _add_nbstripout(repo_path)
-    _add_black(repo_path)
     _add_vulture(repo_path)
-    # Flake8 removed as requested
-    _add_isort(repo_path)
     _add_codecov(repo_path)
     _add_pyupgrade(repo_path)
     _add_pyright(repo_path)
