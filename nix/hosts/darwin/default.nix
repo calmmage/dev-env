@@ -83,7 +83,7 @@ in
 
     systemPath = [
       "/opt/homebrew/bin"
-      # "$DEV_ENV_PATH/tools/" - remove for now - can't get it to work
+      # "$STABLE_DEV_ENV_DIR/tools/" - remove for now - can't get it to work
     ];
     pathsToLink = [ "/Applications" ];
   };

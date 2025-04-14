@@ -90,7 +90,12 @@ nixup
 What it does:
 1) clones dev_env repo to ~/.calmmage/dev_env
 2) sets up zshrc and aliases (add source to ~/.zshrc)
-3) sets up env variables DEV_ENV_PATH and CALMMAGE_DEV_ENV_PATH
+3) sets up env variables STABLE_DEV_ENV_DIR, STABLE_VENV_PATH, ACTIVE_DEV_ENV_DIR and ACTIVE_VENV_PATH
+
+- STABLE_DEV_ENV_DIR  - "~/.calmmage/dev_env"
+- STABLE_VENV_PATH - "~/.calmmage/dev_env/.venv"
+- ACTIVE_DEV_ENV_DIR - this repo
+- ACTIVE_VENV_PATH - this_repo/.venv
 
 # Dev
 

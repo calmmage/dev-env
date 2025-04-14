@@ -28,10 +28,16 @@ set -e
 setup_persistent_location() {
     local location_file="$HOME/.dev-env-location"
     if [ ! -f "$location_file" ]; then
-        echo "Please enter target dev-env location (default: $HOME/.dev-env):"
+        echo "Please enter target dev-env location (default: $HOME/.calmmage/dev-env):"
         read -r user_location
-        DEV_ENV_PATH=${user_location:-$HOME/.dev-env}
-        echo "export DEV_ENV_PATH=\"$DEV_ENV_PATH\"" > "$location_file"
+        STABLE_DEV_ENV_DIR=${user_location:-$HOME/.calmmage/dev-env}
+        ACTIVE_DEV_ENV_DIR="$HOME/work/projects/dev-env"
+        STABLE_VENV_PATH="$STABLE_DEV_ENV_DIR/.venv"
+        ACTIVE_VENV_PATH="$ACTIVE_DEV_ENV_DIR/.venv"
+        echo "export STABLE_DEV_ENV_DIR=\"$STABLE_DEV_ENV_DIR\"" > "$location_file"
+        echo "export ACTIVE_DEV_ENV_DIR=\"$ACTIVE_DEV_ENV_DIR\"" >> "$location_file"
+        echo "export STABLE_VENV_PATH=\"$STABLE_VENV_PATH\"" >> "$location_file"
+        echo "export ACTIVE_VENV_PATH=\"$ACTIVE_VENV_PATH\"" >> "$location_file"
     fi
     source "$location_file"
 }
@@ -105,15 +111,15 @@ ensure_dev_env_repo() {
     echo "Ensuring dev-env repository is present and up to date..."
     python3 "$updater_script"
     
-    if [ ! -d "$DEV_ENV_PATH" ]; then
-        echo "Error: Failed to setup dev-env repository at $DEV_ENV_PATH"
+    if [ ! -d "$STABLE_DEV_ENV_DIR" ]; then
+        echo "Error: Failed to setup dev-env repository at $STABLE_DEV_ENV_DIR"
         exit 1
     fi
 }
 
 setup_nix_configuration() {
     echo "Setting up Nix configuration..."
-    cd "$DEV_ENV_PATH/nix"
+    cd "$STABLE_DEV_ENV_DIR/nix"
     
     # TODO: guide the user through setting up user.yaml config file
     # # Run configuration script

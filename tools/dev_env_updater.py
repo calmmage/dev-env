@@ -15,12 +15,10 @@ def get_dev_env_path():
     """Get dev-env path by sourcing ~/.dev-env-location"""
     location_file = Path.home() / ".dev-env-location"
     if not location_file.exists():
-        raise RuntimeError(
-            "Dev-env location not configured. Please run bootstrap.sh first"
-        )
+        raise RuntimeError("Dev-env location not configured. Please run bootstrap.sh first")
 
     # Source the file and get the environment variable
-    cmd = f"source {location_file} && echo $DEV_ENV_PATH"
+    cmd = f"source {location_file} && echo $STABLE_DEV_ENV_DIR"
     try:
         dev_env_path = check_output(["bash", "-c", cmd], text=True).strip()
         return Path(dev_env_path)

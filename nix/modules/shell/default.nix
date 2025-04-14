@@ -14,7 +14,7 @@ in
     CLICOLOR = 1;
     EDITOR = "subl";
     # PATH = "$PATH:$HOME/bin";
-    PATH = "$PATH:$HOME/bin:$DEV_ENV_PATH/.venv/bin";  # Add Poetry env to PATH
+    PATH = "$PATH:$HOME/bin:$STABLE_VENV_PATH/bin";  # Add Poetry env to PATH
   };
 
   imports = [
