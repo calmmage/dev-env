@@ -1,4 +1,3 @@
-
 # tools 
 # Alias for repo fixer tool
 # alias fix_repo="$STABLE_DEV_ENV_DIR/.venv/bin/typer $DEV_ENV_PATH/tools/repo_fixer/repo_fixer.py run"
@@ -73,6 +72,8 @@ alias pm="typer $STABLE_DEV_ENV_DIR/dev_env/tools/project_manager/pm_cli.py run"
 
 alias nt="typer $STABLE_DEV_ENV_DIR/dev_env/tools/project_manager/pm_cli.py run new-todo"
 alias nf="typer $STABLE_DEV_ENV_DIR/dev_env/tools/project_manager/pm_cli.py run new-feature"
+
+alias js='typer $ACTIVE_DEV_ENV_DIR/tools/job_scheduler/job_manager_client.py run'
 
 # Connect to the Hetzner instance
 alias hetzner="ssh root@5.75.226.237"
