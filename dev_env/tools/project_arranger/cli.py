@@ -4,12 +4,12 @@ from typing import Dict, List
 
 import git
 import typer
+from calmlib.utils import fix_path
 from dotenv import load_dotenv
 from loguru import logger
 from rich.console import Console
 from rich.table import Table
 
-from calmlib.utils import fix_path
 from dev_env.tools.project_arranger.src.main import Group, Project, ProjectArranger
 
 # from .old.main import ProjectArranger
@@ -49,6 +49,10 @@ class Destination:
         if not self.path.exists():
             self.path.mkdir(parents=True)
         try:
+            # Ensure project path exists before attempting move
+            if project.path is None:
+                logger.error(f"Cannot move project {project.name}: path is None.")
+                return
             location = self.get_location(project.name)
             project.path.rename(location)
         except Exception as e:
@@ -327,6 +331,67 @@ def _execute_actions(actions: Dict[str, Dict]):
                 elif action == Action.REMOVE:
                     status.update(f"[bold red]Moving {name} to to_remove...")
                     destination = destinations["to_remove"]
+
+                    # --- Farewell commit ---
+                    if project.path and project.is_git_repo():
+                        try:
+                            repo = git.Repo(project.path)
+                            # Check if repo has origin remote
+                            if "origin" in repo.remotes:
+                                logger.info(f"Performing farewell commit for {name}...")
+                                # Create and checkout new branch
+                                farewell_branch = "farewell-commit"
+                                try:
+                                    # Delete branch if it exists locally
+                                    repo.delete_head(farewell_branch, force=True)
+                                except git.GitCommandError:
+                                    pass  # Branch didn't exist, ignore
+                                new_branch = repo.create_head(farewell_branch)
+                                new_branch.checkout()
+
+                                # Stage all changes
+                                repo.git.add(A=True)
+
+                                # Commit if there are changes
+                                if repo.is_dirty(index=True, working_tree=False):
+                                    repo.index.commit(
+                                        "Final commit before archival by project-arranger"
+                                    )
+                                    logger.info(
+                                        f"Committed changes to {farewell_branch} for {name}"
+                                    )
+
+                                    # Push the new branch
+                                    try:
+                                        repo.git.push(
+                                            "origin", farewell_branch, force=True
+                                        )  # Use force push in case branch exists remotely
+                                        logger.info(
+                                            f"Pushed {farewell_branch} to origin for {name}"
+                                        )
+                                    except git.GitCommandError as push_err:
+                                        logger.warning(
+                                            f"Failed to push farewell branch for {name}: {push_err}"
+                                        )
+                                else:
+                                    logger.info(
+                                        f"No changes to commit for {name} in {farewell_branch}"
+                                    )
+
+                                # Optionally switch back to the original branch if needed,
+                                # but since we're removing it, it might not matter.
+                                # Consider adding repo.heads.main.checkout() or similar if necessary.
+
+                            else:
+                                logger.warning(
+                                    f"Skipping farewell commit for {name}: No 'origin' remote found."
+                                )
+                        except Exception as git_err:
+                            logger.error(
+                                f"Error during farewell git operations for {name}: {git_err}"
+                            )
+                    # --- End Farewell commit ---
+
                     destination.move(project)
                     logger.info(f"Moved {name} to to_remove")
 
