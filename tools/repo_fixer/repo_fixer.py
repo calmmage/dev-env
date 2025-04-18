@@ -12,7 +12,7 @@ import typer
 import yaml
 from calmlib.utils import fix_path
 from loguru import logger
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 app = typer.Typer()
 
@@ -527,7 +527,7 @@ def _install_precommit(repo_path: Path):
         return
 
     try:
-        subprocess.run(["pre-commit", "install"], cwd=repo_path, check=True)
+        subprocess.run(["poetry", "run", "pre-commit", "install"], cwd=repo_path, check=True)
         logger.info("Pre-commit hooks installed successfully.")
     except subprocess.CalledProcessError as e:
         logger.error(f"Failed to install pre-commit hooks: {e}")
@@ -561,6 +561,13 @@ def _add_nbstripout(repo_path: Path):
 
 def _install_all_test_dependencies(repo_path: Path):
     """Install all test dependencies in a single command."""
+    # first - just make sure poetry is installed at all..
+    try:
+        subprocess.run(["poetry", "install"], check=True, cwd=repo_path)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to install poetry: {e}")
+        raise
+
     packages = [
         # "black[jupyter]",
         # flake8 and extensions removed as requested
@@ -586,10 +593,12 @@ def _add_pyright(repo_path: Path):
     content = dedent(
         """
         - repo: https://github.com/RobertCraigie/pyright-python
-          rev: v1.1.350
+          rev: v1.1.399
           hooks:
             - id: pyright
-              additional_dependencies: ["pyright==1.1.350"]
+              additional_dependencies: ["pyright==1.1.399"]
+              args:
+                - "--venvpath=."     # directory that *contains* the venv
         """
     )
     _add_precommit_tool_if_missing(repo_path, "pyright", content)
