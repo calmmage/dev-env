@@ -65,9 +65,6 @@ let name = userConfig.full_name;
       source ~/.zshrc.custom
       source ~/.zsh-custom-functions
       source ~/.aliases
-
-      # Initialize zoxide
-      eval "$(zoxide init zsh)"
     '';
 
     initExtraFirst = ''
@@ -86,15 +83,6 @@ let name = userConfig.full_name;
 
       # Ripgrep alias
       alias search=rg -p --glob '!node_modules/*'  $@
-
-      #  # Emacs is my editor
-      #  export ALTERNATE_EDITOR=""
-      #  export EDITOR="emacsclient -t"
-      #  export VISUAL="emacsclient -c -a emacs"
-
-      #  e() {
-      #      emacsclient -t "$@"
-      #  }
 
       # nix shortcuts
       shell() {
