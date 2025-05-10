@@ -1,7 +1,7 @@
 # tools 
 # Alias for repo fixer tool
 # alias fix_repo="$STABLE_DEV_ENV_DIR/.venv/bin/typer $DEV_ENV_PATH/tools/repo_fixer/repo_fixer.py run"
-alias fix_repo="typer $STABLE_DEV_ENV_DIR/tools/repo_fixer/repo_fixer.py run"
+alias fix_repo="typer $STABLE_DEV_ENV_DIR/dev_env/tools/repo_fixer/repo_fixer.py run"
 
 # Add an alias to update dev-env
 alias update-dev-env='python3 $STABLE_DEV_ENV_DIR/tools/dev_env_updater.py'
@@ -50,10 +50,10 @@ alias at='add_tool'
 alias cpa="copy_absolute_path"
 
 # run python script with $DEV_ENV_PATH poetry environment
-# alias runp="run_with_poetry"
+alias runp="run_with_poetry"
 
-# alias lnsafe="runp $STABLE_DEV_ENV_DIR/dev_env/tools/lnsafe.py"
-alias lnsafe="python $STABLE_DEV_ENV_DIR/tools/lnsafe.py"
+alias lnsafe="runp $STABLE_DEV_ENV_DIR/dev_env/tools/lnsafe.py"
+# alias lnsafe="python $STABLE_DEV_ENV_DIR/dev_env/tools/lnsafe.py"
 # todo: can I make it so this is unnecessary?
 alias typer=$STABLE_VENV_PATH/bin/typer
 alias ipython=$STABLE_VENV_PATH/bin/ipython

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dev-env"
-version = "0.3.1"
+version = "0.3.2"
 description = ""
 authors = ["Petr Lavrov <calmmage@gmail.com>"]
 readme = "README.md"
@@ -108,6 +108,10 @@ freezegun = "^1.5.1"
 
 #[tool.poetry.group.docs.dependencies]
 ##mkdocs = ">=1.6"
+pytest-asyncio = "^0.26.0"
+pytest-mock = "^3.14.0"
+pyright = "^1.1.400"
+ruff = "^0.11.9"
 
 [tool.poetry.group.dev.dependencies]
 ## dev / research utils

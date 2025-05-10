@@ -4,9 +4,8 @@ from pathlib import Path
 from textwrap import dedent
 
 import pytest
-from loguru import logger
 
-from tools.repo_fixer.repo_fixer import _add_precommit_tool_if_missing
+from dev_env.tools.repo_fixer.repo_fixer import _add_precommit_tool_if_missing
 
 
 @pytest.fixture

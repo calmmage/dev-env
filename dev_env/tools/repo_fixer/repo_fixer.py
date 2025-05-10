@@ -38,7 +38,9 @@ class Settings(BaseSettings):
             config_data = yaml.safe_load(file)
 
         # Expand user directory for each path in root_paths
-        config_data["root_paths"] = [Path(p).expanduser() for p in config_data["root_paths"]]
+        config_data["root_paths"] = [
+            Path(p).expanduser() for p in config_data["root_paths"]
+        ]
 
         return cls(**config_data)
 
@@ -78,7 +80,9 @@ def _add_precommit_tool_if_missing(repo_path: Path, tool_name: str, content: str
     else:
         # Check if tool is already in it
         if tool_name in existing_content:
-            tool_line = [line for line in existing_content.splitlines() if tool_name in line][-1]
+            tool_line = [
+                line for line in existing_content.splitlines() if tool_name in line
+            ][-1]
             if tool_line.strip().startswith("#"):
                 logger.info(
                     f"Found {tool_name} in .pre-commit-config.yaml, but it's commented out. Will add {tool_name} anew."
@@ -196,13 +200,18 @@ def add_source_package_to_pyproject_toml(path: Path, package_name: str):
             next_header = ""
         pos = pyproject_content.find(next_header) - 1
         pyproject_content = (
-            pyproject_content[:pos].strip() + new_text + "\n\n" + pyproject_content[pos:]
+            pyproject_content[:pos].strip()
+            + new_text
+            + "\n\n"
+            + pyproject_content[pos:]
         )
 
         pyproject_path.write_text(pyproject_content.rstrip())
     # if not any(p.get("include") == package_name for p in current_packages):
     elif not any(p.get("include") == package_name for p in current_packages):
-        raise NotImplementedError("Adding packages to existing list is not implemented yet")
+        raise NotImplementedError(
+            "Adding packages to existing list is not implemented yet"
+        )
         # current_packages.append({"include": package_name, "from": "."})
         # pyproject_data["tool"]["poetry"]["packages"] = current_packages
         # pyproject_path.write_text(toml.dumps(pyproject_data))
@@ -238,11 +247,15 @@ def _get_source_dir_name(repo_path: Path) -> str:
 
     for candidate in candidates:
         if (repo_path / candidate).exists():
-            logger.info(f"Found source directory: {candidate}. Using it for pre-commit setup.")
+            logger.info(
+                f"Found source directory: {candidate}. Using it for pre-commit setup."
+            )
             source_dir_name = candidate
             break
         if (repo_path / candidate.replace("-", "_")).exists():
-            logger.info(f"Found source directory: {candidate}. Using it for pre-commit setup.")
+            logger.info(
+                f"Found source directory: {candidate}. Using it for pre-commit setup."
+            )
             source_dir_name = candidate.replace("-", "_")
             break
 
@@ -282,7 +295,9 @@ def _get_source_dir_name(repo_path: Path) -> str:
     try:
         add_source_package_to_pyproject_toml(repo_path, source_dir_name)
     except NotImplementedError:
-        logger.warning("Adding packages to existing list is not implemented yet - skipping")
+        logger.warning(
+            "Adding packages to existing list is not implemented yet - skipping"
+        )
 
     return source_dir_name
 
@@ -527,7 +542,9 @@ def _install_precommit(repo_path: Path):
         return
 
     try:
-        subprocess.run(["poetry", "run", "pre-commit", "install"], cwd=repo_path, check=True)
+        subprocess.run(
+            ["poetry", "run", "pre-commit", "install"], cwd=repo_path, check=True
+        )
         logger.info("Pre-commit hooks installed successfully.")
     except subprocess.CalledProcessError as e:
         logger.error(f"Failed to install pre-commit hooks: {e}")
@@ -626,7 +643,9 @@ def fix_repo(
     """Fix repository according to modern standards"""
     repo_path = _discover_project(project)
     if repo_path is None:
-        logger.error(f"Project {project} not found in any of the root paths: {settings.root_paths}")
+        logger.error(
+            f"Project {project} not found in any of the root paths: {settings.root_paths}"
+        )
         raise typer.Exit(1)
 
     logger.info(f"Fixing repo at {repo_path} with operation {operation}")

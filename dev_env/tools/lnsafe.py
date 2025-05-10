@@ -1,8 +1,9 @@
 import os
 from pathlib import Path
+from typing import Optional
+
 import typer
 from loguru import logger
-from typing import Optional
 
 app = typer.Typer()
 
@@ -42,7 +43,9 @@ def create_softlink(target: Path, link_name: Optional[str] = None):
 @app.command()
 def main(
     target: Path = typer.Argument(..., help="Path to the target file or directory"),
-    link_name: Optional[str] = typer.Option(None, help="Name of the softlink (default: same as target)"),
+    link_name: Optional[str] = typer.Option(
+        None, help="Name of the softlink (default: same as target)"
+    ),
 ):
     """
     Create a softlink to a specified path.

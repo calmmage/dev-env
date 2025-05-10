@@ -2,10 +2,10 @@
 
 from pathlib import Path
 
-import pytest
-from loguru import logger
-
-from tools.repo_fixer.repo_fixer import _get_source_dir_name, check_and_fix_poetry_project_name
+from dev_env.tools.repo_fixer.repo_fixer import (
+    _get_source_dir_name,
+    check_and_fix_poetry_project_name,
+)
 
 
 def test_project_name_discovery(broken_repo: Path):
