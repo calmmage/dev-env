@@ -55,6 +55,7 @@ in
     # todo: unify username and use config
     users.${user} = { pkgs, config, lib, ... }: {
       home = {
+        # This is now properly supported in 24.11
         enableNixpkgsReleaseCheck = false;
         packages = pkgs.userPackages ++ 
           # Still add devenv conditionally since it's a special case
@@ -64,7 +65,7 @@ in
         #      files
         #    { "emacs-launcher.command".source = myEmacsLauncher; }
         #  ];
-        stateVersion = "24.05"; # backup: "23.11";
+        stateVersion = "24.11"; # Updated from 24.05
       };
       programs = {} // import ./programs.nix { inherit config pkgs lib userConfig; };
 

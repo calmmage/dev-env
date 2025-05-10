@@ -13,11 +13,12 @@ in
 
   enable_sudo_touch_id = true;
 
-  use_direnv = true;
+  # use_direnv = true;
+  use_direnv = false;
   use_devenv = false;
   # pick one or the other
-  # use_nix_homebrew = false;
-  use_nix_homebrew = true;
+  use_nix_homebrew = false;
+  # use_nix_homebrew = true;
 
   use_poetry2nix = false;
   
