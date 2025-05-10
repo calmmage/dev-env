@@ -15,7 +15,9 @@ from dev_env.tools.project_manager.pm_config import ProjectManagerConfig
 
 class ProjectManager:
     def __init__(
-        self, config_path: Optional[Path] = None, destinations_config_path: Optional[Path] = None
+        self,
+        config_path: Optional[Path] = None,
+        destinations_config_path: Optional[Path] = None,
     ):
         """Initialize Project Manager with configuration"""
         if config_path is None:
@@ -100,9 +102,13 @@ class ProjectManager:
 
     def complete_template_name(self, incomplete: str) -> list[Tuple[str, str]]:
         """Complete template name with fuzzy matching."""
-        templates_dict = self.get_templates()  # This returns a dict: {template_name: repo_object}
+        templates_dict = (
+            self.get_templates()
+        )  # This returns a dict: {template_name: repo_object}
         # Transform the dict into a list of tuples (template_name, help_text)
-        candidates = [(name, repo.description or "") for name, repo in templates_dict.items()]
+        candidates = [
+            (name, repo.description or "") for name, repo in templates_dict.items()
+        ]
         matches = self._fuzzy_match_template_name(incomplete, candidates)
         return matches
 
@@ -133,7 +139,9 @@ class ProjectManager:
 
         # Check if repo exists
         if name in [repo.name for repo in github_client.get_user().get_repos()]:
-            raise ValueError(f"Repository already exists: https://github.com/{username}/{name}")
+            raise ValueError(
+                f"Repository already exists: https://github.com/{username}/{name}"
+            )
 
         # Create repo from template
         params = {
@@ -183,7 +191,9 @@ class ProjectManager:
                         import shutil
 
                         shutil.rmtree(project_dir)
-                        logger.debug(f"Cleaned up failed clone attempt at {project_dir}")
+                        logger.debug(
+                            f"Cleaned up failed clone attempt at {project_dir}"
+                        )
                     except Exception as cleanup_error:
                         logger.warning(f"Failed to clean up directory: {cleanup_error}")
 
@@ -245,15 +255,21 @@ class ProjectManager:
             if len(matches) == 1:
                 template = matches[0][0]
             else:
-                raise ValueError(f"Ambiguous template name: {template}. Matches: {matches}")
+                raise ValueError(
+                    f"Ambiguous template name: {template}. Matches: {matches}"
+                )
 
         if self.config.always_use_hyphens and ("_" in name):
             name = name.replace("_", "-")
-            logger.info(f"Auto converted underscores to hyphens in project name: {name}")
+            logger.info(
+                f"Auto converted underscores to hyphens in project name: {name}"
+            )
 
         # Check GitHub conflicts
         if self._check_github_conflicts(name):
-            raise ValueError(f"Project name '{name}' conflicts with existing GitHub repository")
+            raise ValueError(
+                f"Project name '{name}' conflicts with existing GitHub repository"
+            )
 
         try:
             # Create repo from template
@@ -276,7 +292,9 @@ class ProjectManager:
                 else:
                     # remove empty dir
                     project_dir.rmdir()
-                    logger.warning(f"Removed pre-existing empty project directory: {project_dir}")
+                    logger.warning(
+                        f"Removed pre-existing empty project directory: {project_dir}"
+                    )
 
             if not dry_run:
                 self._clone_github_repository(name, project_dir)
@@ -330,7 +348,9 @@ class ProjectManager:
         if latest_link.exists() and latest_link.is_symlink():
             res = Path(os.readlink(latest_link))
             if res != latest_season:
-                logger.warning(f"Latest symlink exists but points to {res}, not {latest_season}")
+                logger.warning(
+                    f"Latest symlink exists but points to {res}, not {latest_season}"
+                )
             logger.debug(f"Latest season by symlink: {res}")
 
         return latest_season
@@ -348,7 +368,9 @@ class ProjectManager:
         period = self._get_period_from_date_range(date, date)
         logger.debug(f"Generated period: {period}")
 
-        new_folder = destination.path / "seasonal" / f"season_{season_num}_{period}_{date.year}"
+        new_folder = (
+            destination.path / "seasonal" / f"season_{season_num}_{period}_{date.year}"
+        )
         logger.debug(f"New folder path: {new_folder}")
         new_folder.mkdir(parents=True, exist_ok=True)
 
@@ -368,7 +390,20 @@ class ProjectManager:
 
         return new_folder
 
-    months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+    months = [
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec",
+    ]
 
     def _get_period_from_date_range(self, start: datetime, end: datetime) -> str:
         """Get season name from date range
@@ -385,7 +420,9 @@ class ProjectManager:
         elif (start.month + 1) % 12 == end.month:
             # if just 2 months
             period = f"{self.months[start.month - 1]}-{self.months[end.month - 1]}"
-            logger.debug(f"Two month period: {period} (months {start.month}-{end.month})")
+            logger.debug(
+                f"Two month period: {period} (months {start.month}-{end.month})"
+            )
             return period
 
         # warn if time span is too long
@@ -423,21 +460,31 @@ class ProjectManager:
         start = datetime.fromisoformat(metadata["start"])
         end = datetime.now()
         if (end - start).days > 90:
-            logger.debug(f"Season date range too large: {end - start} days. Rolling over.")
+            logger.debug(
+                f"Season date range too large: {end - start} days. Rolling over."
+            )
             return True
         if (end - start).days > 60:
             # check if we're spanning multiple different quarters
             if start.month in [12, 1, 2] and end.month in [3, 4, 5]:
-                logger.debug("Season spans multiple quarters: winter -> spring. Rolling over.")
+                logger.debug(
+                    "Season spans multiple quarters: winter -> spring. Rolling over."
+                )
                 return True
             elif start.month in [3, 4, 5] and end.month in [6, 7, 8]:
-                logger.debug("Season spans multiple quarters: spring -> summer. Rolling over.")
+                logger.debug(
+                    "Season spans multiple quarters: spring -> summer. Rolling over."
+                )
                 return True
             elif start.month in [6, 7, 8] and end.month in [9, 10, 11]:
-                logger.debug("Season spans multiple quarters: summer -> fall. Rolling over.")
+                logger.debug(
+                    "Season spans multiple quarters: summer -> fall. Rolling over."
+                )
                 return True
             elif start.month in [9, 10, 11] and end.month in [12, 1, 2]:
-                logger.debug("Season spans multiple quarters: fall -> winter. Rolling over.")
+                logger.debug(
+                    "Season spans multiple quarters: fall -> winter. Rolling over."
+                )
                 return True
         return False
 
@@ -488,7 +535,9 @@ class ProjectManager:
                     start = datetime(year, start_month_index, 1)
 
                     if end_month_index <= start_month_index:
-                        end = datetime(year + 1, end_month_index + 1, 1) - timedelta(days=1)
+                        end = datetime(year + 1, end_month_index + 1, 1) - timedelta(
+                            days=1
+                        )
                         logger.debug(f"Year boundary crossed: {start} - {end}")
                     else:
                         end = datetime(year, end_month_index + 1, 1) - timedelta(days=1)
@@ -522,7 +571,10 @@ class ProjectManager:
             return self._init_season_metadata(season)
 
     def _update_season_dates(
-        self, season: Path, start: Optional[datetime] = None, end: Optional[datetime] = None
+        self,
+        season: Path,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
     ) -> Path:
         """Update season name and folder to the latest date range"""
         metadata = self._get_season_metadata(season)
@@ -538,37 +590,39 @@ class ProjectManager:
         new_path = season.with_name(new_name)
 
         # Only proceed with rename if needed
-        if new_name != season.name:
-            logger.info(f"Auto-renaming season folder from {season.name} to {new_name}")
-
-            # Update latest symlink first if it points to this season
-            latest_link = season.parent / "latest"
-            if latest_link.exists() and latest_link.is_symlink():
-                try:
-                    if latest_link.resolve() == season.resolve():
-                        latest_link.unlink()
-                        season.rename(new_path)
-                        latest_link.symlink_to(new_path)
-                        # Update metadata in new location
-                        metadata = {"start": start.isoformat(), "end": end.isoformat()}
-                        new_metadata_file = self._get_season_metadata_file(new_path)
-                        new_metadata_file.write_text(json.dumps(metadata))
-                        return new_path
-                except OSError as e:
-                    logger.warning(f"Error handling symlink: {e}")
-
-            # If no symlink or it points elsewhere, just rename
-            season.rename(new_path)
-
-            # Update metadata in new location
-            metadata = {"start": start.isoformat(), "end": end.isoformat()}
-            new_metadata_file = self._get_season_metadata_file(new_path)
-            new_metadata_file.write_text(json.dumps(metadata))
-        else:
-            # Just update metadata if no rename needed
-            metadata = {"start": start.isoformat(), "end": end.isoformat()}
-            metadata_file = self._get_season_metadata_file(season)
-            metadata_file.write_text(json.dumps(metadata))
+        # if new_name != season.name:
+        # disable renaming for now - this is a disaster from git perspective
+        # if False:
+        #     logger.info(f"Auto-renaming season folder from {season.name} to {new_name}")
+        #
+        #     # Update latest symlink first if it points to this season
+        #     latest_link = season.parent / "latest"
+        #     if latest_link.exists() and latest_link.is_symlink():
+        #         try:
+        #             if latest_link.resolve() == season.resolve():
+        #                 latest_link.unlink()
+        #                 season.rename(new_path)
+        #                 latest_link.symlink_to(new_path)
+        #                 # Update metadata in new location
+        #                 metadata = {"start": start.isoformat(), "end": end.isoformat()}
+        #                 new_metadata_file = self._get_season_metadata_file(new_path)
+        #                 new_metadata_file.write_text(json.dumps(metadata))
+        #                 return new_path
+        #         except OSError as e:
+        #             logger.warning(f"Error handling symlink: {e}")
+        #
+        #     # If no symlink or it points elsewhere, just rename
+        #     season.rename(new_path)
+        #
+        #     # Update metadata in new location
+        #     metadata = {"start": start.isoformat(), "end": end.isoformat()}
+        #     new_metadata_file = self._get_season_metadata_file(new_path)
+        #     new_metadata_file.write_text(json.dumps(metadata))
+        # else:
+        # Just update metadata if no rename needed
+        metadata = {"start": start.isoformat(), "end": end.isoformat()}
+        metadata_file = self._get_season_metadata_file(season)
+        metadata_file.write_text(json.dumps(metadata))
 
         return new_path
 
@@ -626,7 +680,9 @@ class ProjectManager:
             if len(matches) == 1:
                 template = matches[0][0]
             else:
-                raise ValueError(f"Ambiguous template name: {template}. Matches: {matches}")
+                raise ValueError(
+                    f"Ambiguous template name: {template}. Matches: {matches}"
+                )
 
         # - locate seasonal dir
         seasonal_folder = self.get_seasonal_folder(private=private)
@@ -634,7 +690,9 @@ class ProjectManager:
         if self.config.always_use_hyphens:
             if "_" in name:
                 name = name.replace("_", "-")
-                logger.info(f"Auto converted underscores to hyphens in project name: {name}")
+                logger.info(
+                    f"Auto converted underscores to hyphens in project name: {name}"
+                )
 
         # - create dir
         draft_dir = seasonal_folder / "draft"
@@ -688,7 +746,9 @@ class ProjectManager:
             if template:
                 logger.info(f"Dry run: Would initialize from template: {template}")
             if idea:
-                logger.info(f"Dry run: Would create idea.md with content:\n# {name}\n\n{idea}\n")
+                logger.info(
+                    f"Dry run: Would create idea.md with content:\n# {name}\n\n{idea}\n"
+                )
 
         return project_dir
 
@@ -698,7 +758,9 @@ class ProjectManager:
         app_file = project_dir / "_app.py"
         if app_file.exists():
             content = app_file.read_text()
-            content = content.replace("Mini Botspot Template", name.replace("-", " ").title())
+            content = content.replace(
+                "Mini Botspot Template", name.replace("-", " ").title()
+            )
             app_file.write_text(content)
             logger.debug(f"Updated project name in {app_file}")
 
@@ -710,7 +772,9 @@ class ProjectManager:
             return template_path
 
         raise ValueError(
-            f"Template not found: {template_name}. " f"Checked paths:\n" f"- {template_path}\n"
+            f"Template not found: {template_name}. "
+            f"Checked paths:\n"
+            f"- {template_path}\n"
         )
 
     # endregion Mini Project
@@ -781,7 +845,9 @@ class ProjectManager:
         if target.exists():
             logger.warning(f"Target already exists: {target}. Skipping.")
             if path.is_dir():
-                target = target.with_suffix(f"_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+                target = target.with_suffix(
+                    f"_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                )
             else:
                 target = target.with_suffix(
                     f"_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{path.suffix}"
