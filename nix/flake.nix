@@ -17,38 +17,40 @@
   };
 
   inputs = {
-    nixpkgs.url = "https://github.com/nixos/nixpkgs/archive/nixos-24.11.tar.gz";
-    nixpkgs-unstable.url = "https://github.com/nixos/nixpkgs/archive/nixpkgs-unstable.tar.gz";
-    agenix.url = "https://github.com/ryantm/agenix/archive/master.tar.gz";
+#    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    agenix.url = "github:ryantm/agenix";
+#    home-manager.url = "github:nix-community/home-manager";
     home-manager = {
-      url = "https://github.com/nix-community/home-manager/archive/release-24.11.tar.gz";
+      url = "github:nix-community/home-manager/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     darwin = {
-      url = "https://github.com/LnL7/nix-darwin/archive/nix-darwin-24.11.tar.gz";
+      url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-homebrew = {
-      url = "https://github.com/zhaofengli-wip/nix-homebrew/archive/master.tar.gz";
+      url = "github:zhaofengli-wip/nix-homebrew";
     };
     homebrew-bundle = {
-      url = "https://github.com/homebrew/homebrew-bundle/archive/master.tar.gz";
+      url = "github:homebrew/homebrew-bundle";
       flake = false;
     };
     homebrew-core = {
-      url = "https://github.com/homebrew/homebrew-core/archive/master.tar.gz";
+      url = "github:homebrew/homebrew-core";
       flake = false;
     };
     homebrew-cask = {
-      url = "https://github.com/homebrew/homebrew-cask/archive/master.tar.gz";
+      url = "github:homebrew/homebrew-cask";
       flake = false;
     }; 
     disko = {
-      url = "https://github.com/nix-community/disko/archive/master.tar.gz";
+      url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     poetry2nix = {
-      url = "https://github.com/nix-community/poetry2nix/archive/master.tar.gz";
+      url = "github:nix-community/poetry2nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # todo: add secrets back
