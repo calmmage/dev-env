@@ -262,7 +262,8 @@ def _get_source_dir_name(repo_path: Path) -> str:
     # if none of the candadtes exist, ask user for a name
     if source_dir_name is None:
         # ask user for project name
-        default = repo_path.name.replace("-", "_")
+        # default = repo_path.name.replace("-", "_")
+        default = "src"
         try:
             source_dir_name = typer.prompt(
                 f"Please provide a source directory name for {repo_path}, will be used to run pre-commit checks (default: {default}): ",
