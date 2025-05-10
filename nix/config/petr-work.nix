@@ -54,4 +54,8 @@ in
 
     "teams"           # Microsoft Teams client
   ];
+
+  npmPackages = shared.npmPackages ++ [
+    # Add work-specific npm packages here
+  ];
 }

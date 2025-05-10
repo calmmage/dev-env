@@ -11,8 +11,8 @@
 
   enable_sudo_touch_id = false;
 
-  use_direnv = true;
-  use_devenv = true;
+  use_direnv = false;
+  use_devenv = false;
   # pick one or the other
    use_nix_homebrew = false;
 #  use_nix_homebrew = true;
@@ -48,6 +48,7 @@
 
       # Development essentials
       "poetry"
+      "uv"
       # "ripgrep"
       "python"
       "python@3.9"
@@ -59,6 +60,8 @@
       "gcc"
       "yarn"
       "pinentry-mac"
+      "npm"
+      "pnpm"
     ];
 
     casks = [
@@ -80,7 +83,7 @@
       # - mitmproxy
       "cursor"
       # "zed"
-      "karabiner-elements"
+      # "karabiner-elements"
       "sublime-text"
 
       # Browsers & Communication
@@ -212,12 +215,6 @@
     "meslo-lgs-nf"
 
     # Node.js development tools
-    "nodePackages_npm" # converted to nodePackages.npm later
-    "nodePackages_prettier" # converted to nodePackages.prettier later
-    "nodePackages_pnpm" # converted to nodePackages.pnpm later
-    "nodejs"
-
-    # Text and terminal utilities
     "hunspell"
     "iftop"
     "jetbrains-mono"
@@ -317,5 +314,10 @@
     # File Operations
     "rsync"         # Advanced file copying
     "delta"           # Syntax highlighting pager for git diffs
+  ];
+
+  npmPackages = [
+    "prettier"
+    # Add more global npm packages here
   ];
 }

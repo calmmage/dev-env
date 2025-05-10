@@ -77,4 +77,8 @@ in
   package_names = shared.package_names ++ [
     # Add personal-specific packages here as strings
   ];
+
+  npmPackages = shared.npmPackages ++ [
+    # Add personal-specific npm packages here
+  ];
 }

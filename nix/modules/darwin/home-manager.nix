@@ -17,6 +17,15 @@ in
     ./dock
   ];
 
+  # Overlay to disable Node.js tests (workaround for upstream build failures)
+  nixpkgs.overlays = [
+    (final: prev: {
+      nodejs = prev.nodejs.overrideAttrs (old: {
+        doCheck = false;
+      });
+    })
+  ];
+
   # It me
   users.users.${user} = {
     name = "${user}";
@@ -36,7 +45,7 @@ in
 
     onActivation = {
       autoUpdate = true;
-      cleanup = "uninstall";
+      cleanup = "none";
       upgrade = true;
     };
   };
@@ -73,6 +82,17 @@ in
       # https://github.com/nix-community/home-manager/issues/3344
       manual.manpages.enable = false;
       imports = [ ../shell ];
+
+      home.activation.installNpmPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if command -v npm >/dev/null 2>&1; then
+          for pkg in ${lib.concatStringsSep " " (userConfig.npmPackages or [])}; do
+            if ! npm list -g --depth=0 | grep -q "$pkg@"; then
+              echo "Installing global npm package: $pkg"
+              npm install -g "$pkg"
+            fi
+          done
+        fi
+      '';
     };
     # users.${user}.imports = [ ../shell ];
 
