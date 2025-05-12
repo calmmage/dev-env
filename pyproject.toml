@@ -102,7 +102,7 @@ flake8-docstrings = "^1.7.0"
 flake8-bugbear = "^24.10.31"
 flake8-comprehensions = "^3.16.0"
 flake8-simplify = "^0.21.0"
-isort = "^5.13.2"
+isort = "^6"
 pyupgrade = "^3.19.0"
 freezegun = "^1.5.1"
 
