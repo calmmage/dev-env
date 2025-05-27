@@ -72,7 +72,7 @@ class Project(BaseModel):
         raise ValueError(f"Failed to extract repo info from {url}")
 
     @cached_property
-    def _repo_info(self) -> tuple[str, str]:
+    def _repo_info(self) -> tuple[Optional[str], Optional[str]]:
         """Get GitHub repository name and organization for a local repository
 
         Returns:
@@ -103,13 +103,15 @@ class Project(BaseModel):
     def github_name(self) -> Optional[str]:
         if self.github_repo:
             return self.github_repo.name
-        return self._repo_info[0]
+        repo_info = self._repo_info
+        return repo_info[0] if repo_info else None
 
     @property
     def github_org(self) -> Optional[str]:
         if self.github_repo:
             return self.github_repo.owner.login
-        return self._repo_info[1]
+        repo_info = self._repo_info
+        return repo_info[1] if repo_info else None
 
     # todo: use external ignore rules
     #  option 1: gitignore
@@ -149,20 +151,85 @@ class Project(BaseModel):
 
     @cached_property
     def size(self) -> int:
+        """Synchronous size calculation - use async_size for better performance"""
+        import asyncio
+        try:
+            # Try to run in existing event loop
+            loop = asyncio.get_running_loop()
+            # If we're already in an async context, we need to use a different approach
+            # This is a fallback for sync usage
+            return asyncio.run_coroutine_threadsafe(self.async_size(), loop).result(timeout=10)
+        except RuntimeError:
+            # No event loop running, safe to use asyncio.run
+            return asyncio.run(self.async_size())
+    
+    async def async_size(self) -> int:
+        """Async size calculation for better performance with many projects"""
         if self.path is None:
-            # todo: can we get size from github?
             logger.warning(f"No path set for project {self.name}, can't calculate size")
             return 0
-        total_size = 0
-        for file in self.path.rglob("*"):
-            # Skip common non-source directories
-            if any(part in str(file.relative_to(self.path)) for part in self.__ignored_paths):
-                continue
-
-            # Only count source code files
-            if file.is_file() and file.suffix in self.__source_extensions:
-                total_size += file.stat().st_size
-        return total_size
+        
+        # Fast approach 1: Use git ls-files if it's a git repo
+        if self.is_git_repo():
+            try:
+                return await self._async_git_tracked_size()
+            except Exception as e:
+                logger.debug(f"Git size calculation failed for {self.path}: {e}")
+        
+        # Fast approach 2: Smart glob patterns for non-git projects
+        return await self._async_fallback_size_calculation()
+    
+    async def _async_git_tracked_size(self) -> int:
+        """Async version of git size calculation"""
+        import asyncio
+        from git import Repo
+        
+        # Run git operations in thread pool to avoid blocking
+        def _git_size():
+            repo = Repo(self.path)
+            total_size = 0
+            
+            # Get all tracked files
+            tracked_files = repo.git.ls_files().splitlines()
+            
+            for file_path in tracked_files:
+                file_full_path = self.path / file_path
+                
+                # Skip if file doesn't exist (deleted but not committed)
+                if not file_full_path.exists():
+                    continue
+                    
+                # Only count source code files
+                if file_full_path.suffix in self.__source_extensions:
+                    total_size += file_full_path.stat().st_size
+            
+            return total_size
+        
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, _git_size)
+    
+    async def _async_fallback_size_calculation(self) -> int:
+        """Async fallback size calculation"""
+        import asyncio
+        
+        if self.path is None:
+            return 0
+        
+        def _fallback_size():
+            total_size = 0
+            try:
+                # Only check a few key patterns for speed
+                quick_patterns = ["*.py", "*.md", "*.sh", "src/**/*.py", "lib/**/*.py"]
+                for pattern in quick_patterns:
+                    for file in self.path.glob(pattern):
+                        if file.is_file():
+                            total_size += file.stat().st_size
+            except Exception as e:
+                logger.debug(f"Fallback size calculation failed for {self.path}: {e}")
+            return total_size
+        
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, _fallback_size)
 
     FORMAT_MODE: int = 2
 
@@ -184,12 +251,19 @@ class Project(BaseModel):
                 rounded = (self.size // (10**magnitude)) * (10**magnitude)
                 return f"{rounded:>10,}"
             return f"{self.size:>10}"
+        else:
+            # Default fallback
+            return f"{self.size:>10}"
 
     @cached_property
     def date(self) -> datetime:
         """Last meaningful change date - from git or filesystem"""
         if self.github_repo:
             return self.github_repo.pushed_at.replace(tzinfo=None)
+
+        if self.path is None:
+            # Fallback to current time if no path available
+            return datetime.now()
 
         # idea 1: if git repo - look at last commit date
         if is_git_repo(self.path):
@@ -208,6 +282,10 @@ class Project(BaseModel):
         """Project creation date - from git or filesystem"""
         if self.github_repo:
             return self.github_repo.created_at.replace(tzinfo=None)
+
+        if self.path is None:
+            # Fallback to current time if no path available
+            return datetime.now()
 
         # idea 1: if git repo - look at first commit date
         if is_git_repo(self.path):
@@ -266,7 +344,7 @@ class Project(BaseModel):
         if self.github_repo:
             since = datetime.now(timezone.utc) - timedelta(days=days)
             return self.github_repo.get_commits(since=since).totalCount
-        elif self.is_git_repo():
+        elif self.path and self.is_git_repo():
             return get_commit_count(self.path, days=days)
         raise ValueError("Project is not a git repo")
 
@@ -452,7 +530,7 @@ class ProjectArranger:
     def get_current_groups(self, projects: List[Project]) -> Dict[str, Dict[str, List[Project]]]:
         """Build groups dictionary based on current filesystem structure"""
         logger.info(f"Analyzing current groups for {len(projects)} projects...")
-        groups = {"main": defaultdict(list), "secondary": defaultdict(list)}
+        groups: Dict[str, Dict[str, List[Project]]] = {"main": defaultdict(list), "secondary": defaultdict(list)}
 
         # Sort into main groups based on current directory structure
         for project in projects:
@@ -469,7 +547,11 @@ class ProjectArranger:
         # 2. Add a method to detect current secondary groups for a project
         # 3. Update Project class to support multiple current groups
 
-        return groups
+        # Convert defaultdicts to regular dicts for return type compliance
+        return {
+            "main": dict(groups["main"]),
+            "secondary": dict(groups["secondary"])
+        }
 
     def sort_projects(self, projects: List[Project]) -> Dict[str, Dict[str, List[Project]]]:
         """Sort projects into target categories based on config"""
@@ -506,6 +588,60 @@ class ProjectArranger:
         main_counts = {group: len(projects) for group, projects in groups["main"].items()}
         logger.info(f"Sorted projects: {main_counts}")
         return groups
+
+    async def sort_projects_async(self, projects: List[Project]) -> Dict[str, Dict[str, List[Project]]]:
+        """Async version of sort_projects for better performance with large project lists"""
+        import asyncio
+        logger.info(f"Sorting {len(projects)} projects into groups (async)...")
+        groups = {"main": defaultdict(list), "secondary": defaultdict(list), "main_reason": {}}
+        
+        # Pre-calculate sizes async for all projects that need it
+        logger.info("Pre-calculating project sizes...")
+        size_tasks = []
+        for project in projects:
+            if project.path and self._needs_size_for_sorting(project):
+                size_tasks.append(project.async_size())
+            else:
+                size_tasks.append(asyncio.sleep(0, result=0))  # No-op task
+        
+        # Run size calculations concurrently
+        await asyncio.gather(*size_tasks)
+        logger.info("Size calculations complete")
+        
+        # Now sort projects (this part is still mostly CPU-bound)
+        for project in tqdm(projects):
+            project_start = time.time()
+            main_group, reason = self._sort_projects_into_main_groups(project)
+            secondary_groups = self._sort_projects_into_secondary_groups(project)
+            project_time = time.time() - project_start
+            
+            if project_time > 0.1:  # Log slow projects
+                logger.warning(f"Slow project sorting: {project.name} took {project_time:.2f}s")
+
+            if (
+                secondary_groups
+                and (main_group in [Group.unsorted, Group.ignore])
+                and (reason != "manual")
+            ):
+                reason = "has secondary groups"
+                main_group = Group.archive
+            groups["main"][main_group].append(project)
+            groups["main_reason"][project.name] = reason
+            for group in secondary_groups:
+                groups["secondary"][group].append(project)
+        
+        # Log summary
+        main_counts = {group: len(projects) for group, projects in groups["main"].items()}
+        logger.info(f"Sorted projects: {main_counts}")
+        return groups
+
+    def _needs_size_for_sorting(self, project: Project) -> bool:
+        """Check if project sorting logic needs size calculation"""
+        # Check if project would go through auto-sorting that uses size
+        if project.name in (self.settings.ignore + self.settings.actual + 
+                           self.settings.archive + self.settings.experiments):
+            return False  # Manual sorting, no size needed
+        return True  # Auto-sorting may need size
 
     def _sort_projects_into_main_groups(self, project: Project) -> tuple[str, str]:
         """Sort projects into main groups"""
