@@ -7,7 +7,7 @@ class ProjectManagerConfig(BaseSettings):
     """Project Manager configuration"""
 
     # Project creation settings
-    experiments_destination: str = "experiments"  # Key in destinations registry
+    experiments_destination: str = "projects"  # Key in destinations registry. New projects now go to projects/ dir
     private_mini_projects_destination: str = "calmmage-private"  # For private mini-projects
     public_mini_projects_destination: str = "calmmage"  # For public mini-projects
 

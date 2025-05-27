@@ -241,7 +241,7 @@ class ProjectManager:
         template: Optional[str] = None,
         dry_run: bool = False,
     ):
-        """Create a new project in experiments using GitHub template."""
+        """Create a new project in experiments destination using GitHub template."""
         # Auto-detect bot projects and set template if none provided
         if template is None:
             if self._detect_bot_project(name):
