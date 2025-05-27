@@ -227,11 +227,9 @@ def _determine_actions(
     """Determine required actions for each project"""
     actions = {}
 
-    # todo: make this async?
-    # todo: profile which part is slow? Disk ops?
     for project in projects:
-        current_group = determine_group(project, current_groups)
-        target_group = determine_group(project, target_groups)
+        current_group = determine_group(project, current_groups['main'])
+        target_group = determine_group(project, target_groups['main'])
 
         if not target_group:
             logger.warning(f"No target group found for {project.name}")
