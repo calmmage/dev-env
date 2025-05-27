@@ -686,6 +686,8 @@ def fix_repo(
 
     except Exception as e:
         logger.error(f"Error during {operation}: {e}")
+        import traceback
+        traceback.print_exc()
         raise typer.Exit(1)
 
 

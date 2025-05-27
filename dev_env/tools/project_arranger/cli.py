@@ -213,6 +213,13 @@ def sort(
     if _confirm_actions():
         _execute_actions(actions)
 
+def determine_group(project: Project, groups: Dict[Group, List[Project]]) -> Group:
+    for group, projects in groups.items():
+        if project in projects:
+            return group
+
+    return Group(project.current_group)
+
 
 def _determine_actions(
     projects: List[Project], current_groups: Dict, target_groups: Dict
@@ -221,20 +228,21 @@ def _determine_actions(
     actions = {}
 
     for project in projects:
-        current_main = project.current_group
-        target_main = next(
-            (group for group, projects in target_groups["main"].items() if project in projects),
-            None,
-        )
+        current_group = determine_group(project, current_groups['main'])
+        target_group = determine_group(project, target_groups['main'])
 
-        if not target_main:
+        if not target_group:
             logger.warning(f"No target group found for {project.name}")
             continue
 
+        # If target is experiments, replace with projects
+        if target_group == Group.experiments:
+            target_group = Group.actual  # Group.actual corresponds to 'projects' folder
+
         # Determine action
-        if target_main == current_main:
+        if target_group == current_group:
             action = Action.SKIP
-        elif target_main == Group.ignore:
+        elif target_group == Group.ignore:
             action = Action.REMOVE
         elif not project.path:
             action = Action.CLONE
@@ -244,8 +252,8 @@ def _determine_actions(
         actions[project.name] = {
             "project": project,
             "action": action,
-            "current_group": current_main,
-            "target_group": target_main,
+            "current_group": current_group,
+            "target_group": target_group,
             "reason": target_groups["main_reason"].get(project.name, "unknown"),
         }
 
@@ -396,10 +404,12 @@ def _execute_actions(actions: Dict[str, Dict]):
                     logger.info(f"Moved {name} to to_remove")
 
                 elif action == Action.MOVE:
-                    status.update(f"[bold yellow]Moving {name} to {target_group}...")
-                    destination = destinations[target_group]
+                    # If current group is experiments, or target group is experiments, use projects instead
+                    actual_target_group = "projects" if target_group == "experiments" else target_group
+                    status.update(f"[bold yellow]Moving {name} to {actual_target_group}...")
+                    destination = destinations[actual_target_group]
                     destination.move(project)
-                    logger.info(f"Moved {name} to {target_group}")
+                    logger.info(f"Moved {name} to {actual_target_group}")
 
             except Exception as e:
                 logger.error(f"Failed to process {name}: {e}")
