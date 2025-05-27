@@ -1,13 +1,16 @@
 import os
+import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from typing import Dict, List, Optional
+from pydantic import BaseModel
 
 from github.Repository import Repository
 from loguru import logger
+from tqdm.auto import tqdm
 
 from dev_env.tools.project_arranger.src.config import ProjectArrangerSettings
 from dev_env.tools.project_arranger.src.utils import (
@@ -33,16 +36,25 @@ class Group(str, Enum):
     ignore = "ignore"
 
 
-class Project:
+class Project(BaseModel):
     name: str
     path: Optional[Path] = None
     github_repo: Optional[Repository] = None
 
-    def __init__(self, name: str, path: Path = None, github_repo: Repository = None):
-        self.name = name
-        self.path = Path(path) if path else None
-        self.github_repo = github_repo
-        self._github_client = MISSING
+    class Config:
+        arbitrary_types_allowed = True
+
+    def __hash__(self):
+        """Make Project hashable for use in sets and as dict keys"""
+        # Use name and path (if available) as the hash key
+        return hash((self.name, str(self.path) if self.path else None))
+
+    def __eq__(self, other):
+        """Define equality for Project objects"""
+        if not isinstance(other, Project):
+            return False
+        # Projects are equal if they have the same name and path
+        return self.name == other.name and self.path == other.path
 
     @staticmethod
     def _extract_repo_info(url: str) -> tuple[str, str]:
@@ -318,28 +330,32 @@ class ProjectArranger:
 
     def build_projects_list(self) -> List[Project]:
         """Discover all projects in configured paths"""
+        logger.info("Building projects list...")
         local_projects = self._build_projets_list_local()
         github_projects = self._build_projets_list_github()
-        return self._merge_projects_lists(local_projects, github_projects)
+        merged_projects = self._merge_projects_lists(local_projects, github_projects)
+        logger.info(f"Found {len(merged_projects)} total projects ({len(local_projects)} local, {len(github_projects)} GitHub)")
+        return merged_projects
 
     def _build_projets_list_local(self) -> List[Project]:
         """Discover all projects in local paths"""
+        logger.info("Discovering local projects...")
         projects = []
+        
         for root in self.settings.root_paths:
             root = root.expanduser()
             if not root.exists():
                 logger.warning(f"Path {root} does not exist")
                 continue
-
-            for path in root.iterdir():
-                if not path.is_dir():
-                    continue
-                if path.name.startswith("."):
-                    continue
-                # if path.name in self.format.ignored_projects:
-                #     continue
-
+            
+            # logger.info(f"Scanning directory: {root}")
+            paths = [path for path in root.iterdir() if path.is_dir() and not path.name.startswith(".")]
+            logger.info(f"Found {len(paths)} directories in {root}")
+            
+            for path in paths:
                 projects.append(Project(name=path.name, path=path.resolve()))
+        
+        logger.info(f"Found {len(projects)} local projects total")
         return projects
 
     def _build_projets_list_github(self) -> List[Project]:
@@ -348,10 +364,16 @@ class ProjectArranger:
             logger.warning("GitHub client not available - skipping GitHub projects")
             return []
 
+        logger.info("Discovering GitHub projects...")
         projects = []
         all_orgs = set()
         try:
-            for repo in self.github_client.get_user().get_repos():
+            logger.info("Fetching repositories from GitHub API...")
+            all_repos = list(self.github_client.get_user().get_repos())
+            logger.info(f"Found {len(all_repos)} total repositories on GitHub")
+            
+            logger.info("Processing repositories...")
+            for repo in all_repos:
                 if repo.fork:  # Skip forked repos
                     continue
 
@@ -372,7 +394,7 @@ class ProjectArranger:
                 projects.append(Project(name=repo.name, github_repo=repo))
 
             # Log org info
-            logger.info(f"Found repos from orgs: {sorted(all_orgs)}")
+            logger.info(f"Found {len(projects)} GitHub projects from orgs: {sorted(all_orgs)}")
             if self.settings.github_orgs:
                 logger.info(f"Including only orgs: {sorted(self.settings.github_orgs)}")
             if self.settings.github_skip_orgs:
@@ -388,37 +410,58 @@ class ProjectArranger:
         self, local_projects: List[Project], github_projects: List[Project]
     ) -> List[Project]:
         """Merge projects lists from local and GitHub"""
+        logger.info("Merging local and GitHub project lists...")
+        
         # Create lookup by GitHub URL for local projects
-        local_by_github = {
-            (p.github_org, p.github_name): p
-            for p in local_projects
-            if p.github_name and p.github_org
-        }
+        logger.info("Building local projects lookup...")
+        start_time = time.time()
+        local_by_github = {}
+        slow_projects = []
+        
+        for p in local_projects:
+            project_start = time.time()
+            if p.github_name and p.github_org:
+                local_by_github[(p.github_org, p.github_name)] = p
+            project_time = time.time() - project_start
+            if project_time > 0.05:  # Log projects that take more than 50ms
+                slow_projects.append((p.name, project_time))
+        
+        elapsed = time.time() - start_time
+        logger.info(f"Built lookup in {elapsed:.2f}s")
+        if slow_projects:
+            logger.warning(f"Slow projects during lookup: {slow_projects[:5]}")  # Show first 5
 
         # Add GitHub metadata to matching local projects
-        # todo: actually, we can try to pre-fill github_repo with just local remote
-        #  warn user if there's a missmatch - conflicitng remotes
+        logger.info("Matching GitHub projects with local...")
+        matched_count = 0
         for github_proj in github_projects:
             key = (github_proj.github_org, github_proj.github_name)
             if key in local_by_github:
                 local_proj = local_by_github[key]
                 local_proj.github_repo = github_proj.github_repo
+                matched_count += 1
 
         # Add GitHub-only projects
         github_only = [
             p for p in github_projects if (p.github_org, p.github_name) not in local_by_github
         ]
 
+        logger.info(f"Merged projects: {matched_count} matched, {len(github_only)} GitHub-only")
         return local_projects + github_only
 
     def get_current_groups(self, projects: List[Project]) -> Dict[str, Dict[str, List[Project]]]:
         """Build groups dictionary based on current filesystem structure"""
+        logger.info(f"Analyzing current groups for {len(projects)} projects...")
         groups = {"main": defaultdict(list), "secondary": defaultdict(list)}
 
         # Sort into main groups based on current directory structure
         for project in projects:
             current_group = project.current_group
             groups["main"][current_group].append(project)
+
+        # Log current distribution
+        current_counts = {group: len(projects) for group, projects in groups["main"].items()}
+        logger.info(f"Current distribution: {current_counts}")
 
         # TODO: Implement secondary groups scanning
         # Will need to:
@@ -430,10 +473,20 @@ class ProjectArranger:
 
     def sort_projects(self, projects: List[Project]) -> Dict[str, Dict[str, List[Project]]]:
         """Sort projects into target categories based on config"""
+        logger.info(f"Sorting {len(projects)} projects into groups...")
         groups = {"main": defaultdict(list), "secondary": defaultdict(list), "main_reason": {}}
-        for project in projects:
+        
+        # Add progress tracking for slow operations
+        processed = 0
+        for project in tqdm(projects):
+            
+            project_start = time.time()
             main_group, reason = self._sort_projects_into_main_groups(project)
             secondary_groups = self._sort_projects_into_secondary_groups(project)
+            project_time = time.time() - project_start
+            
+            if project_time > 0.1:  # Log slow projects
+                logger.warning(f"Slow project sorting: {project.name} took {project_time:.2f}s")
 
             if (
                 secondary_groups
@@ -446,6 +499,12 @@ class ProjectArranger:
             groups["main_reason"][project.name] = reason
             for group in secondary_groups:
                 groups["secondary"][group].append(project)
+            
+            processed += 1
+        
+        # Log summary
+        main_counts = {group: len(projects) for group, projects in groups["main"].items()}
+        logger.info(f"Sorted projects: {main_counts}")
         return groups
 
     def _sort_projects_into_main_groups(self, project: Project) -> tuple[str, str]:
@@ -479,13 +538,16 @@ class ProjectArranger:
         this_month = today - timedelta(days=30)
 
         # If created this month -> experiments
+        # logger.debug(f"Checking created_date for {project.name}")
         if project.created_date > this_month:
             if project.current_group == Group.actual:
                 return Group.actual, "already in actual"
             return Group.experiments, "created this month"
 
+        # logger.debug(f"Checking date for {project.name}")
         if project.date > today - timedelta(days=self.settings.auto_sort_days):
             # look at the size / activity
+            logger.debug(f"Checking git repo status for {project.name}")
             if (
                 project.is_git_repo()
                 and project.get_recent_commit_count(self.settings.auto_sort_days)
@@ -494,6 +556,7 @@ class ProjectArranger:
                 # look at commit activity
                 # - if more than 5 commits in the last 30 days - "actual"
                 return Group.actual, "5+ recent commits"  # "actual"
+
             elif project.size > self.settings.auto_sort_size:
                 return Group.actual, "recent and big"  # "actual"
             if project.current_group == Group.actual:
@@ -501,6 +564,7 @@ class ProjectArranger:
             return Group.experiments, "recent but yet small"
         else:
             # look at project size
+            logger.debug(f"Checking size for old project {project.name}")
             if project.size > self.settings.auto_sort_size:
                 return Group.archive, "old but big"  # "archive"
             return Group.ignore, "old and small"  # "ignore"
