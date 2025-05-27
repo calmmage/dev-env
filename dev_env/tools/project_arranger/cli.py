@@ -218,7 +218,8 @@ def determine_group(project: Project, groups: Dict[Group, List[Project]]) -> Gro
         if project in projects:
             return group
 
-    return Group(project.current_group)
+    # return Group(project.current_group)
+    raise ValueError(f"Project {project.name} not found in groups")
 
 
 def _determine_actions(
@@ -337,6 +338,27 @@ def _execute_actions(actions: Dict[str, Dict]):
                     logger.info(f"Cloned {name} to {target_group}")
 
                 elif action == Action.REMOVE:
+                    # --- Protection: Check if project has remote before deletion ---
+                    has_remote = False
+                    if project.path and project.is_git_repo():
+                        try:
+                            repo = git.Repo(project.path)
+                            has_remote = "origin" in repo.remotes
+                        except Exception as git_err:
+                            logger.debug(f"Error checking remotes for {name}: {git_err}")
+                    
+                    # Also check if project has GitHub repo metadata
+                    has_github_repo = project.github_repo is not None
+                    
+                    if not has_remote and not has_github_repo:
+                        logger.warning(
+                            f"ABORTING deletion of {name}: No remote repository found. "
+                            "This appears to be a local-only project."
+                        )
+                        console.print(f"[red]⚠️  SKIPPED: {name} - No remote repository found[/red]")
+                        continue
+                    # --- End Protection ---
+
                     status.update(f"[bold red]Moving {name} to to_remove...")
                     destination = destinations["to_remove"]
 
