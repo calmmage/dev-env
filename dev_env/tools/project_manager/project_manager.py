@@ -376,7 +376,7 @@ class ProjectManager:
 
         # update latest symlink
         latest_link = destination.path / "seasonal" / "latest"
-        if latest_link.exists():
+        if latest_link.exists() or latest_link.is_symlink():
             logger.debug(f"Removing existing symlink: {latest_link}")
             latest_link.unlink()
         logger.debug(f"Creating new symlink: {latest_link} -> {new_folder}")
@@ -875,7 +875,10 @@ class ProjectManager:
             Path to the rolled-up todo.md file if any todos were found, None otherwise.
         """
         if project_dir is None:
-            project_dir = self.discovery.get_current_project().path
+            current_project = self.discovery.get_current_project()
+            if current_project is None:
+                raise ValueError("No current project found and no project_dir specified")
+            project_dir = current_project.path
 
         # Get todo directory
         todo_dir = project_dir / self.config.todo_subfolder
