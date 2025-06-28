@@ -15,8 +15,7 @@
     top = "btop";  # Interactive process viewer
     # ps = "procs";  # Modern replacement for ps
     ps1 = "procs";  # Modern replacement for ps
-    kill1 = "fkill";  # Interactive process killer
-    
+    kill1 = "fkill";  # Interactive process killer    
     # File Operations
     # cp = "rsync -ah --progress";  # Advanced copy with progress
     cp1 = "rsync -ah --progress";  # Advanced copy with progress
