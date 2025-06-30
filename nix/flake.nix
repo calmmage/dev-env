@@ -31,7 +31,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-homebrew = {
-      url = "github:zhaofengli-wip/nix-homebrew";
+      url = "github:zhaofengli/nix-homebrew";
     };
     homebrew-bundle = {
       url = "github:homebrew/homebrew-bundle";
@@ -173,6 +173,7 @@
             nix-homebrew = {
               inherit user;
               enable = userConfig.use_nix_homebrew;
+              # enable = true;
               taps = {
                 "homebrew/homebrew-core" = homebrew-core;
                 "homebrew/homebrew-cask" = homebrew-cask;
