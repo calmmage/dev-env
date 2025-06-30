@@ -13,13 +13,15 @@ in
 
   enable_sudo_touch_id = true;
 
-  use_direnv = true;
-  use_devenv = false;
+  # use_direnv = true;
+  use_direnv = false;
+  use_devenv = true;
   # pick one or the other
-  # use_nix_homebrew = false;
-  use_nix_homebrew = true;
-  use_poetry2nix = false;
+  use_nix_homebrew = false;
+  # use_nix_homebrew = true;
 
+  use_poetry2nix = false;
+  
   homebrew = {
     brews = shared.homebrew.brews ++ [
       "sonar-scanner"
@@ -28,9 +30,18 @@ in
     casks = shared.homebrew.casks ++ [
       # Communication
 #      "microsoft-teams"
-      "ollama"
-      "zed"
-      "windsurf"
+        "ollama"
+        "zed"
+        "windsurf"
+        "obs"              # Streaming and recording
+        "zoom"             # Video conferencing
+
+        # System & Utilities
+        "grandperspective" # Disk space visualization
+
+        # Media & Entertainment
+        "vlc"              # Media player
+        "iina"            # Modern media player for macOS
     ];
 
     # These app IDs are from using the mas CLI app
@@ -45,14 +56,22 @@ in
     # This message is safe to ignore. (https://github.com/dustinlyons/nixos-config/issues/83)
 
     masApps = shared.homebrew.masApps // {
-      # Add work-specific Mac App Store apps here
+      "amphetamine" = 937984704;
     };
   };
 
   package_names = shared.package_names ++ [
-    # Add work-specific packages here
-
-    "teams"           # Microsoft Teams client
+    # Add work-specific packages here as strings
+    # "teams"           # Microsoft Teams client
+    
+    # # FPGA development tools
+    "icestorm"
+    "yosys"
+    "gtkwave"
+    
+    # # Build dependencies
+    "eigen"
+    "boost"
   ];
 
   npmPackages = shared.npmPackages ++ [
