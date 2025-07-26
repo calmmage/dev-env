@@ -1,3 +1,7 @@
+---
+ARCHIVED. This repo was moved to the main calmmage repo - https://github.com/calmmage/calmmage/tree/main/config
+---
+
 # Dev Env
 
 Development environment setup and configuration management.
